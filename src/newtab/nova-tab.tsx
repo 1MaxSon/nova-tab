@@ -1,6 +1,7 @@
 import { ChevronRightIcon } from "lucide-react";
 import Clock from "@/newtab/components/clock";
 import DateWithWeather from "@/newtab/components/date-with-weather";
+import SearchBar from "@/newtab/components/search-bar";
 
 export default function NovaTab() {
 	return (
@@ -11,65 +12,7 @@ export default function NovaTab() {
 					<DateWithWeather className="mb-10 animate-in duration-500 delay-100" />
 				</div>
 
-				<div
-					id="city-popover"
-					className="fixed z-20 hidden w-70 rounded-[1.25rem] border border-white/12 bg-[#0e101a]/95 p-3 backdrop-blur-2xl shadow-[0_16px_48px_rgba(0,0,0,0.5)]"
-				>
-					<div id="city-input-wrap" className="flex gap-2">
-						<input
-							id="city-input"
-							type="text"
-							placeholder="Введите город..."
-							autoComplete="off"
-							className="flex-1 rounded-xl border border-white/12 bg-white/5 px-3 py-2 text-sm text-white outline-none transition-colors duration-200 focus:border-white/25"
-						/>
-						<button
-							id="city-confirm"
-							type="button"
-							className="rounded-xl bg-[#c9a96e] px-4 py-2 text-sm font-medium text-[#0b0d14] transition hover:opacity-90"
-						>
-							Найти
-						</button>
-					</div>
-					<div id="city-suggestions" className="mt-2 flex flex-col gap-1"></div>
-				</div>
-
-				<div
-					id="search-wrap"
-					className="relative w-full max-w-135 mb-10 animate-in duration-500 delay-200"
-				>
-					<svg
-						id="search-icon"
-						width="17"
-						height="17"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						strokeWidth="2"
-						strokeLinecap="round"
-						strokeLinejoin="round"
-						className="pointer-events-none absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-[rgba(255,255,255,0.45)]"
-					>
-						<title>Поиск</title>
-						<circle cx="11" cy="11" r="8" />
-						<line x1="21" y1="21" x2="16.65" y2="16.65" />
-					</svg>
-					<input
-						id="search"
-						type="text"
-						placeholder="Поиск в интернете..."
-						autoComplete="off"
-						spellCheck="false"
-						className="w-full rounded-full border border-white/10 bg-white/5 px-14 py-4 text-base text-white outline-none transition duration-200 focus:border-white/20 focus:bg-white/10 focus:shadow-[0_0_0_3px_rgba(201,169,110,0.12),0_8px_32px_rgba(0,0,0,0.3)]"
-					/>
-					<button
-						id="search-btn"
-						type="button"
-						className="absolute right-3 top-1/2 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full border border-[#c9a96e]/30 bg-[#c9a96e]/15 text-[#c9a96e] transition hover:bg-[#c9a96e]/20"
-					>
-						<ChevronRightIcon className="translate-x-px" />
-					</button>
-				</div>
+				<SearchBar className="max-w-135 mb-10 animate-in duration-500 delay-200" />
 
 				<section
 					id="shortcuts-section"

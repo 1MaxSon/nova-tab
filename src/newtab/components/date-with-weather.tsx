@@ -188,10 +188,10 @@ const DateWithWeather = ({ className }: { className: string }) => {
 				href={weatherLink}
 				target="_blank"
 				rel="noopener"
-				className="flex items-center gap-1 rounded-[0.375rem] px-1.5 py-0.5 text-[0.85rem] text-muted-foreground transition-colors duration-200 hover:bg-white/5 hover:text-white"
+				className="flex items-center gap-1 rounded-[0.375rem] px-1.5 py-0.5 text-base text-muted-foreground transition-colors duration-200 hover:bg-white/5 hover:text-white"
 			>
-				<span className="text-base">{weatherCity?.name ?? "загрузка..."}</span>
-				<span className="text-base">
+				<span>{weatherCity?.name ?? "загрузка..."}</span>
+				<span>
 					{weatherData ? (
 						`${weatherData.icon} ${weatherData.desc}`
 					) : (
