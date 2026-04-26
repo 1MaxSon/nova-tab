@@ -1,6 +1,18 @@
 import { type IDBPDatabase, openDB } from "idb";
 import type { Shortcut, WeatheCity } from "@/lib/types";
 
+export type StorageData = {
+	shortcuts: Shortcut[];
+	wallpaper: object;
+	weatherCity: WeatheCity | null;
+};
+
+const DEFAULT_STORAGE_DATA: StorageData = {
+	shortcuts: [],
+	wallpaper: {},
+	weatherCity: null,
+};
+
 const useChrome = typeof chrome !== "undefined" && chrome?.storage?.local;
 
 function saveShortcuts(s: Shortcut[]) {
@@ -20,45 +32,23 @@ function saveWeatherCity(c: WeatheCity) {
 		: localStorage.setItem("nova_weather_city", JSON.stringify(c));
 }
 
-async function loadData(): Promise<
-	| {
-			shortcuts: Shortcut[];
-			wallpaper: object;
-			weatherCity: WeatheCity | null;
-	  }
-	| object
-> {
-	return new Promise((resolve) => {
-		if (typeof chrome !== "undefined") {
-			chrome.storage.local.get(
-				["shortcuts", "wallpaper", "weatherCity"],
-				resolve,
-			);
-		} else {
-			try {
-				resolve({
-					shortcuts: JSON.parse(
-						localStorage.getItem("nova_shortcuts") || "[]",
-					) as Shortcut[],
-					wallpaper: JSON.parse(
-						localStorage.getItem("nova_wallpaper") || "null",
-					),
-					weatherCity: JSON.parse(
-						localStorage.getItem("nova_weather_city") || "null",
-					) as WeatheCity | null,
-				});
-			} catch {
-				resolve({});
-			}
-		}
-	});
+async function loadData(): Promise<StorageData> {
+	if (typeof chrome !== "undefined" && chrome.storage?.local) {
+		return new Promise((resolve) => {
+			chrome.storage.local.get(Object.keys(DEFAULT_STORAGE_DATA), (result) => {
+				resolve({ ...DEFAULT_STORAGE_DATA, ...result } as StorageData);
+			});
+		});
+	}
+
+	throw new Error("The app is not running in the chrome-extension environment");
 }
 
 const ICONS_DB_NAME = "IconCacheDB";
 const ICONS_STORE_NAME = "icons";
 
 type SavedIcon = {
-	name: string;
+	id: number;
 	blob: Blob;
 };
 
@@ -77,9 +67,10 @@ const getDB = () => {
 	return dbPromise;
 };
 
-const saveIcon = async (name: string, iconBlob: Blob) => {
+const saveIcon = async (data: SavedIcon) => {
+	const { id, blob } = data;
 	const db = await getDB();
-	await db.put(ICONS_STORE_NAME, { name, blob: iconBlob }, name);
+	await db.put(ICONS_STORE_NAME, { id, blob }, id);
 };
 
 const getIcons = async () => {
@@ -87,21 +78,28 @@ const getIcons = async () => {
 	const icons = await db.getAll(ICONS_STORE_NAME);
 	return icons.filter((p): p is SavedIcon => {
 		return (
-			"name" in p &&
-			typeof p.name === "string" &&
+			"id" in p &&
+			typeof p.id === "number" &&
 			"blob" in p &&
 			p.blob instanceof Blob
 		);
 	});
 };
 
-const getIconByName = async (name: string): Promise<SavedIcon> => {
+const deleteIcon = async (id: number) => {
 	const db = await getDB();
-	return await db.get(ICONS_STORE_NAME, name);
+
+	db.delete(ICONS_STORE_NAME, id);
+};
+
+const getIconById = async (id: number): Promise<SavedIcon> => {
+	const db = await getDB();
+	return await db.get(ICONS_STORE_NAME, id);
 };
 
 export {
-	getIconByName,
+	deleteIcon,
+	getIconById as getIconByName,
 	getIcons,
 	loadData,
 	saveIcon,

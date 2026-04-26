@@ -7,7 +7,7 @@ import {
 	getContrastYIQ,
 	getFaviconDisplay,
 } from "@/lib/helpers";
-import { saveIcon } from "@/lib/storage";
+import { loadData, saveIcon } from "@/lib/storage";
 import type { Shortcut } from "@/lib/types";
 import type { Coords } from "@/lib/types/open-meteo";
 
@@ -40,11 +40,15 @@ export type CreateShortcutInput = PickTyped<Shortcut, "url"> &
 
 export async function createShortcut(
 	data: CreateShortcutInput,
-): Promise<OmitTyped<Shortcut, "id">> {
+): Promise<Shortcut> {
 	const { url, name, accentColor, mutedColor } = data;
 	const iconUrl = getFaviconDisplay(url);
 	const res = await fetch(iconUrl);
 	const iconBlob = await res.blob();
+
+	const { shortcuts } = await loadData();
+
+	const previousShortcutId = Math.max(0, ...shortcuts.map((s) => s.id)) + 1;
 
 	const fallbackName = domainFromUrl(url);
 	const resolvedName =
@@ -52,7 +56,7 @@ export async function createShortcut(
 			? name
 			: fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
 
-	saveIcon(resolvedName, iconBlob);
+	saveIcon({ id: previousShortcutId, blob: iconBlob });
 
 	const iconPalette = await extractIconPalette(iconUrl);
 
@@ -65,6 +69,7 @@ export async function createShortcut(
 		: (iconPalette.LightVibrant?.hex ?? getContrastYIQ(resolvedAccent));
 
 	return {
+		id: previousShortcutId,
 		name: resolvedName,
 		accentColor: resolvedAccent,
 		mutedColor: resolvedText,

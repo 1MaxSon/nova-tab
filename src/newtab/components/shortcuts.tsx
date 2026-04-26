@@ -1,5 +1,5 @@
 import { useStorage } from "@/components/providers/storage-provider";
-import AddShortcutDialog from "@/newtab/components/add-shortcut-dialog";
+import CreateShortcutDialog from "@/newtab/components/create-shortcut-dialog";
 import ShortcutItem from "@/newtab/components/shortcut-item";
 
 const Shortcuts = ({ className }: { className?: string }) => {
@@ -11,7 +11,7 @@ const Shortcuts = ({ className }: { className?: string }) => {
 				{storage.shortcuts.map((shortcut) => (
 					<ShortcutItem key={shortcut.id} shortcut={shortcut} />
 				))}
-				<AddShortcutDialog />
+				<CreateShortcutDialog />
 			</div>
 		</section>
 	);

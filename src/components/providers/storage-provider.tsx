@@ -6,13 +6,8 @@ import {
 	useEffect,
 	useState,
 } from "react";
+import { loadData, type StorageData } from "@/lib/storage";
 import type { Shortcut, WeatheCity } from "@/lib/types";
-
-type StorageData = {
-	shortcuts: Shortcut[];
-	wallpaper: object;
-	weatherCity: WeatheCity | null;
-};
 
 type StorageProviderContextType = {
 	storage: StorageData;
@@ -26,24 +21,6 @@ const StorageContext = createContext<StorageProviderContextType | null>(null);
 const useStorage = () => {
 	return useContext(StorageContext)!;
 };
-
-const DEFAULT_STORAGE_DATA: StorageData = {
-	shortcuts: [],
-	wallpaper: {},
-	weatherCity: null,
-};
-
-async function loadData(): Promise<StorageData> {
-	if (typeof chrome !== "undefined" && chrome.storage?.local) {
-		return new Promise((resolve) => {
-			chrome.storage.local.get(Object.keys(DEFAULT_STORAGE_DATA), (result) => {
-				resolve({ ...DEFAULT_STORAGE_DATA, ...result } as StorageData);
-			});
-		});
-	}
-
-	throw new Error("The app is not running in the chrome-extension environment");
-}
 
 const StorageProvider = ({ children }: { children: ReactNode }) => {
 	const useChrome = typeof chrome !== "undefined" && chrome?.storage?.local;
@@ -102,7 +79,11 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 		);
 
 	const [storageData, setStorageData] = useState<StorageProviderContextType>({
-		storage: DEFAULT_STORAGE_DATA,
+		storage: {
+			shortcuts: [],
+			wallpaper: {},
+			weatherCity: null,
+		},
 		saveShortcuts,
 		saveWallpaper,
 		saveWeatherCity,
