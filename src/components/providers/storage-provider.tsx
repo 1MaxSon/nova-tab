@@ -15,7 +15,7 @@ type StorageData = {
 };
 
 type StorageProviderContextType = {
-	storage: StorageData | object;
+	storage: StorageData;
 	saveShortcuts: (s: Shortcut[]) => void;
 	saveWallpaper: (w: object) => void;
 	saveWeatherCity: (c: WeatheCity) => void;
@@ -27,45 +27,45 @@ const useStorage = () => {
 	return useContext(StorageContext)!;
 };
 
-async function loadData(): Promise<StorageData | object> {
-	return new Promise((resolve) => {
-		if (typeof chrome !== "undefined") {
-			chrome.storage.local.get(
-				["shortcuts", "wallpaper", "weatherCity"],
-				resolve,
-			);
-		} else {
-			try {
-				resolve({
-					shortcuts: JSON.parse(
-						localStorage.getItem("nova_shortcuts") || "[]",
-					) as Shortcut[],
-					wallpaper: JSON.parse(
-						localStorage.getItem("nova_wallpaper") || "null",
-					),
-					weatherCity: JSON.parse(
-						localStorage.getItem("nova_weather_city") || "null",
-					) as WeatheCity | null,
-				});
-			} catch {
-				resolve({});
-			}
-		}
-	});
+const DEFAULT_STORAGE_DATA: StorageData = {
+	shortcuts: [],
+	wallpaper: {},
+	weatherCity: null,
+};
+
+async function loadData(): Promise<StorageData> {
+	if (typeof chrome !== "undefined" && chrome.storage?.local) {
+		return new Promise((resolve) => {
+			chrome.storage.local.get(Object.keys(DEFAULT_STORAGE_DATA), (result) => {
+				resolve({ ...DEFAULT_STORAGE_DATA, ...result } as StorageData);
+			});
+		});
+	}
+
+	throw new Error("The app is not running in the chrome-extension environment");
 }
 
 const StorageProvider = ({ children }: { children: ReactNode }) => {
 	const useChrome = typeof chrome !== "undefined" && chrome?.storage?.local;
 
-	const saveShortcuts: StorageProviderContextType["saveShortcuts"] =
-		useCallback(
-			(s: Shortcut[]) => {
-				useChrome
-					? chrome.storage.local.set({ shortcuts: s })
-					: localStorage.setItem("nova_shortcuts", JSON.stringify(s));
-			},
-			[useChrome],
-		);
+	const saveShortcuts = useCallback(
+		(s: Shortcut[]) => {
+			if (useChrome) {
+				chrome.storage.local.set({ shortcuts: s });
+			} else {
+				localStorage.setItem("nova_shortcuts", JSON.stringify(s));
+			}
+
+			setStorageData((prev) => ({
+				...prev,
+				storage: {
+					...prev.storage,
+					shortcuts: s,
+				},
+			}));
+		},
+		[useChrome],
+	);
 
 	const saveWallpaper: StorageProviderContextType["saveWallpaper"] =
 		useCallback(
@@ -73,22 +73,36 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 				useChrome
 					? chrome.storage.local.set({ wallpaper: w })
 					: localStorage.setItem("nova_wallpaper", JSON.stringify(w));
+				setStorageData((prev) => ({
+					...prev,
+					storage: {
+						...prev.storage,
+						wallpaper: w,
+					},
+				}));
 			},
 			[useChrome],
 		);
 
 	const saveWeatherCity: StorageProviderContextType["saveWeatherCity"] =
 		useCallback(
-			(c: WeatheCity) => {
+			(wc: WeatheCity) => {
 				useChrome
-					? chrome.storage.local.set({ weatherCity: c })
-					: localStorage.setItem("nova_weather_city", JSON.stringify(c));
+					? chrome.storage.local.set({ weatherCity: wc })
+					: localStorage.setItem("nova_weather_city", JSON.stringify(wc));
+				setStorageData((prev) => ({
+					...prev,
+					storage: {
+						...prev.storage,
+						weatherCity: wc,
+					},
+				}));
 			},
 			[useChrome],
 		);
 
 	const [storageData, setStorageData] = useState<StorageProviderContextType>({
-		storage: {},
+		storage: DEFAULT_STORAGE_DATA,
 		saveShortcuts,
 		saveWallpaper,
 		saveWeatherCity,

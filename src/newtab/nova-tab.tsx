@@ -2,6 +2,7 @@ import { ChevronRightIcon } from "lucide-react";
 import Clock from "@/newtab/components/clock";
 import DateWithWeather from "@/newtab/components/date-with-weather";
 import SearchBar from "@/newtab/components/search-bar";
+import Shortcuts from "@/newtab/components/shortcuts";
 
 export default function NovaTab() {
 	return (
@@ -14,15 +15,7 @@ export default function NovaTab() {
 
 				<SearchBar className="max-w-135 mb-10 animate-in duration-500 delay-200" />
 
-				<section
-					id="shortcuts-section"
-					className="w-full animate-in duration-500 delay-300"
-				>
-					<div
-						id="shortcuts-grid"
-						className="grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(192px,1fr))] justify-center gap-3"
-					></div>
-				</section>
+				<Shortcuts className="w-full animate-in duration-500 delay-300" />
 			</main>
 
 			<div className="fixed inset-0 z-0 nova-gradient" />

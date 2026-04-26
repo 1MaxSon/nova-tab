@@ -1,3 +1,4 @@
+import { type IDBPDatabase, openDB } from "idb";
 import type { Shortcut, WeatheCity } from "@/lib/types";
 
 const useChrome = typeof chrome !== "undefined" && chrome?.storage?.local;
@@ -53,4 +54,58 @@ async function loadData(): Promise<
 	});
 }
 
-export { loadData, saveShortcuts, saveWallpaper, saveWeatherCity };
+const ICONS_DB_NAME = "IconCacheDB";
+const ICONS_STORE_NAME = "icons";
+
+type SavedIcon = {
+	name: string;
+	blob: Blob;
+};
+
+let dbPromise: Promise<IDBPDatabase> | null = null;
+
+const getDB = () => {
+	if (!dbPromise) {
+		dbPromise = openDB(ICONS_DB_NAME, 1, {
+			upgrade(db) {
+				if (!db.objectStoreNames.contains(ICONS_STORE_NAME)) {
+					db.createObjectStore(ICONS_STORE_NAME);
+				}
+			},
+		});
+	}
+	return dbPromise;
+};
+
+const saveIcon = async (name: string, iconBlob: Blob) => {
+	const db = await getDB();
+	await db.put(ICONS_STORE_NAME, { name, blob: iconBlob }, name);
+};
+
+const getIcons = async () => {
+	const db = await getDB();
+	const icons = await db.getAll(ICONS_STORE_NAME);
+	return icons.filter((p): p is SavedIcon => {
+		return (
+			"name" in p &&
+			typeof p.name === "string" &&
+			"blob" in p &&
+			p.blob instanceof Blob
+		);
+	});
+};
+
+const getIconByName = async (name: string): Promise<SavedIcon> => {
+	const db = await getDB();
+	return await db.get(ICONS_STORE_NAME, name);
+};
+
+export {
+	getIconByName,
+	getIcons,
+	loadData,
+	saveIcon,
+	saveShortcuts,
+	saveWallpaper,
+	saveWeatherCity,
+};
