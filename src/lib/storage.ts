@@ -1,8 +1,8 @@
 import { type IDBPDatabase, openDB } from "idb";
-import type { Shortcut, WeatheCity } from "@/lib/types";
+import type { ShortcutData, WeatheCity } from "@/lib/types";
 
 export type StorageData = {
-	shortcuts: Shortcut[];
+	shortcuts: ShortcutData[];
 	wallpaper: object;
 	weatherCity: WeatheCity | null;
 };
@@ -15,7 +15,7 @@ const DEFAULT_STORAGE_DATA: StorageData = {
 
 const useChrome = typeof chrome !== "undefined" && chrome?.storage?.local;
 
-function saveShortcuts(s: Shortcut[]) {
+function saveShortcuts(s: ShortcutData[]) {
 	useChrome
 		? chrome.storage.local.set({ shortcuts: s })
 		: localStorage.setItem("nova_shortcuts", JSON.stringify(s));
@@ -32,11 +32,43 @@ function saveWeatherCity(c: WeatheCity) {
 		: localStorage.setItem("nova_weather_city", JSON.stringify(c));
 }
 
+function normalizeShortcutData(input: unknown): ShortcutData[] {
+	if (!Array.isArray(input)) return [];
+
+	return input
+		.map((item): ShortcutData | null => {
+			if (!item || typeof item !== "object") return null;
+			const raw = item as Record<string, unknown>;
+			if (raw.type === "group") {
+				return {
+					...(raw as object),
+					type: "group",
+				} as ShortcutData;
+			}
+			if (Array.isArray(raw.items)) {
+				return {
+					...(raw as object),
+					type: "group",
+				} as ShortcutData;
+			}
+
+			return {
+				...(raw as object),
+				type: "shortcut",
+			} as ShortcutData;
+		})
+		.filter(Boolean) as ShortcutData[];
+}
+
 async function loadData(): Promise<StorageData> {
 	if (typeof chrome !== "undefined" && chrome.storage?.local) {
 		return new Promise((resolve) => {
 			chrome.storage.local.get(Object.keys(DEFAULT_STORAGE_DATA), (result) => {
-				resolve({ ...DEFAULT_STORAGE_DATA, ...result } as StorageData);
+				resolve({
+					...DEFAULT_STORAGE_DATA,
+					shortcuts: normalizeShortcutData(result.shortcuts),
+					...result,
+				} as StorageData);
 			});
 		});
 	}

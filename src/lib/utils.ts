@@ -70,6 +70,7 @@ export async function createShortcut(
 
 	return {
 		id: previousShortcutId,
+		type: "shortcut",
 		name: resolvedName,
 		accentColor: resolvedAccent,
 		mutedColor: resolvedText,

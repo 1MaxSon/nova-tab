@@ -7,11 +7,11 @@ import {
 	useState,
 } from "react";
 import { loadData, type StorageData } from "@/lib/storage";
-import type { Shortcut, WeatheCity } from "@/lib/types";
+import type { ShortcutData, WeatheCity } from "@/lib/types";
 
 type StorageProviderContextType = {
 	storage: StorageData;
-	saveShortcuts: (s: Shortcut[]) => void;
+	saveShortcuts: (s: ShortcutData[]) => void;
 	saveWallpaper: (w: object) => void;
 	saveWeatherCity: (c: WeatheCity) => void;
 };
@@ -26,7 +26,7 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 	const useChrome = typeof chrome !== "undefined" && chrome?.storage?.local;
 
 	const saveShortcuts = useCallback(
-		(s: Shortcut[]) => {
+		(s: ShortcutData[]) => {
 			if (useChrome) {
 				chrome.storage.local.set({ shortcuts: s });
 			} else {

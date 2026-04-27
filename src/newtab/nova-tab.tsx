@@ -1,4 +1,3 @@
-import { ChevronRightIcon } from "lucide-react";
 import Clock from "@/newtab/components/clock";
 import DateWithWeather from "@/newtab/components/date-with-weather";
 import SearchBar from "@/newtab/components/search-bar";
@@ -21,7 +20,7 @@ export default function NovaTab() {
 			<div className="fixed inset-0 z-0 nova-gradient" />
 			<div className="nova-bg-grain" />
 
-			<div
+			{/* <div
 				id="toolbar"
 				className="fixed right-7 bottom-6 z-20 flex flex-col items-end gap-2.5 animate-in duration-1000 delay-400"
 			>
@@ -174,7 +173,7 @@ export default function NovaTab() {
 						</div>
 					</form>
 				</div>
-			</div>
+			</div> */}
 		</>
 	);
 }

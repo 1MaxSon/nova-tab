@@ -1,5 +1,5 @@
 import { TrashIcon } from "lucide-react";
-import type { ComponentProps } from "react";
+import { type ComponentProps, memo } from "react";
 import { useStorage } from "@/components/providers/storage-provider";
 import { Button } from "@/components/ui/button";
 import { deleteIcon } from "@/lib/storage";
@@ -29,4 +29,4 @@ const DeleteShortcutButton = ({
 	);
 };
 
-export default DeleteShortcutButton;
+export default memo(DeleteShortcutButton);

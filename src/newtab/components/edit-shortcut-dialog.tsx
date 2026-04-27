@@ -1,4 +1,4 @@
-import { type ComponentProps, useState } from "react";
+import { type ComponentProps, memo, useState } from "react";
 import { useStorage } from "@/components/providers/storage-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,7 +10,7 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { saveIcon } from "@/lib/storage";
-import type { Shortcut } from "@/lib/types";
+import type { Shortcut, ShortcutData } from "@/lib/types";
 import type { CreateShortcutInput } from "@/lib/utils";
 import CreateShortcutForm from "@/newtab/components/create-shortcut-form";
 
@@ -31,9 +31,10 @@ const EditShortcutDialog = ({
 	>(shortcut);
 
 	const onFormSubmit = async () => {
-		const changedShortcuts = storage.shortcuts.map((s): Shortcut => {
+		const changedShortcuts = storage.shortcuts.map((s): ShortcutData => {
 			if (s.id === shortcut.id)
 				return {
+					type: "shortcut",
 					id: shortcut.id,
 					url: shortcut.url,
 					name: formData.name ?? "",
@@ -46,7 +47,7 @@ const EditShortcutDialog = ({
 
 		if (formData.newIcon) {
 			await saveIcon({ id: shortcut.id, blob: formData.newIcon });
-            onIconChange()
+			onIconChange();
 		}
 
 		saveShortcuts(changedShortcuts);
@@ -103,4 +104,4 @@ const EditShortcutDialog = ({
 	);
 };
 
-export default EditShortcutDialog;
+export default memo(EditShortcutDialog);

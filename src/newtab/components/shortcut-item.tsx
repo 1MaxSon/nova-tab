@@ -1,5 +1,6 @@
+﻿import { useSortable } from "@dnd-kit/react/sortable";
 import { Edit2Icon } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { type ComponentProps, useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { getIconByName } from "@/lib/storage";
@@ -18,12 +19,19 @@ export const shortcutItemClassName =
 const ShortcutItem = ({
 	className,
 	shortcut,
+	index,
+	...props
 }: {
-	className?: string;
 	shortcut: Shortcut;
-}) => {
+	index: number;
+} & ComponentProps<"div">) => {
 	const [iconBlob, setIconBlob] = useState<Blob | undefined>(undefined);
 	const [iconBlobUrl, setIconBlobUrl] = useState<string | undefined>(undefined);
+
+	const { ref, handleRef } = useSortable({
+		id: shortcut.id,
+		index: index,
+	});
 
 	const loadIcon = useCallback(async () => {
 		const icon = await getIconByName(shortcut.id);
@@ -47,8 +55,9 @@ const ShortcutItem = ({
 	}, [iconBlob]);
 
 	return (
-		<div className="relative group">
+		<div className="relative group" {...props} ref={ref}>
 			<a
+				ref={handleRef}
 				href={shortcut.url}
 				rel="norefer"
 				className={cn([className, shortcutItemClassName])}
