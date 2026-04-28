@@ -19,6 +19,26 @@ export default defineConfig({
 		zip({ outDir: "release", outFileName: `crx-${name}-${version}.zip` }),
 		tailwindcss(),
 	],
+	build: {
+		rollupOptions: {
+			output: {
+				chunkFileNames: "chunks/[name]-[hash].js",
+				entryFileNames: "[name]-[hash].js",
+				assetFileNames: "assets/[name]-[hash][extname]",
+				manualChunks(id) {
+					if (id.includes("node_modules")) {
+						if (id.includes("@dnd-kit")) return "dnd-kit";
+						if (id.includes("@base-ui")) return "ui-lib";
+						if (id.includes("next-themes")) return "theme";
+						if (id.includes("sonner")) return "sonner";
+						if (id.includes("node-vibrant")) return "vibrant";
+
+						return "vendor";
+					}
+				},
+			},
+		},
+	},
 	server: {
 		cors: {
 			origin: [/chrome-extension:\/\//],

@@ -1,7 +1,10 @@
+import { lazy, Suspense } from "react";
+import { Spinner } from "@/components/ui/spinner";
 import Clock from "@/newtab/components/clock";
 import DateWithWeather from "@/newtab/components/date-with-weather";
 import SearchBar from "@/newtab/components/search-bar";
-import Shortcuts from "@/newtab/components/shortcuts";
+
+const Shortcuts = lazy(() => import("@/newtab/components/shortcuts"));
 
 export default function NovaTab() {
 	return (
@@ -17,7 +20,9 @@ export default function NovaTab() {
 
 				<SearchBar className="max-w-135 mb-10 animate-in duration-500 delay-200" />
 
-				<Shortcuts className="w-full animate-in duration-500 delay-300" />
+				<Suspense fallback={<Spinner />}>
+					<Shortcuts className="w-full animate-in duration-500 delay-300" />
+				</Suspense>
 			</main>
 
 			{/* <div
