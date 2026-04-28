@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useStorage } from "@/components/providers/storage-provider";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { shortcutSensor } from "@/lib/sensors";
 import type { ShortcutGroupType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import PreviewShortcutItem from "@/newtab/components/preview-shortcut-item";
@@ -152,6 +153,7 @@ const ShortcutGroup = ({
 								}),
 							);
 						}}
+						sensors={[shortcutSensor]}
 					>
 						<div className="space-y-4 rounded-xl">
 							<ShortcutsGrid className="gap-2">

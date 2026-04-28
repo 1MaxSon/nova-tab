@@ -1,8 +1,8 @@
-import { PointerActivationConstraints } from "@dnd-kit/dom";
 import { move } from "@dnd-kit/helpers";
-import { DragDropProvider, PointerSensor } from "@dnd-kit/react";
+import { DragDropProvider } from "@dnd-kit/react";
 import { useStorage } from "@/components/providers/storage-provider";
 import { generatePreviousId } from "@/lib/helpers";
+import { shortcutSensor } from "@/lib/sensors";
 import type { ShortcutGroupType, ShortcutType } from "@/lib/types";
 import CreateShortcutDialog from "@/newtab/components/create-shortcut-dialog";
 import ShortcutGroup from "@/newtab/components/shortcut-group";
@@ -105,16 +105,7 @@ const Shortcuts = ({ className }: { className?: string }) => {
 
 						saveShortcuts(move(shortcutItems, event));
 					}}
-					sensors={[
-						PointerSensor.configure({
-							activationConstraints: [
-								new PointerActivationConstraints.Delay({
-									value: 100,
-									tolerance: 0,
-								}),
-							],
-						}),
-					]}
+					sensors={[shortcutSensor]}
 				>
 					{shortcutItems.map((shortcut, idx) => {
 						if (shortcut.type === "group") {
