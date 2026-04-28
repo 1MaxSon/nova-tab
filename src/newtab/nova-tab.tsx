@@ -6,7 +6,10 @@ import Shortcuts from "@/newtab/components/shortcuts";
 export default function NovaTab() {
 	return (
 		<>
-			<main className="fixed inset-0 z-10 flex flex-col items-center justify-center px-12 py-6">
+			<div className="fixed inset-0 z-0 nova-gradient" />
+			<div className="nova-bg-grain z-0" />
+
+			<main className="flex flex-col items-center justify-center px-12 py-6">
 				<div className="flex flex-col items-center">
 					<Clock className="mb-3 animate-in duration-500" />
 					<DateWithWeather className="mb-10 animate-in duration-500 delay-100" />
@@ -16,9 +19,6 @@ export default function NovaTab() {
 
 				<Shortcuts className="w-full animate-in duration-500 delay-300" />
 			</main>
-
-			<div className="fixed inset-0 z-0 nova-gradient" />
-			<div className="nova-bg-grain" />
 
 			{/* <div
 				id="toolbar"

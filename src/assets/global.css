@@ -127,8 +127,13 @@
 	* {
 		@apply border-border outline-ring/50;
 	}
+
+	html {
+		@apply no-scrollbar;
+	}
+
 	body {
-		@apply bg-background text-foreground w-full h-full select-none;
+		@apply bg-background text-foreground w-full h-full select-none overflow-y-auto no-scrollbar;
 	}
 
 	button:not(:disabled),
