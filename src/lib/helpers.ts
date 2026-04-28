@@ -1,5 +1,6 @@
 import { Vibrant, WorkerPipeline } from "node-vibrant/worker";
 import PipelineWorker from "node-vibrant/worker.worker?worker";
+import type { ShortcutData } from "@/lib/types";
 
 Vibrant.use(new WorkerPipeline(PipelineWorker as never));
 
@@ -12,7 +13,8 @@ export function domainFromUrl(url: string) {
 }
 
 export function getFaviconDisplay(url: string) {
-	return `https://www.google.com/s2/favicons?domain=${domainFromUrl(url)}&sz=64`;
+	// return `https://www.google.com/s2/favicons?domain=${domainFromUrl(url)}&sz=64`;
+	return `https://icons.duckduckgo.com/ip3/${domainFromUrl(url)}.ico`;
 }
 
 export async function extractIconPalette(blobUrl: string) {
@@ -28,3 +30,17 @@ export const getContrastYIQ = (hexcolor: string) => {
 	const yiq = (r * 299 + g * 587 + b * 114) / 1000;
 	return yiq >= 128 ? "#000000" : "#ffffff";
 };
+
+export function generatePreviousId(shortcuts: ShortcutData[]) {
+	const ids: number[] = [];
+
+	shortcuts.forEach((s) => {
+		ids.push(s.id);
+
+		if (s.type === "group") {
+			ids.push(...s.items.map((item) => item.id));
+		}
+	});
+
+	return Math.max(0, ...ids) + 1;
+}

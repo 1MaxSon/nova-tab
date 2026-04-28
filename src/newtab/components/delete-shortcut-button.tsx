@@ -3,13 +3,13 @@ import { type ComponentProps, memo } from "react";
 import { useStorage } from "@/components/providers/storage-provider";
 import { Button } from "@/components/ui/button";
 import { deleteIcon } from "@/lib/storage";
-import type { Shortcut } from "@/lib/types";
+import type { ShortcutGroupType, ShortcutType } from "@/lib/types";
 
 const DeleteShortcutButton = ({
 	shortcut,
 	onClick,
 	...props
-}: { shortcut: Shortcut } & OmitTyped<
+}: { shortcut: ShortcutType } & OmitTyped<
 	ComponentProps<typeof Button>,
 	"children"
 >) => {
@@ -20,7 +20,32 @@ const DeleteShortcutButton = ({
 			{...props}
 			onClick={async (e) => {
 				onClick?.(e);
-				saveShortcuts(storage.shortcuts.filter((p) => p.id !== shortcut.id));
+
+				if (shortcut.groupId) {
+					const shortcutGroup = storage.shortcuts.find(
+						(p): p is ShortcutGroupType =>
+							p.type === "group" && p.id === shortcut.groupId,
+					);
+
+					if (shortcutGroup) {
+						const shortcutGroupItems = shortcutGroup.items.filter(
+							(p) => p.id !== shortcut.id,
+						);
+
+						saveShortcuts(
+							storage.shortcuts.map((s) => {
+								if (s.id === shortcutGroup.id) {
+									return { ...s, items: shortcutGroupItems };
+								}
+
+								return s;
+							}),
+						);
+					}
+				} else {
+					saveShortcuts(storage.shortcuts.filter((p) => p.id !== shortcut.id));
+				}
+
 				await deleteIcon(shortcut.id);
 			}}
 		>

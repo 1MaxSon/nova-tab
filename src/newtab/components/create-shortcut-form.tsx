@@ -1,4 +1,3 @@
-import { memo } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
@@ -103,4 +102,4 @@ const CreateShortcutForm = ({
 	);
 };
 
-export default memo(CreateShortcutForm);
+export default CreateShortcutForm;

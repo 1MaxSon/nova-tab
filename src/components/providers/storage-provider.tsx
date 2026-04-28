@@ -26,9 +26,9 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 	const useChrome = typeof chrome !== "undefined" && chrome?.storage?.local;
 
 	const saveShortcuts = useCallback(
-		(s: ShortcutData[]) => {
+		async (s: ShortcutData[]) => {
 			if (useChrome) {
-				chrome.storage.local.set({ shortcuts: s });
+				await chrome.storage.local.set({ shortcuts: s });
 			} else {
 				localStorage.setItem("nova_shortcuts", JSON.stringify(s));
 			}
@@ -46,9 +46,9 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 
 	const saveWallpaper: StorageProviderContextType["saveWallpaper"] =
 		useCallback(
-			(w: object) => {
+			async (w: object) => {
 				useChrome
-					? chrome.storage.local.set({ wallpaper: w })
+					? await chrome.storage.local.set({ wallpaper: w })
 					: localStorage.setItem("nova_wallpaper", JSON.stringify(w));
 				setStorageData((prev) => ({
 					...prev,
@@ -63,9 +63,9 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 
 	const saveWeatherCity: StorageProviderContextType["saveWeatherCity"] =
 		useCallback(
-			(wc: WeatheCity) => {
+			async (wc: WeatheCity) => {
 				useChrome
-					? chrome.storage.local.set({ weatherCity: wc })
+					? await chrome.storage.local.set({ weatherCity: wc })
 					: localStorage.setItem("nova_weather_city", JSON.stringify(wc));
 				setStorageData((prev) => ({
 					...prev,

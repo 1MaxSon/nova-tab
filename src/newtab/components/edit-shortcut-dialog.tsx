@@ -10,7 +10,7 @@ import {
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { saveIcon } from "@/lib/storage";
-import type { Shortcut, ShortcutData } from "@/lib/types";
+import type { ShortcutGroupType, ShortcutType } from "@/lib/types";
 import type { CreateShortcutInput } from "@/lib/utils";
 import CreateShortcutForm from "@/newtab/components/create-shortcut-form";
 
@@ -19,7 +19,7 @@ const EditShortcutDialog = ({
 	children,
 	onIconChange,
 	...props
-}: { shortcut: Shortcut; onIconChange: () => void } & ComponentProps<
+}: { shortcut: ShortcutType; onIconChange: () => void } & ComponentProps<
 	typeof DialogTrigger
 >) => {
 	const { saveShortcuts, storage } = useStorage();
@@ -27,16 +27,25 @@ const EditShortcutDialog = ({
 	const [open, setOpen] = useState(false);
 
 	const [formData, setFormData] = useState<
-		CreateShortcutInput & { newIcon?: Blob }
+		OmitTyped<CreateShortcutInput, "groupId" | "id"> & { newIcon?: Blob }
 	>(shortcut);
 
 	const onFormSubmit = async () => {
-		const changedShortcuts = storage.shortcuts.map((s): ShortcutData => {
+		const shortcutGroup = storage.shortcuts.find(
+			(p): p is ShortcutGroupType => p.id === shortcut.groupId,
+		);
+
+		const affectedShortcuts = shortcutGroup
+			? shortcutGroup.items
+			: storage.shortcuts.filter(
+					(p): p is ShortcutType => p.type === "shortcut",
+				);
+
+		const changedShortcuts = affectedShortcuts.map((s): ShortcutType => {
 			if (s.id === shortcut.id)
 				return {
-					type: "shortcut",
-					id: shortcut.id,
-					url: shortcut.url,
+					...shortcut,
+					url: formData.url,
 					name: formData.name ?? "",
 					accentColor: formData.accentColor ?? "#000",
 					mutedColor: formData.mutedColor ?? "#000",
@@ -50,7 +59,21 @@ const EditShortcutDialog = ({
 			onIconChange();
 		}
 
-		saveShortcuts(changedShortcuts);
+		if (shortcutGroup) {
+			saveShortcuts(
+				storage.shortcuts.map((s) => {
+					if (s.type === "group" && s.id === shortcutGroup.id) {
+						return {
+							...s,
+							items: changedShortcuts,
+						};
+					}
+					return s;
+				}),
+			);
+		} else {
+			saveShortcuts(changedShortcuts);
+		}
 
 		setOpen(false);
 	};
@@ -91,7 +114,12 @@ const EditShortcutDialog = ({
 						</Field>
 						<CreateShortcutForm
 							formData={formData}
-							onFormDataChange={setFormData}
+							onFormDataChange={(data) => {
+								setFormData((prev) => ({
+									...data,
+									newIcon: prev.newIcon,
+								}));
+							}}
 							hasOptional={false}
 						/>
 						<Field>

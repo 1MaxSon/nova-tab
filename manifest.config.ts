@@ -18,8 +18,7 @@ export default defineManifest({
 		"https://api.open-meteo.com/*",
 		"https://geocoding-api.open-meteo.com/*",
 		"https://nominatim.openstreetmap.org/*",
-		"https://www.google.com/*",
-		"https://*.gstatic.com/*",
+		"https://icons.duckduckgo.com/ip3/*"
 	],
 	chrome_url_overrides: {
 		newtab: "src/newtab/index.html",

@@ -99,12 +99,6 @@ const getDB = () => {
 	return dbPromise;
 };
 
-const saveIcon = async (data: SavedIcon) => {
-	const { id, blob } = data;
-	const db = await getDB();
-	await db.put(ICONS_STORE_NAME, { id, blob }, id);
-};
-
 const getIcons = async () => {
 	const db = await getDB();
 	const icons = await db.getAll(ICONS_STORE_NAME);
@@ -116,6 +110,12 @@ const getIcons = async () => {
 			p.blob instanceof Blob
 		);
 	});
+};
+
+const saveIcon = async (data: SavedIcon) => {
+	const { id, blob } = data;
+	const db = await getDB();
+	await db.put(ICONS_STORE_NAME, { id, blob }, id);
 };
 
 const deleteIcon = async (id: number) => {

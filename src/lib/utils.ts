@@ -4,11 +4,12 @@ import { twMerge } from "tailwind-merge";
 import {
 	domainFromUrl,
 	extractIconPalette,
+	generatePreviousId,
 	getContrastYIQ,
 	getFaviconDisplay,
 } from "@/lib/helpers";
 import { loadData, saveIcon } from "@/lib/storage";
-import type { Shortcut } from "@/lib/types";
+import type { ShortcutType } from "@/lib/types";
 import type { Coords } from "@/lib/types/open-meteo";
 
 export function cn(...inputs: ClassValue[]) {
@@ -35,12 +36,12 @@ export async function getCityName(coords: Coords) {
 	return cityName;
 }
 
-export type CreateShortcutInput = PickTyped<Shortcut, "url"> &
-	Partial<OmitTyped<Shortcut, "url">>;
+export type CreateShortcutInput = PickTyped<ShortcutType, "url"> &
+	Partial<OmitTyped<ShortcutType, "url">>;
 
 export async function createShortcut(
 	data: CreateShortcutInput,
-): Promise<Shortcut> {
+): Promise<ShortcutType> {
 	const { url, name, accentColor, mutedColor } = data;
 	const iconUrl = getFaviconDisplay(url);
 	const res = await fetch(iconUrl);
@@ -48,7 +49,7 @@ export async function createShortcut(
 
 	const { shortcuts } = await loadData();
 
-	const previousShortcutId = Math.max(0, ...shortcuts.map((s) => s.id)) + 1;
+	const previousShortcutId = generatePreviousId(shortcuts);
 
 	const fallbackName = domainFromUrl(url);
 	const resolvedName =
