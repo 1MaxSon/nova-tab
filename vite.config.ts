@@ -23,5 +23,12 @@ export default defineConfig({
 		cors: {
 			origin: [/chrome-extension:\/\//],
 		},
+		port: 5173,
+		strictPort: true,
+		hmr: {
+			host: "localhost",
+			protocol: "ws",
+			clientPort: 5173,
+		},
 	},
 });
