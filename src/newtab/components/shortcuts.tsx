@@ -27,6 +27,8 @@ const Shortcuts = ({ className }: { className?: string }) => {
 							const sourceId = event.operation.source?.id as number | undefined;
 							if (!sourceId) return;
 
+							if (targetId === sourceId) return;
+
 							const targetIndex = shortcutItems.findIndex(
 								(p) => p.type === "shortcut" && p.id === targetId,
 							);
