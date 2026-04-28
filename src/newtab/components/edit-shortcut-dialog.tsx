@@ -75,7 +75,10 @@ const EditShortcutDialog = ({
 				}),
 			);
 		} else {
-			saveShortcuts(changedShortcuts);
+			saveShortcuts([
+				...storage.shortcuts.filter((p) => p.type === "group"),
+				...changedShortcuts,
+			]);
 		}
 
 		setOpen(false);
