@@ -31,7 +31,11 @@ const ShortcutGroup = ({
 
 	const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-	const { ref: sortableRef, handleRef } = useSortable({
+	const {
+		ref: sortableRef,
+		handleRef,
+		isDragging,
+	} = useSortable({
 		id: shortcutGroup.id,
 		index,
 		type: "shortcut-group",
@@ -46,6 +50,7 @@ const ShortcutGroup = ({
 			groupId: shortcutGroup.id,
 		},
 		collisionDetector: shapeIntersection,
+		disabled: isDragging,
 	});
 
 	useEffect(() => {

@@ -1,5 +1,5 @@
 ﻿import { pointerIntersection } from "@dnd-kit/collision";
-import { useDragDropManager, useDroppable } from "@dnd-kit/react";
+import { useDroppable } from "@dnd-kit/react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import { Edit2Icon, FolderPlusIcon } from "lucide-react";
 import { type ComponentProps, useCallback, useEffect, useState } from "react";
@@ -34,26 +34,31 @@ const ShortcutItem = ({
 	const [iconBlob, setIconBlob] = useState<Blob | undefined>(undefined);
 	const [iconBlobUrl, setIconBlobUrl] = useState<string | undefined>(undefined);
 
-	const manager = useDragDropManager();
-
 	const {
 		ref: sortableRef,
 		handleRef,
-		isDragging,
+		sortable,
 	} = useSortable({
 		id: shortcut.id,
 		index,
 		collisionDetector: pointerIntersection,
 		type: "shortcut",
-		group: "main-shortcuts"
+		group: "main-shortcuts",
 	});
+
+	const manager = sortable.manager;
+
+	const sourceId = manager?.dragOperation.source?.id;
+	const sourceType = manager?.dragOperation.source?.type?.toString();
 
 	const { ref: dropRef, isDropTarget } = useDroppable({
 		id: `${GROUP_DROP_PREFIX}${shortcut.id}`,
 		data: { targetId: shortcut.id },
-		disabled:
-			isDragging || manager?.dragOperation.source?.type === "group" || inGroup,
+		disabled: inGroup,
 	});
+
+	const isGroupTarget =
+		isDropTarget && sourceId !== shortcut.id && sourceType === "shortcut";
 
 	const loadIcon = useCallback(async () => {
 		const icon = await getIconByName(shortcut.id);
@@ -74,10 +79,6 @@ const ShortcutItem = ({
 			if (_iconBlobUrl !== "") URL.revokeObjectURL(_iconBlobUrl);
 		};
 	}, [iconBlob]);
-
-	const activeId = manager?.dragOperation.source?.id;
-
-	const isGroupTarget = isDropTarget && activeId !== shortcut.id;
 
 	return (
 		<div
