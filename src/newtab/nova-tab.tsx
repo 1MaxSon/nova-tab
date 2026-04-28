@@ -9,7 +9,7 @@ export default function NovaTab() {
 			<div className="fixed inset-0 z-0 nova-gradient" />
 			<div className="nova-bg-grain z-0" />
 
-			<main className="flex flex-col items-center justify-center px-12 py-6">
+			<main className="relative flex flex-col items-center justify-center px-12 py-6">
 				<div className="flex flex-col items-center">
 					<Clock className="mb-3 animate-in duration-500" />
 					<DateWithWeather className="mb-10 animate-in duration-500 delay-100" />
