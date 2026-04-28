@@ -65,7 +65,10 @@ const EditShortcutDialog = ({
 					if (s.type === "group" && s.id === shortcutGroup.id) {
 						return {
 							...s,
-							items: changedShortcuts,
+							items: changedShortcuts.map((s) => ({
+								...s,
+								groupId: shortcutGroup.id,
+							})),
 						};
 					}
 					return s;
