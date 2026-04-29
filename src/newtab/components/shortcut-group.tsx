@@ -24,7 +24,7 @@ const ShortcutGroup = ({
 	shortcutGroup: ShortcutGroupType;
 	index: number;
 }) => {
-	const { storage, saveShortcuts } = useStorage();
+	const { storage, setShortcuts } = useStorage();
 
 	const [name, setName] = useState(shortcutGroup.name);
 	const [debouncedName] = useDebounce(name, 200);
@@ -55,14 +55,14 @@ const ShortcutGroup = ({
 
 	useEffect(() => {
 		if (!debouncedName.trim()) return;
-		saveShortcuts(
+		setShortcuts(
 			storage.shortcuts.map((s) =>
 				s.type === "group" && s.id === shortcutGroup.id
 					? { ...s, name: debouncedName }
 					: s,
 			),
 		);
-	}, [debouncedName, saveShortcuts, shortcutGroup.id, storage.shortcuts.map]);
+	}, [debouncedName, setShortcuts, shortcutGroup.id, storage.shortcuts.map]);
 
 	return (
 		<div
@@ -110,7 +110,8 @@ const ShortcutGroup = ({
 
 								if (changedShortcutsInGroup.length === 0) {
 									setIsDialogOpen(false);
-									saveShortcuts([
+
+									setShortcuts([
 										...storage.shortcuts.filter(
 											(p) => p.id !== shortcutGroup.id,
 										),
@@ -123,7 +124,7 @@ const ShortcutGroup = ({
 									return;
 								}
 
-								saveShortcuts([
+								setShortcuts([
 									...storage.shortcuts.map((s) => {
 										if (s.id !== shortcutGroup.id) return s;
 
@@ -145,7 +146,7 @@ const ShortcutGroup = ({
 
 							const movedShortcuts = move(shortcutGroup.items, event);
 
-							saveShortcuts(
+							setShortcuts(
 								storage.shortcuts.map((data) => {
 									if (data.id !== shortcutGroup.id) return data;
 

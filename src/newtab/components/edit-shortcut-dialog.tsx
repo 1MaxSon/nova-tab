@@ -22,7 +22,7 @@ const EditShortcutDialog = ({
 }: { shortcut: ShortcutType; onIconChange: () => void } & ComponentProps<
 	typeof DialogTrigger
 >) => {
-	const { saveShortcuts, storage } = useStorage();
+	const { setShortcuts, storage } = useStorage();
 
 	const [open, setOpen] = useState(false);
 
@@ -60,7 +60,7 @@ const EditShortcutDialog = ({
 		}
 
 		if (shortcutGroup) {
-			saveShortcuts(
+			setShortcuts(
 				storage.shortcuts.map((s) => {
 					if (s.type === "group" && s.id === shortcutGroup.id) {
 						return {
@@ -75,7 +75,7 @@ const EditShortcutDialog = ({
 				}),
 			);
 		} else {
-			saveShortcuts([
+			setShortcuts([
 				...storage.shortcuts.filter((p) => p.type === "group"),
 				...changedShortcuts,
 			]);

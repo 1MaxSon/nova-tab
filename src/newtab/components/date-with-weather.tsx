@@ -61,11 +61,11 @@ const getDate = () => {
 };
 
 const DateWithWeather = ({ className }: { className: string }) => {
-	const { saveWeatherCity, storage } = useStorage();
+	const { setWeatherCity, storage } = useStorage();
 
 	const [date, setDate] = useState(getDate());
 
-	const [weatherCity, setWeatherCity] = useState<WeatheCity | null>(null);
+	// const [weatherCity, setWeatherCity] = useState<WeatheCity | null>(null);
 	const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
 
 	const [selectedCity, setSelectedCity] = useState<GeocodedEntry | null>(null);
@@ -87,10 +87,10 @@ const DateWithWeather = ({ className }: { className: string }) => {
 	useIntervalWhen(
 		async () => {
 			const fetchWeather = async () => {
-				if (!weatherCity) return;
+				if (!storage.weatherCity) return;
 
 				const res = await fetch(
-					`https://api.open-meteo.com/v1/forecast?latitude=${weatherCity.lat}&longitude=${weatherCity.lon}` +
+					`https://api.open-meteo.com/v1/forecast?latitude=${storage.weatherCity.lat}&longitude=${storage.weatherCity.lon}` +
 						`&current_weather=true&temperature_unit=celsius&timezone=auto`,
 				);
 				if (res.status !== 200) {
@@ -111,16 +111,14 @@ const DateWithWeather = ({ className }: { className: string }) => {
 		},
 		{
 			ms: 5 * 60 * 10000,
-			condition: !!weatherCity,
+			condition: !!storage.weatherCity,
 			startImmediately: true,
 		},
 	);
 
 	useEffect(() => {
-		if (!("weatherCity" in storage)) return;
-
-		if (!weatherCity) setWeatherCity(storage.weatherCity);
-	}, [weatherCity, storage]);
+		if (!storage.weatherCity) setWeatherCity(storage.weatherCity);
+	}, [storage.weatherCity, setWeatherCity]);
 
 	useEffect(() => {
 		const fetchCities = async () => {
@@ -159,23 +157,22 @@ const DateWithWeather = ({ className }: { className: string }) => {
 			};
 
 			setWeatherCity(weaCity);
-			saveWeatherCity(weaCity);
 		};
 
 		fetchCityName();
-	}, [selectedCity, saveWeatherCity]);
+	}, [selectedCity, setWeatherCity]);
 
 	const comboboxItems = isDebouncePending()
 		? [0, 1, 2, 3].map((i) => ({ type: "skeleton", id: i }))
 		: addressAutoCompletes.map((c) => ({ type: "city", data: c }));
 
 	const weatherLink = useMemo(() => {
-		if (!weatherCity) return "#";
+		if (!storage.weatherCity) return "#";
 		return buildYandexUrl({
-			latitude: weatherCity.lat,
-			longitude: weatherCity.lat,
+			latitude: storage.weatherCity.lat,
+			longitude: storage.weatherCity.lat,
 		});
-	}, [weatherCity]);
+	}, [storage.weatherCity]);
 
 	return (
 		<div className={cn(["flex items-center gap-3.5", className])}>
@@ -190,7 +187,7 @@ const DateWithWeather = ({ className }: { className: string }) => {
 				rel="noopener"
 				className="flex items-center gap-1 rounded-[0.375rem] px-1.5 py-0.5 text-base text-muted-foreground transition-colors duration-200 hover:bg-white/5 hover:text-white"
 			>
-				<span>{weatherCity?.name ?? "загрузка..."}</span>
+				<span>{storage.weatherCity?.name ?? "загрузка..."}</span>
 				<span>
 					{weatherData ? (
 						`${weatherData.icon} ${weatherData.desc}`

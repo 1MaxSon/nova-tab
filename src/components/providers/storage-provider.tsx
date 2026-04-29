@@ -1,19 +1,25 @@
 import {
 	createContext,
+	type Dispatch,
 	type ReactNode,
-	useCallback,
+	type SetStateAction,
 	useContext,
 	useEffect,
+	useRef,
 	useState,
 } from "react";
-import { loadData, type StorageData } from "@/lib/storage";
+import {
+	loadData,
+	type StorageData,
+	saveShortcuts,
+	saveWeatherCity,
+} from "@/lib/storage";
 import type { ShortcutData, WeatheCity } from "@/lib/types";
 
 type StorageProviderContextType = {
 	storage: StorageData;
-	saveShortcuts: (s: ShortcutData[]) => void;
-	saveWallpaper: (w: object) => void;
-	saveWeatherCity: (c: WeatheCity) => void;
+	setShortcuts: Dispatch<SetStateAction<ShortcutData[]>>;
+	setWeatherCity: Dispatch<SetStateAction<WeatheCity | null>>;
 };
 
 const StorageContext = createContext<StorageProviderContextType | null>(null);
@@ -23,82 +29,46 @@ const useStorage = () => {
 };
 
 const StorageProvider = ({ children }: { children: ReactNode }) => {
-	const useChrome = typeof chrome !== "undefined" && chrome?.storage?.local;
+	const isDataLoaded = useRef(false);
 
-	const saveShortcuts = useCallback(
-		async (s: ShortcutData[]) => {
-			if (useChrome) {
-				await chrome.storage.local.set({ shortcuts: s });
-			} else {
-				localStorage.setItem("nova_shortcuts", JSON.stringify(s));
-			}
+	const [shortcuts, setShortcuts] = useState<ShortcutData[]>([]);
 
-			setStorageData((prev) => ({
-				...prev,
-				storage: {
-					...prev.storage,
-					shortcuts: s,
-				},
-			}));
-		},
-		[useChrome],
-	);
-
-	const saveWallpaper: StorageProviderContextType["saveWallpaper"] =
-		useCallback(
-			async (w: object) => {
-				useChrome
-					? await chrome.storage.local.set({ wallpaper: w })
-					: localStorage.setItem("nova_wallpaper", JSON.stringify(w));
-				setStorageData((prev) => ({
-					...prev,
-					storage: {
-						...prev.storage,
-						wallpaper: w,
-					},
-				}));
-			},
-			[useChrome],
-		);
-
-	const saveWeatherCity: StorageProviderContextType["saveWeatherCity"] =
-		useCallback(
-			async (wc: WeatheCity) => {
-				useChrome
-					? await chrome.storage.local.set({ weatherCity: wc })
-					: localStorage.setItem("nova_weather_city", JSON.stringify(wc));
-				setStorageData((prev) => ({
-					...prev,
-					storage: {
-						...prev.storage,
-						weatherCity: wc,
-					},
-				}));
-			},
-			[useChrome],
-		);
-
-	const [storageData, setStorageData] = useState<StorageProviderContextType>({
-		storage: {
-			shortcuts: [],
-			wallpaper: {},
-			weatherCity: null,
-		},
-		saveShortcuts,
-		saveWallpaper,
-		saveWeatherCity,
-	});
+	const [weatherCity, setWeatherCity] = useState<WeatheCity | null>(null);
 
 	useEffect(() => {
 		const loadStorageData = async () => {
-			const storageData = await loadData();
-			setStorageData((prev) => ({
-				...prev,
-				storage: storageData,
-			}));
+			const data = await loadData();
+			setShortcuts(data.shortcuts);
+			setWeatherCity(data.weatherCity);
+			isDataLoaded.current = true;
 		};
-		loadStorageData();
+
+		if (!isDataLoaded.current) {
+			loadStorageData();
+		}
 	}, []);
+
+	const storageData: StorageProviderContextType = {
+		storage: {
+			shortcuts,
+			weatherCity,
+			wallpaper: {},
+		},
+		setShortcuts,
+		setWeatherCity,
+	};
+
+	useEffect(() => {
+		if (!isDataLoaded.current) return;
+
+		if (weatherCity) saveWeatherCity(weatherCity);
+	}, [weatherCity]);
+
+	useEffect(() => {
+		if (!isDataLoaded.current) return;
+
+		saveShortcuts(shortcuts);
+	}, [shortcuts]);
 
 	return (
 		<StorageContext.Provider value={storageData}>

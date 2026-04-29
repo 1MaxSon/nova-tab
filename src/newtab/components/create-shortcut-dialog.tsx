@@ -16,7 +16,7 @@ import CreateShortcutForm from "@/newtab/components/create-shortcut-form";
 import { shortcutItemClassName } from "@/newtab/components/shortcut-item";
 
 const CreateShortcutDialog = () => {
-	const { saveShortcuts, storage } = useStorage();
+	const { setShortcuts, storage } = useStorage();
 
 	const [open, setOpen] = useState(false);
 
@@ -34,7 +34,7 @@ const CreateShortcutDialog = () => {
 		setOpen(false);
 
 		const newShortcut = await createShortcut(formData);
-		saveShortcuts([...storage.shortcuts, newShortcut]);
+		setShortcuts([...storage.shortcuts, newShortcut]);
 
 		setFormData({ url: "", name: "" });
 		setIsPending(false);

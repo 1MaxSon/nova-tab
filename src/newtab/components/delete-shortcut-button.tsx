@@ -13,7 +13,7 @@ const DeleteShortcutButton = ({
 	ComponentProps<typeof Button>,
 	"children"
 >) => {
-	const { storage, saveShortcuts } = useStorage();
+	const { storage, setShortcuts } = useStorage();
 
 	return (
 		<Button
@@ -32,7 +32,7 @@ const DeleteShortcutButton = ({
 							(p) => p.id !== shortcut.id,
 						);
 
-						saveShortcuts(
+						setShortcuts(
 							storage.shortcuts.map((s) => {
 								if (s.id === shortcutGroup.id) {
 									return { ...s, items: shortcutGroupItems };
@@ -43,7 +43,7 @@ const DeleteShortcutButton = ({
 						);
 					}
 				} else {
-					saveShortcuts(storage.shortcuts.filter((p) => p.id !== shortcut.id));
+					setShortcuts(storage.shortcuts.filter((p) => p.id !== shortcut.id));
 				}
 
 				await deleteIcon(shortcut.id);

@@ -10,7 +10,7 @@ import ShortcutItem from "@/newtab/components/shortcut-item";
 import ShortcutsGrid from "@/newtab/components/shortcuts-grid";
 
 const Shortcuts = ({ className }: { className?: string }) => {
-	const { storage, saveShortcuts } = useStorage();
+	const { storage, setShortcuts } = useStorage();
 
 	const shortcutItems = storage.shortcuts;
 
@@ -66,7 +66,7 @@ const Shortcuts = ({ className }: { className?: string }) => {
 								...withoutGrouped.slice(targetIndex),
 							];
 
-							saveShortcuts(next);
+							setShortcuts(next);
 							return;
 						}
 
@@ -101,11 +101,11 @@ const Shortcuts = ({ className }: { className?: string }) => {
 								} satisfies ShortcutGroupType;
 							});
 
-							saveShortcuts(changedShortcuts);
+							setShortcuts(changedShortcuts);
 							return;
 						}
 
-						saveShortcuts(move(shortcutItems, event));
+						setShortcuts(move(shortcutItems, event));
 					}}
 					sensors={[shortcutSensor]}
 				>
