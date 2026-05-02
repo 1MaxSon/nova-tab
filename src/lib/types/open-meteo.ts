@@ -8,34 +8,6 @@ export type Coords = {
 	longitude: Longitude;
 };
 
-export type GeocodedEntry = {
-	id: string;
-	name: string;
-	latitude: Latitude;
-	longitude: Longitude;
-	elevation: number;
-	timezone: string;
-	feature_code: string;
-	country_code: string;
-	country: string;
-	country_id: number;
-	population: number;
-	postcodes: string[];
-	admin1?: string;
-	admin2?: string;
-	admin3?: string;
-	admin4?: string;
-	admin1_id?: number;
-	admin2_id?: number;
-	admin3_id?: number;
-	admin4_id?: number;
-};
-
-export type GeocodingData = {
-	results?: GeocodedEntry[];
-	generationtime_ms?: number;
-};
-
 export type ForecastData = {
 	current_weather: {
 		interval: number;

@@ -28,19 +28,15 @@ import {
 import { WEATHER_CODES } from "@/lib/constants";
 import { useInterval } from "@/lib/hooks/use-interval";
 import { useIntervalWhen } from "@/lib/hooks/use-interval-when";
-import type { WeatheCity } from "@/lib/types";
-import type {
-	ForecastData,
-	GeocodedEntry,
-	GeocodingData,
-} from "@/lib/types/open-meteo";
-import { buildYandexUrl, cn, getCityName } from "@/lib/utils";
+import type { ForecastData } from "@/lib/types/open-meteo";
+import type { NominatimData } from "@/lib/types/openstreetmap";
+import { buildYandexUrl, cn } from "@/lib/utils";
 
 const locale = navigator.language;
 
 type Item =
 	| { type: "skeleton"; id: number }
-	| { type: "city"; data: GeocodedEntry };
+	| { type: "city"; data: NominatimData };
 
 type WeatherData = {
 	icon: string;
@@ -65,14 +61,13 @@ const DateWithWeather = ({ className }: { className: string }) => {
 
 	const [date, setDate] = useState(getDate());
 
-	// const [weatherCity, setWeatherCity] = useState<WeatheCity | null>(null);
 	const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
 
-	const [selectedCity, setSelectedCity] = useState<GeocodedEntry | null>(null);
+	const [selectedCity, setSelectedCity] = useState<NominatimData | null>(null);
 	const [open, setOpen] = useState(false);
 
 	const [addressAutoCompletes, setAddressAutoCompletes] = useState<
-		GeocodedEntry[]
+		NominatimData[]
 	>([]);
 	const [addressQuery, setAddressQuery] = useState("");
 	const [addressQueryDebounced, { isPending: isDebouncePending }] = useDebounce(
@@ -123,44 +118,21 @@ const DateWithWeather = ({ className }: { className: string }) => {
 	useEffect(() => {
 		const fetchCities = async () => {
 			const res = await fetch(
-				`https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(addressQueryDebounced)}&count=5&language=ru`,
+				`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressQueryDebounced)}&format=json`,
 			);
-			const data = (await res.json()) as GeocodingData;
 
-			const cities = data.results;
+			const nominatimData = (await res.json()) as NominatimData[];
 
-			if (!cities || cities.length === 0) {
+			if (!nominatimData || nominatimData.length === 0) {
 				setAddressAutoCompletes([]);
 				return;
 			}
 
-			setAddressAutoCompletes(
-				cities.filter((p) => ["PPLA", "PPL"].includes(p.feature_code)),
-			);
+			setAddressAutoCompletes(nominatimData);
 		};
 
-		fetchCities();
+		if (addressQueryDebounced) fetchCities();
 	}, [addressQueryDebounced]);
-
-	useEffect(() => {
-		const fetchCityName = async () => {
-			if (!selectedCity) return;
-			const cityName = await getCityName({
-				latitude: selectedCity.latitude,
-				longitude: selectedCity.longitude,
-			});
-
-			const weaCity: WeatheCity = {
-				name: cityName,
-				lat: selectedCity.latitude,
-				lon: selectedCity.longitude,
-			};
-
-			setWeatherCity(weaCity);
-		};
-
-		fetchCityName();
-	}, [selectedCity, setWeatherCity]);
 
 	const comboboxItems = isDebouncePending()
 		? [0, 1, 2, 3].map((i) => ({ type: "skeleton", id: i }))
@@ -222,7 +194,14 @@ const DateWithWeather = ({ className }: { className: string }) => {
 							value={selectedCity}
 							onValueChange={(itemValue) => {
 								setSelectedCity(itemValue);
-								if (itemValue) setOpen(false);
+								if (itemValue) {
+									setOpen(false);
+									setWeatherCity({
+										name: itemValue.name,
+										lat: parseFloat(itemValue.lat),
+										lon: parseFloat(itemValue.lon),
+									});
+								}
 							}}
 						>
 							<ComboboxInput
@@ -245,8 +224,8 @@ const DateWithWeather = ({ className }: { className: string }) => {
 										const city = item.data;
 
 										return (
-											<ComboboxItem key={city.id} value={city}>
-												{`${city.name}, ${[city.admin1, city.country].filter(Boolean).join(", ")}`}
+											<ComboboxItem key={city.osm_id} value={city}>
+												{city.display_name}
 											</ComboboxItem>
 										);
 									}}

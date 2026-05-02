@@ -14,12 +14,12 @@ import {
 	saveShortcuts,
 	saveWeatherCity,
 } from "@/lib/storage";
-import type { ShortcutData, WeatheCity } from "@/lib/types";
+import type { ShortcutData, WeatherCity } from "@/lib/types";
 
 type StorageProviderContextType = {
 	storage: StorageData;
 	setShortcuts: Dispatch<SetStateAction<ShortcutData[]>>;
-	setWeatherCity: Dispatch<SetStateAction<WeatheCity | null>>;
+	setWeatherCity: Dispatch<SetStateAction<WeatherCity | null>>;
 };
 
 const StorageContext = createContext<StorageProviderContextType | null>(null);
@@ -33,7 +33,7 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 
 	const [shortcuts, setShortcuts] = useState<ShortcutData[]>([]);
 
-	const [weatherCity, setWeatherCity] = useState<WeatheCity | null>(null);
+	const [weatherCity, setWeatherCity] = useState<WeatherCity | null>(null);
 
 	useEffect(() => {
 		const loadStorageData = async () => {

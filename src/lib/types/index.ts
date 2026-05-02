@@ -19,4 +19,4 @@ export type ShortcutGroupType = {
 
 export type ShortcutData = ShortcutType | ShortcutGroupType;
 
-export type WeatheCity = { name: string; lat: Latitude; lon: Longitude };
+export type WeatherCity = { name: string; lat: Latitude; lon: Longitude };

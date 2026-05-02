@@ -1,10 +1,10 @@
 import { type IDBPDatabase, openDB } from "idb";
-import type { ShortcutData, WeatheCity } from "@/lib/types";
+import type { ShortcutData, WeatherCity } from "@/lib/types";
 
 export type StorageData = {
 	shortcuts: ShortcutData[];
 	wallpaper: object;
-	weatherCity: WeatheCity | null;
+	weatherCity: WeatherCity | null;
 };
 
 const DEFAULT_STORAGE_DATA: StorageData = {
@@ -26,7 +26,7 @@ function saveWallpaper(w: object) {
 		: localStorage.setItem("nova_wallpaper", JSON.stringify(w));
 }
 
-function saveWeatherCity(c: WeatheCity) {
+function saveWeatherCity(c: WeatherCity) {
 	useChrome
 		? chrome.storage.local.set({ weatherCity: c })
 		: localStorage.setItem("nova_weather_city", JSON.stringify(c));
