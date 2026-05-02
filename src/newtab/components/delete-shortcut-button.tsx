@@ -32,6 +32,14 @@ const DeleteShortcutButton = ({
 							(p) => p.id !== shortcut.id,
 						);
 
+						if (shortcutGroupItems.length === 0) {
+							setShortcuts(
+								storage.shortcuts.filter((p) => p.id !== shortcut.groupId),
+							);
+
+							return;
+						}
+
 						setShortcuts(
 							storage.shortcuts.map((s) => {
 								if (s.id === shortcutGroup.id) {
