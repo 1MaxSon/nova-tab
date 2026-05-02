@@ -116,7 +116,6 @@ const Shortcuts = ({ className }: { className?: string }) => {
 									key={shortcut.id}
 									index={idx}
 									shortcutGroup={shortcut}
-									className="h-42"
 								/>
 							);
 						}

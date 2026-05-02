@@ -179,81 +179,83 @@ const DateWithWeather = ({ className }: { className: string }) => {
 			<span className="text-[0.85rem] font-normal uppercase tracking-[0.12em] text-[rgba(255,255,255,0.45)]">
 				{date}
 			</span>
-			<span className="inline-block h-1 w-1 rounded-full bg-[#c9a96e] opacity-60 shrink-0" />
-			<a
-				id="weather-link"
-				href={weatherLink}
-				target="_blank"
-				rel="noopener"
-				className="flex items-center gap-1 rounded-[0.375rem] px-1.5 py-0.5 text-base text-muted-foreground transition-colors duration-200 hover:bg-white/5 hover:text-white"
-			>
-				<span>{storage.weatherCity?.name ?? "загрузка..."}</span>
-				<span>
-					{weatherData ? (
-						`${weatherData.icon} ${weatherData.desc}`
-					) : (
-						<Spinner />
-					)}
-				</span>
-				<span className="text-muted-foreground">
-					{weatherData &&
-						`${weatherData.temperature} ${weatherData.temperatureUnit}`}
-				</span>
-			</a>
-			<Dialog open={open} onOpenChange={setOpen}>
-				<Tooltip>
-					<TooltipTrigger
-						render={
-							<DialogTrigger render={<Button variant="ghost" size="icon" />}>
-								<MapPinIcon className="text-muted-foreground" />
-							</DialogTrigger>
-						}
-					></TooltipTrigger>
-					<TooltipContent side="bottom">Изменить адрес</TooltipContent>
-				</Tooltip>
-				<DialogContent>
-					<DialogHeader>
-						<DialogTitle>Изменить адрес</DialogTitle>
-					</DialogHeader>
-					<Combobox
-						items={comboboxItems}
-						filteredItems={comboboxItems}
-						value={selectedCity}
-						onValueChange={(itemValue) => {
-							setSelectedCity(itemValue);
-							if (itemValue) setOpen(false);
-						}}
-					>
-						<ComboboxInput
-							placeholder="Введите адрес"
-							value={addressQuery}
-							onInput={(e) => setAddressQuery(e.currentTarget.value)}
-						/>
-						<ComboboxContent>
-							<ComboboxEmpty>Ничего не найдено</ComboboxEmpty>
-							<ComboboxList>
-								{(item: Item) => {
-									if (item.type === "skeleton") {
+			<span className="size-1 rounded-full bg-[#c9a96e] opacity-60 shrink-0 hidden md:inline-block" />
+			<div className="flex items-center gap-2">
+				<a
+					id="weather-link"
+					href={weatherLink}
+					target="_blank"
+					rel="noopener"
+					className="flex items-center gap-1 rounded-[0.375rem] px-1.5 py-0.5 text-base text-muted-foreground transition-colors duration-200 hover:bg-white/5 hover:text-white"
+				>
+					<span>{storage.weatherCity?.name ?? "загрузка..."}</span>
+					<span>
+						{weatherData ? (
+							`${weatherData.icon} ${weatherData.desc}`
+						) : (
+							<Spinner />
+						)}
+					</span>
+					<span className="text-muted-foreground">
+						{weatherData &&
+							`${weatherData.temperature} ${weatherData.temperatureUnit}`}
+					</span>
+				</a>
+				<Dialog open={open} onOpenChange={setOpen}>
+					<Tooltip>
+						<TooltipTrigger
+							render={
+								<DialogTrigger render={<Button variant="ghost" size="icon" />}>
+									<MapPinIcon className="text-muted-foreground" />
+								</DialogTrigger>
+							}
+						></TooltipTrigger>
+						<TooltipContent side="bottom">Изменить адрес</TooltipContent>
+					</Tooltip>
+					<DialogContent>
+						<DialogHeader>
+							<DialogTitle>Изменить адрес</DialogTitle>
+						</DialogHeader>
+						<Combobox
+							items={comboboxItems}
+							filteredItems={comboboxItems}
+							value={selectedCity}
+							onValueChange={(itemValue) => {
+								setSelectedCity(itemValue);
+								if (itemValue) setOpen(false);
+							}}
+						>
+							<ComboboxInput
+								placeholder="Введите адрес"
+								value={addressQuery}
+								onInput={(e) => setAddressQuery(e.currentTarget.value)}
+							/>
+							<ComboboxContent>
+								<ComboboxEmpty>Ничего не найдено</ComboboxEmpty>
+								<ComboboxList>
+									{(item: Item) => {
+										if (item.type === "skeleton") {
+											return (
+												<ComboboxItem key={item.id} disabled value={item.id}>
+													<Skeleton className="h-5 w-full" />
+												</ComboboxItem>
+											);
+										}
+
+										const city = item.data;
+
 										return (
-											<ComboboxItem key={item.id} disabled value={item.id}>
-												<Skeleton className="h-5 w-full" />
+											<ComboboxItem key={city.id} value={city}>
+												{`${city.name}, ${[city.admin1, city.country].filter(Boolean).join(", ")}`}
 											</ComboboxItem>
 										);
-									}
-
-									const city = item.data;
-
-									return (
-										<ComboboxItem key={city.id} value={city}>
-											{`${city.name}, ${[city.admin1, city.country].filter(Boolean).join(", ")}`}
-										</ComboboxItem>
-									);
-								}}
-							</ComboboxList>
-						</ComboboxContent>
-					</Combobox>
-				</DialogContent>
-			</Dialog>
+									}}
+								</ComboboxList>
+							</ComboboxContent>
+						</Combobox>
+					</DialogContent>
+				</Dialog>
+			</div>
 		</div>
 	);
 };

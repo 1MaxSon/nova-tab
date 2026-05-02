@@ -73,12 +73,12 @@ const ShortcutGroup = ({
 			}}
 			className={cn([
 				className,
-				"overflow-hidden bg-accent/5 border-accent/40 border rounded-lg relative",
+				"overflow-hidden bg-accent/5 border-accent/40 border rounded-lg relative aspect-video",
 			])}
 		>
 			<Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-				<DialogTrigger className="flex h-full w-full flex-col justify-between p-4 text-left">
-					<div className="grid flex-1 grid-cols-2 grid-rows-2 gap-2 rounded-md bg-black/10 p-2 min-h-0">
+				<DialogTrigger className="flex h-full w-full flex-col justify-between text-left">
+					<div className="grid p-2 grid-cols-2 grid-rows-2 gap-1 rounded-md bg-black/10 min-h-0">
 						{shortcutGroup.items.slice(0, 4).map((shortcut) => (
 							<PreviewShortcutItem key={shortcut.id} shortcut={shortcut} />
 						))}

@@ -11,7 +11,7 @@ const ShortcutsGrid = ({
 	return (
 		<div
 			className={cn([
-				"grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(256px,1fr))] justify-center gap-3",
+				"grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(200px,1fr))] justify-center gap-3",
 				className,
 			])}
 		>

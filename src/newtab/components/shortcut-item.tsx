@@ -17,8 +17,7 @@ export type ShortcutItemCSSVars = React.CSSProperties & {
 	"--color"?: string;
 };
 
-export const shortcutItemClassName =
-	"flex flex-col items-center justify-center h-42 rounded-lg relative";
+export const shortcutItemClassName = "flex flex-col items-center justify-center py-6 rounded-lg relative aspect-video";
 
 const ShortcutItem = ({
 	className,
@@ -99,7 +98,7 @@ const ShortcutItem = ({
 					<img
 						src={iconBlobUrl}
 						alt={shortcut.name}
-						className="size-20 object-cover mb-2"
+						className="size-12 mb-2"
 					/>
 				) : (
 					<Spinner />

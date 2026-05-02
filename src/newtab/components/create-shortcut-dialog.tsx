@@ -53,7 +53,7 @@ const CreateShortcutDialog = () => {
 				type="button"
 				className={cn([
 					shortcutItemClassName,
-					"border border-dashed rounded-lg border-accent text-accent bg-accent/2 hover:bg-accent/10 transition-colors",
+					"border border-dashed size-full border-accent text-accent bg-accent/2 hover:bg-accent/10 transition-colors",
 				])}
 			>
 				<PlusIcon />
