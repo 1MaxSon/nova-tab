@@ -19,7 +19,7 @@ export function cn(...inputs: ClassValue[]) {
 export function buildYandexUrl(coords: Coords) {
 	const { latitude, longitude } = coords;
 
-	return `https://yandex.ru/pogoda/?ll=${longitude.toFixed(4)},${latitude.toFixed(4)}&z=12`;
+	return `https://yandex.ru/pogoda/?lat=${latitude}&lon=${longitude}`;
 }
 
 export async function getCityName(coords: Coords) {

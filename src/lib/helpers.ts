@@ -13,7 +13,6 @@ export function domainFromUrl(url: string) {
 }
 
 export function getFaviconDisplay(url: string) {
-	// return `https://www.google.com/s2/favicons?domain=${domainFromUrl(url)}&sz=64`;
 	return `https://icons.duckduckgo.com/ip3/${domainFromUrl(url)}.ico`;
 }
 

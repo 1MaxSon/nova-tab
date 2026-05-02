@@ -170,7 +170,7 @@ const DateWithWeather = ({ className }: { className: string }) => {
 		if (!storage.weatherCity) return "#";
 		return buildYandexUrl({
 			latitude: storage.weatherCity.lat,
-			longitude: storage.weatherCity.lat,
+			longitude: storage.weatherCity.lon,
 		});
 	}, [storage.weatherCity]);
 
