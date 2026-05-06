@@ -1,5 +1,6 @@
 import { move } from "@dnd-kit/helpers";
 import { DragDropProvider } from "@dnd-kit/react";
+import { useEffect, useState } from "react";
 import { useStorage } from "@/components/providers/storage-provider";
 import { generatePreviousId } from "@/lib/helpers";
 import { shortcutSensor } from "@/lib/sensors";
@@ -13,6 +14,16 @@ const Shortcuts = ({ className }: { className?: string }) => {
 	const { storage, setShortcuts } = useStorage();
 
 	const shortcutItems = storage.shortcuts;
+
+	const [intro, setIntro] = useState(true);
+
+	useEffect(() => {
+		const hasItems = storage.shortcuts.length > 0;
+		if (hasItems) {
+			const t = setTimeout(() => setIntro(false), 500);
+			return () => clearTimeout(t);
+		}
+	}, [storage.shortcuts.length]);
 
 	return (
 		<section className={className}>
@@ -116,12 +127,18 @@ const Shortcuts = ({ className }: { className?: string }) => {
 									key={shortcut.id}
 									index={idx}
 									shortcutGroup={shortcut}
+									className={intro ? "animate-in fade-in duration-300" : ""}
 								/>
 							);
 						}
 
 						return (
-							<ShortcutItem key={shortcut.id} index={idx} shortcut={shortcut} />
+							<ShortcutItem
+								key={shortcut.id}
+								index={idx}
+								shortcut={shortcut}
+								className={intro ? "animate-in fade-in duration-300" : ""}
+							/>
 						);
 					})}
 				</DragDropProvider>

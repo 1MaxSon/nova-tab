@@ -14,14 +14,14 @@ export default function NovaTab() {
 
 			<main className="relative flex flex-col items-center justify-center px-12 py-6">
 				<div className="flex flex-col items-center">
-					<Clock className="mb-3 animate-in duration-500" />
-					<DateWithWeather className="mb-10 animate-in duration-500 delay-100 flex-col md:flex-row" />
+					<Clock className="mb-3 animate-in fade-in duration-300" />
+					<DateWithWeather className="mb-10 animate-in fade-in duration-300 flex-col md:flex-row" />
 				</div>
 
-				<SearchBar className="max-w-135 mb-10 animate-in duration-500 delay-200" />
+				<SearchBar className="max-w-135 mb-10 animate-in fade-in duration-300" />
 
 				<Suspense fallback={<Spinner />}>
-					<Shortcuts className="w-full animate-in duration-500 delay-300" />
+					<Shortcuts className="w-full" />
 				</Suspense>
 			</main>
 		</>
