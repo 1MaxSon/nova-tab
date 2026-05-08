@@ -137,7 +137,7 @@ const Shortcuts = ({ className }: { className?: string }) => {
 								key={shortcut.id}
 								index={idx}
 								shortcut={shortcut}
-								className={intro ? "animate-in fade-in duration-300" : ""}
+								className={`${intro ? "animate-in fade-in duration-300" : ""}`}
 							/>
 						);
 					})}

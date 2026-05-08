@@ -124,7 +124,7 @@ const deleteIcon = async (id: number) => {
 	db.delete(ICONS_STORE_NAME, id);
 };
 
-const getIconById = async (id: number): Promise<SavedIcon> => {
+const getIconById = async (id: number): Promise<SavedIcon | null> => {
 	const db = await getDB();
 	return await db.get(ICONS_STORE_NAME, id);
 };

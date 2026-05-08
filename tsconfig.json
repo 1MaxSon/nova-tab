@@ -4,10 +4,4 @@
     { "path": "./tsconfig.node.json" }
   ],
   "files": [],
-  "compilerOptions": {
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-    "baseUrl": "."
-  }
 }

@@ -43,9 +43,25 @@ export async function createShortcut(
 	data: CreateShortcutInput,
 ): Promise<ShortcutType> {
 	const { url, name, accentColor, mutedColor } = data;
-	const iconUrl = getFaviconDisplay(url);
-	const res = await fetch(iconUrl);
-	const iconBlob = await res.blob();
+	const iconUrl = await getFaviconDisplay(url);
+
+	if (import.meta.env.DEV) {
+		console.log(`Fetched favicon url: ${iconUrl}`);
+	}
+
+	let iconBlob: Blob | undefined;
+
+	if (!iconUrl) alert("Failed to fetch favicon");
+	else {
+		try {
+			const res = await fetch(iconUrl);
+
+			if (res.status !== 200) alert("Failed to fetch favicon");
+			iconBlob = await res.blob();
+		} catch {
+			alert("Failed to fetch favicon");
+		}
+	}
 
 	const { shortcuts } = await loadData();
 
@@ -57,17 +73,19 @@ export async function createShortcut(
 			? name
 			: fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
 
-	saveIcon({ id: previousShortcutId, blob: iconBlob });
+	if (iconBlob) {
+		saveIcon({ id: previousShortcutId, blob: iconBlob });
+	}
 
-	const iconPalette = await extractIconPalette(iconUrl);
+	const iconPalette = iconUrl ? await extractIconPalette(iconUrl) : undefined;
 
 	const resolvedAccent = accentColor?.trim()
 		? accentColor
-		: (iconPalette.DarkMuted?.hex ?? "#1a1a1a");
+		: (iconPalette?.DarkMuted?.hex ?? "#1a1a1a");
 
 	const resolvedText = mutedColor?.trim()
 		? mutedColor
-		: (iconPalette.LightVibrant?.hex ?? getContrastYIQ(resolvedAccent));
+		: (iconPalette?.LightVibrant?.hex ?? getContrastYIQ(resolvedAccent));
 
 	return {
 		id: previousShortcutId,

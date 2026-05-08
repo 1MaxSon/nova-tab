@@ -4,7 +4,6 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import { Edit2Icon, FolderPlusIcon } from "lucide-react";
 import { type ComponentProps, useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Spinner } from "@/components/ui/spinner";
 import { getIconByName } from "@/lib/storage";
 import type { ShortcutType } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -17,7 +16,8 @@ export type ShortcutItemCSSVars = React.CSSProperties & {
 	"--color"?: string;
 };
 
-export const shortcutItemClassName = "flex flex-col items-center justify-center py-6 rounded-lg relative aspect-video";
+export const shortcutItemClassName =
+	"flex flex-col items-center justify-center rounded-lg relative aspect-video";
 
 const ShortcutItem = ({
 	className,
@@ -61,7 +61,8 @@ const ShortcutItem = ({
 
 	const loadIcon = useCallback(async () => {
 		const icon = await getIconByName(shortcut.id);
-		setIconBlob(icon.blob);
+
+		if (icon) setIconBlob(icon.blob);
 	}, [shortcut.id]);
 
 	useEffect(() => {
@@ -91,19 +92,13 @@ const ShortcutItem = ({
 				ref={handleRef}
 				href={shortcut.url}
 				rel="noreferrer"
-				className={cn(className, shortcutItemClassName)}
+				className={cn(className, shortcutItemClassName, 'h-full')}
 				style={{ background: shortcut.accentColor }}
 			>
-				{iconBlobUrl ? (
-					<img
-						src={iconBlobUrl}
-						alt={shortcut.name}
-						className="size-12 mb-2"
-					/>
-				) : (
-					<Spinner />
+				{iconBlobUrl && (
+					<img src={iconBlobUrl} alt={shortcut.name} className="size-12 mb-2" />
 				)}
-				<span className="text-lg" style={{ color: shortcut.mutedColor }}>
+				<span className={`${iconBlobUrl ? 'text-lg' : 'text-xl'}`} style={{ color: shortcut.mutedColor }}>
 					{shortcut.name}
 				</span>
 
