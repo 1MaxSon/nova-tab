@@ -75,10 +75,12 @@ const EditShortcutDialog = ({
 				}),
 			);
 		} else {
-			setShortcuts([
-				...storage.shortcuts.filter((p) => p.type === "group"),
-				...changedShortcuts,
-			]);
+			setShortcuts(
+				storage.shortcuts.map((s) => {
+					const changed = changedShortcuts.find((c) => c.id === s.id);
+					return changed ?? s;
+				}),
+			);
 		}
 
 		setOpen(false);
