@@ -20,7 +20,7 @@ const PreviewShortcutItem = ({
 
 	const loadIcon = useCallback(async () => {
 		const icon = await getIconByName(shortcut.id);
-		setIconBlob(icon.blob);
+		if (icon) setIconBlob(icon.blob);
 	}, [shortcut.id]);
 
 	useEffect(() => {
@@ -52,7 +52,11 @@ const PreviewShortcutItem = ({
 			}
 			{...props}
 		>
-			<img src={iconBlobUrl} alt={shortcut.name} className="min-h-0 flex-1 w-auto max-w-full object-contain" />
+			<img
+				src={iconBlobUrl}
+				alt={shortcut.name}
+				className="min-h-0 flex-1 w-auto max-w-full object-contain"
+			/>
 		</div>
 	);
 };
