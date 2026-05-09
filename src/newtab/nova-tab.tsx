@@ -3,8 +3,8 @@ import { Spinner } from "@/components/ui/spinner";
 import Clock from "@/newtab/components/clock";
 import DateWithWeather from "@/newtab/components/date-with-weather";
 import SearchBar from "@/newtab/components/search-bar";
+import Shortcuts from "@/newtab/components/shortcuts";
 
-const Shortcuts = lazy(() => import("@/newtab/components/shortcuts"));
 const SettingsDrawer = lazy(
 	() => import("@/newtab/components/settings-drawer"),
 );
@@ -23,9 +23,7 @@ export default function NovaTab() {
 
 				<SearchBar className="max-w-135 mb-10 animate-in fade-in duration-300" />
 
-				<Suspense fallback={<Spinner />}>
-					<Shortcuts className="w-full" />
-				</Suspense>
+				<Shortcuts className="w-full fade-in animate-in duration-500" />
 
 				<Suspense fallback={<Spinner className="absolute top-4 right-4" />}>
 					<SettingsDrawer />

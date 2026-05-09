@@ -32,15 +32,40 @@ const useStorage = () => {
 	return useContext(StorageContext)!;
 };
 
+// Get cached data from sessionStorage for instant rendering
+const getCachedData = (): StorageData | null => {
+	try {
+		const cached = sessionStorage.getItem("nova_storage_cache");
+		return cached ? JSON.parse(cached) : null;
+	} catch {
+		return null;
+	}
+};
+
+// Cache data in sessionStorage for subsequent loads
+const setCachedData = (data: StorageData) => {
+	try {
+		sessionStorage.setItem("nova_storage_cache", JSON.stringify(data));
+	} catch {
+		// Silent fail if storage is unavailable
+	}
+};
+
 const StorageProvider = ({ children }: { children: ReactNode }) => {
 	const isDataLoaded = useRef(false);
 
-	const [shortcuts, setShortcuts] = useState<ShortcutData[]>([]);
+	// Use cached data for instant render
+	const cachedData = getCachedData();
+	const [shortcuts, setShortcuts] = useState<ShortcutData[]>(
+		cachedData?.shortcuts || [],
+	);
 
-	const [weatherCity, setWeatherCity] = useState<WeatherCity | null>(null);
+	const [weatherCity, setWeatherCity] = useState<WeatherCity | null>(
+		cachedData?.weatherCity || null,
+	);
 
 	const [settings, setSettings] = useState<SettingsData>(
-		DEFAULT_STORAGE_DATA.settings,
+		cachedData?.settings || DEFAULT_STORAGE_DATA.settings,
 	);
 
 	useEffect(() => {
@@ -49,6 +74,7 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 			setShortcuts(data.shortcuts);
 			setWeatherCity(data.weatherCity);
 			setSettings(data.settings);
+			setCachedData(data);
 			isDataLoaded.current = true;
 		};
 
@@ -75,10 +101,16 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 		if (weatherCity) saveWeatherCity(weatherCity);
 	}, [weatherCity]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: no update on storage change
 	useEffect(() => {
 		if (!isDataLoaded.current) return;
 
 		saveShortcuts(shortcuts);
+		// Update cache whenever shortcuts change
+		setCachedData({
+			...storageData.storage,
+			shortcuts,
+		});
 	}, [shortcuts]);
 
 	useEffect(() => {
