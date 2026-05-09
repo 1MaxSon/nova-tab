@@ -1,5 +1,6 @@
 import {
 	CheckIcon,
+	LanguagesIcon,
 	MapPinIcon,
 	PaletteIcon,
 	PlusIcon,
@@ -27,12 +28,14 @@ import {
 	FieldLabel,
 } from "@/components/ui/field";
 import { THEMES } from "@/lib/constants";
+import { languageOptions, useI18n } from "@/lib/i18n";
 import { saveCustomWallpaper } from "@/lib/storage";
 import { Switch } from "@/components/ui/switch";
-import type { SettingsData } from "@/lib/storage";
+import type { Language, SettingsData } from "@/lib/storage";
 
 const SettingsDrawer = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const { t } = useI18n();
 	const {
 		setWallpaper,
 		setSettings,
@@ -74,15 +77,40 @@ const SettingsDrawer = () => {
 			</DrawerTrigger>
 			<DrawerContent>
 				<DrawerHeader>
-					<DrawerTitle>Settings</DrawerTitle>
+					<DrawerTitle>{t("settings.title")}</DrawerTitle>
 					<DrawerDescription></DrawerDescription>
 				</DrawerHeader>
 				<div className="overflow-y-auto px-4">
 					<FieldGroup>
 						<Field>
 							<FieldContent>
+								<FieldLabel htmlFor="language">
+									<LanguagesIcon className="size-4" /> {t("settings.language")}
+								</FieldLabel>
+								<select
+									id="language"
+									name="language"
+									value={settings.language}
+									onChange={(event) => {
+										setSetting("language", event.target.value as Language);
+									}}
+									className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
+								>
+									{languageOptions.map((language) => (
+										<option key={language} value={language}>
+											{t(`language.${language}`)}
+										</option>
+									))}
+								</select>
+							</FieldContent>
+							<FieldDescription>
+								{t("settings.languageDescription")}
+							</FieldDescription>
+						</Field>
+						<Field>
+							<FieldContent>
 								<FieldLabel>
-									<PaletteIcon className="size-4" /> Theme
+									<PaletteIcon className="size-4" /> {t("settings.theme")}
 								</FieldLabel>
 								<div className="grid grid-cols-2 gap-2">
 									{THEMES.map((theme) => {
@@ -140,21 +168,21 @@ const SettingsDrawer = () => {
 									onClick={() => fileInputRef.current?.click()}
 								>
 									<UploadIcon />
-									Upload wallpaper
+									{t("settings.uploadWallpaper")}
 									{wallpaper.type === "custom" ? (
 										<CheckIcon className="ml-auto" />
 									) : null}
 								</Button>
 							</FieldContent>
 							<FieldDescription>
-								The theme changes the wallpaper and interface colors
+								{t("settings.themeDescription")}
 							</FieldDescription>
 						</Field>
 						<Field>
 							<FieldContent className="flex items-center justify-between flex-row">
 								<FieldLabel htmlFor="transparentAddShortcut">
-									<PlusIcon className="size-4" /> Make the add shortcut button
-									transparent
+									<PlusIcon className="size-4" />{" "}
+									{t("settings.transparentAddShortcut")}
 								</FieldLabel>
 								<Switch
 									name="transparentAddShortcut"
@@ -166,14 +194,14 @@ const SettingsDrawer = () => {
 								/>
 							</FieldContent>
 							<FieldDescription>
-								It will become visible when hovering over
+								{t("settings.transparentDescription")}
 							</FieldDescription>
 						</Field>
 						<Field>
 							<FieldContent className="flex items-center justify-between flex-row">
 								<FieldLabel htmlFor="transparentChangeGeo">
-									<MapPinIcon className="size-4" /> Make the change geo button
-									transparent
+									<MapPinIcon className="size-4" />{" "}
+									{t("settings.transparentChangeGeo")}
 								</FieldLabel>
 								<Switch
 									name="transparentChangeGeo"
@@ -185,14 +213,14 @@ const SettingsDrawer = () => {
 								/>
 							</FieldContent>
 							<FieldDescription>
-								It will become visible when hovering over
+								{t("settings.transparentDescription")}
 							</FieldDescription>
 						</Field>
 					</FieldGroup>
 				</div>
 				<DrawerFooter>
 					<DrawerClose asChild>
-						<Button>Close</Button>
+						<Button>{t("common.close")}</Button>
 					</DrawerClose>
 				</DrawerFooter>
 			</DrawerContent>

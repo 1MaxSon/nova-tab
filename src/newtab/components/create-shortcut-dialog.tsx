@@ -11,12 +11,14 @@ import {
 } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
+import { useI18n } from "@/lib/i18n";
 import { type CreateShortcutInput, cn, createShortcut } from "@/lib/utils";
 import CreateShortcutForm from "@/newtab/components/create-shortcut-form";
 import { shortcutItemClassName } from "@/newtab/components/shortcut-item";
 
 const CreateShortcutDialog = () => {
 	const { setShortcuts, storage } = useStorage();
+	const { t } = useI18n();
 
 	const [open, setOpen] = useState(false);
 
@@ -64,7 +66,7 @@ const CreateShortcutDialog = () => {
 			</DialogTrigger>
 			<DialogContent>
 				<DialogHeader>
-					<DialogTitle>Create a shortcut</DialogTitle>
+					<DialogTitle>{t("shortcut.createTitle")}</DialogTitle>
 				</DialogHeader>
 				<form
 					onSubmit={async (e) => {
@@ -78,7 +80,7 @@ const CreateShortcutDialog = () => {
 							formData={formData}
 						/>
 						<Field>
-							<Button type="submit">Create</Button>
+							<Button type="submit">{t("common.create")}</Button>
 						</Field>
 					</div>
 				</form>

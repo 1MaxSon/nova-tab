@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useI18n } from "@/lib/i18n";
 import { saveIcon } from "@/lib/storage";
 import type { ShortcutGroupType, ShortcutType } from "@/lib/types";
 import type { CreateShortcutInput } from "@/lib/utils";
@@ -23,6 +24,7 @@ const EditShortcutDialog = ({
 	typeof DialogTrigger
 >) => {
 	const { setShortcuts, storage } = useStorage();
+	const { t } = useI18n();
 
 	const [open, setOpen] = useState(false);
 
@@ -90,7 +92,7 @@ const EditShortcutDialog = ({
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger {...props}>{children}</DialogTrigger>
 			<DialogContent>
-				<DialogHeader>Edit shortcut</DialogHeader>
+				<DialogHeader>{t("shortcut.editTitle")}</DialogHeader>
 				<form
 					onSubmit={(e) => {
 						e.preventDefault();
@@ -99,7 +101,9 @@ const EditShortcutDialog = ({
 				>
 					<div className="grid grid-cols-1 gap-4">
 						<Field>
-							<FieldLabel htmlFor="newIcon">New icon (Optional)</FieldLabel>
+							<FieldLabel htmlFor="newIcon">
+								{t("shortcut.newIcon")} ({t("common.optional")})
+							</FieldLabel>
 							<Input
 								type="file"
 								name="newIcon"
@@ -116,9 +120,7 @@ const EditShortcutDialog = ({
 									}));
 								}}
 							/>
-							<FieldDescription>
-								The colors will not be changed
-							</FieldDescription>
+							<FieldDescription>{t("shortcut.iconDescription")}</FieldDescription>
 						</Field>
 						<CreateShortcutForm
 							formData={formData}
@@ -131,7 +133,7 @@ const EditShortcutDialog = ({
 							hasOptional={false}
 						/>
 						<Field>
-							<Button type="submit">Save</Button>
+							<Button type="submit">{t("common.save")}</Button>
 						</Field>
 					</div>
 				</form>

@@ -1,6 +1,7 @@
 import { useDebouncedCallback } from "use-debounce";
 import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { useI18n } from "@/lib/i18n";
 import type { CreateShortcutInput } from "@/lib/utils";
 
 const CreateShortcutForm = ({
@@ -12,6 +13,7 @@ const CreateShortcutForm = ({
 	onFormDataChange: (data: CreateShortcutInput) => void;
 	hasOptional?: boolean;
 }) => {
+	const { t } = useI18n();
 	const debouncedUpdate = useDebouncedCallback((data: CreateShortcutInput) => {
 		onFormDataChange(data);
 	}, 80);
@@ -26,7 +28,7 @@ const CreateShortcutForm = ({
 	return (
 		<>
 			<Field>
-				<FieldLabel htmlFor="url">Url</FieldLabel>
+				<FieldLabel htmlFor="url">{t("shortcut.url")}</FieldLabel>
 				<Input
 					id="url"
 					name="url"
@@ -42,7 +44,7 @@ const CreateShortcutForm = ({
 			</Field>
 			<Field>
 				<FieldLabel htmlFor="name">
-					Name {hasOptional && "(Optional)"}
+					{t("shortcut.name")} {hasOptional && `(${t("common.optional")})`}
 				</FieldLabel>
 				<Input
 					id="name"
@@ -55,15 +57,12 @@ const CreateShortcutForm = ({
 					}}
 				/>
 				{hasOptional && (
-					<FieldDescription>
-						if it is empty, the domine site will be taken. For example
-						Example.com
-					</FieldDescription>
+					<FieldDescription>{t("shortcut.nameDescription")}</FieldDescription>
 				)}
 			</Field>
 			<Field>
 				<FieldLabel htmlFor="accentColor">
-					Bg color {hasOptional && "(Optional)"}
+					{t("shortcut.bgColor")} {hasOptional && `(${t("common.optional")})`}
 				</FieldLabel>
 				<Input
 					id="accentColor"
@@ -74,15 +73,14 @@ const CreateShortcutForm = ({
 					}}
 				/>
 				{hasOptional && (
-					<FieldDescription>
-						if it is empty, the color based on the icon will be taken.
-					</FieldDescription>
+					<FieldDescription>{t("shortcut.colorDescription")}</FieldDescription>
 				)}
 			</Field>
 
 			<Field>
 				<FieldLabel htmlFor="mutedColor">
-					Muted color {hasOptional && "(Optional)"}
+					{t("shortcut.mutedColor")}{" "}
+					{hasOptional && `(${t("common.optional")})`}
 				</FieldLabel>
 				<Input
 					id="mutedColor"
@@ -93,9 +91,7 @@ const CreateShortcutForm = ({
 					}}
 				/>
 				{hasOptional && (
-					<FieldDescription>
-						if it is empty, the color based on the icon will be taken.
-					</FieldDescription>
+					<FieldDescription>{t("shortcut.colorDescription")}</FieldDescription>
 				)}
 			</Field>
 		</>

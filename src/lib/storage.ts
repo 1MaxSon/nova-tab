@@ -11,7 +11,15 @@ export type WallpaperData =
 			updatedAt: number;
 	  };
 
+export type Language = "en" | "ru";
+
+const getDefaultLanguage = (): Language => {
+	if (typeof navigator === "undefined") return "en";
+	return navigator.language.toLowerCase().startsWith("ru") ? "ru" : "en";
+};
+
 export type SettingsData = {
+	language: Language;
 	transparentAddShortcut: boolean;
 	transparentChangeGeo: boolean;
 	theme: string;
@@ -32,6 +40,7 @@ export const DEFAULT_STORAGE_DATA: StorageData = {
 	},
 	weatherCity: null,
 	settings: {
+		language: getDefaultLanguage(),
 		transparentAddShortcut: false,
 		transparentChangeGeo: false,
 		theme: "nova",
@@ -81,10 +90,12 @@ function saveSettings(settings: SettingsData) {
 
 function normalizeSettingsData(input: unknown): SettingsData {
 	if (!input || typeof input !== "object") return DEFAULT_STORAGE_DATA.settings;
+	const raw = input as Partial<SettingsData>;
 
 	return {
 		...DEFAULT_STORAGE_DATA.settings,
-		...(input as Partial<SettingsData>),
+		...raw,
+		language: raw.language === "ru" ? "ru" : "en",
 	};
 }
 

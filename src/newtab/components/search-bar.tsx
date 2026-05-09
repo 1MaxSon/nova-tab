@@ -1,10 +1,12 @@
 import { ChevronRightIcon, SearchIcon } from "lucide-react";
 import { useState } from "react";
 import { useChromeSearch } from "@/lib/hooks/use-chrome-search";
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
 const SearchBar = ({ className }: { className?: string }) => {
 	const { search } = useChromeSearch();
+	const { t } = useI18n();
 	const [searchQuery, setSearchQuery] = useState("");
 
 	return (
@@ -18,7 +20,7 @@ const SearchBar = ({ className }: { className?: string }) => {
 				<SearchIcon className="pointer-events-none absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 				<input
 					type="text"
-					placeholder="Search..."
+					placeholder={t("search.placeholder")}
 					autoComplete="off"
 					spellCheck="false"
 					value={searchQuery}

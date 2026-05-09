@@ -4,6 +4,7 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import { Edit2Icon, FolderPlusIcon } from "lucide-react";
 import { type ComponentProps, useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/lib/i18n";
 import { getIconByName } from "@/lib/storage";
 import type { ShortcutType } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -30,6 +31,7 @@ const ShortcutItem = ({
 	index: number;
 	inGroup?: boolean;
 } & ComponentProps<"div">) => {
+	const { t } = useI18n();
 	const [iconBlob, setIconBlob] = useState<Blob | undefined>(undefined);
 	const [iconBlobUrl, setIconBlobUrl] = useState<string | undefined>(undefined);
 
@@ -107,7 +109,7 @@ const ShortcutItem = ({
 				{isGroupTarget && (
 					<div className="absolute flex flex-col items-center justify-center inset-0 rounded-lg bg-black/50 ...">
 						<FolderPlusIcon className="size-8 text-white" />
-						<span className="text-xl">Create a group</span>
+						<span className="text-xl">{t("shortcut.createGroup")}</span>
 					</div>
 				)}
 			</a>

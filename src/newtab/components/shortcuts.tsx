@@ -2,6 +2,7 @@ import { move } from "@dnd-kit/helpers";
 import { DragDropProvider } from "@dnd-kit/react";
 import { useStorage } from "@/components/providers/storage-provider";
 import { generatePreviousId } from "@/lib/helpers";
+import { useI18n } from "@/lib/i18n";
 import { shortcutSensor } from "@/lib/sensors";
 import type { ShortcutGroupType, ShortcutType } from "@/lib/types";
 import CreateShortcutDialog from "@/newtab/components/create-shortcut-dialog";
@@ -11,6 +12,7 @@ import ShortcutsGrid from "@/newtab/components/shortcuts-grid";
 
 const Shortcuts = ({ className }: { className?: string }) => {
 	const { storage, setShortcuts } = useStorage();
+	const { t } = useI18n();
 
 	const shortcutItems = storage.shortcuts;
 
@@ -52,7 +54,7 @@ const Shortcuts = ({ className }: { className?: string }) => {
 									{ ...targetShortcut, groupId: previousId },
 									{ ...sourceShortcut, groupId: previousId },
 								],
-								name: "Group",
+								name: t("shortcut.group"),
 								type: "group",
 							};
 

@@ -1,0 +1,98 @@
+import { useStorage } from "@/components/providers/storage-provider";
+import type { Language } from "@/lib/storage";
+
+const translations = {
+	en: {
+		"common.close": "Close",
+		"common.create": "Create",
+		"common.save": "Save",
+		"common.optional": "Optional",
+		"common.loading": "Loading...",
+		"common.notFound": "Nothing found",
+		"settings.title": "Settings",
+		"settings.language": "Language",
+		"settings.languageDescription": "Choose the interface language",
+		"settings.theme": "Theme",
+		"settings.themeDescription":
+			"The theme changes the wallpaper and interface colors",
+		"settings.uploadWallpaper": "Upload wallpaper",
+		"settings.transparentAddShortcut":
+			"Make the add shortcut button transparent",
+		"settings.transparentChangeGeo": "Make the change geo button transparent",
+		"settings.transparentDescription": "It will become visible on hover",
+		"search.placeholder": "Search...",
+		"weather.changeAddress": "Change address",
+		"weather.addressPlaceholder": "Enter an address",
+		"shortcut.createTitle": "Create a shortcut",
+		"shortcut.editTitle": "Edit shortcut",
+		"shortcut.url": "Url",
+		"shortcut.name": "Name",
+		"shortcut.bgColor": "Bg color",
+		"shortcut.mutedColor": "Muted color",
+		"shortcut.newIcon": "New icon",
+		"shortcut.nameDescription":
+			"If it is empty, the site domain will be used. For example Example.com",
+		"shortcut.colorDescription":
+			"If it is empty, a color based on the icon will be used.",
+		"shortcut.iconDescription": "The colors will not be changed",
+		"shortcut.group": "Group",
+		"shortcut.createGroup": "Create a group",
+		"shortcut.addToGroup": "Add to the group",
+		"language.en": "English",
+		"language.ru": "Russian",
+	},
+	ru: {
+		"common.close": "Закрыть",
+		"common.create": "Создать",
+		"common.save": "Сохранить",
+		"common.optional": "Необязательно",
+		"common.loading": "Загрузка...",
+		"common.notFound": "Ничего не найдено",
+		"settings.title": "Настройки",
+		"settings.language": "Язык",
+		"settings.languageDescription": "Выберите язык интерфейса",
+		"settings.theme": "Тема",
+		"settings.themeDescription": "Тема меняет обои и цвета интерфейса",
+		"settings.uploadWallpaper": "Загрузить обои",
+		"settings.transparentAddShortcut":
+			"Сделать кнопку добавления ярлыка прозрачной",
+		"settings.transparentChangeGeo":
+			"Сделать кнопку смены геолокации прозрачной",
+		"settings.transparentDescription": "Она появится при наведении",
+		"search.placeholder": "Поиск...",
+		"weather.changeAddress": "Изменить адрес",
+		"weather.addressPlaceholder": "Введите адрес",
+		"shortcut.createTitle": "Создать ярлык",
+		"shortcut.editTitle": "Редактировать ярлык",
+		"shortcut.url": "Url",
+		"shortcut.name": "Название",
+		"shortcut.bgColor": "Цвет фона",
+		"shortcut.mutedColor": "Приглушенный цвет",
+		"shortcut.newIcon": "Новая иконка",
+		"shortcut.nameDescription":
+			"Если оставить пустым, будет использован домен сайта. Например Example.com",
+		"shortcut.colorDescription":
+			"Если оставить пустым, цвет будет подобран по иконке.",
+		"shortcut.iconDescription": "Цвета не изменятся",
+		"shortcut.group": "Группа",
+		"shortcut.createGroup": "Создать группу",
+		"shortcut.addToGroup": "Добавить в группу",
+		"language.en": "Английский",
+		"language.ru": "Русский",
+	},
+} as const satisfies Record<Language, Record<string, string>>;
+
+export type TranslationKey = keyof (typeof translations)["en"];
+
+export const languageOptions = ["en", "ru"] as const satisfies Language[];
+
+export function useI18n() {
+	const {
+		storage: { settings },
+	} = useStorage();
+
+	const language = settings.language;
+	const t = (key: TranslationKey) => translations[language][key];
+
+	return { language, t };
+}

@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useStorage } from "@/components/providers/storage-provider";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { useI18n } from "@/lib/i18n";
 import { shortcutSensor } from "@/lib/sensors";
 import type { ShortcutGroupType } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ const ShortcutGroup = ({
 	index: number;
 }) => {
 	const { storage, setShortcuts } = useStorage();
+	const { t } = useI18n();
 
 	const [name, setName] = useState(shortcutGroup.name);
 	const [debouncedName] = useDebounce(name, 200);
@@ -188,7 +190,7 @@ const ShortcutGroup = ({
 			{isDropTarget && (
 				<div className="inset-0 absolute flex items-center justify-center flex-col bg-black/80 rounded-lg">
 					<FolderPlusIcon className="size-5" />
-					<span className="text-xl">Add to the group</span>
+					<span className="text-xl">{t("shortcut.addToGroup")}</span>
 				</div>
 			)}
 		</div>

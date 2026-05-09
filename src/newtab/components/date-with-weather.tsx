@@ -28,11 +28,10 @@ import {
 import { WEATHER_CODES } from "@/lib/constants";
 import { useInterval } from "@/lib/hooks/use-interval";
 import { useIntervalWhen } from "@/lib/hooks/use-interval-when";
+import { useI18n } from "@/lib/i18n";
 import type { ForecastData } from "@/lib/types/open-meteo";
 import type { NominatimData } from "@/lib/types/openstreetmap";
 import { buildYandexUrl, cn } from "@/lib/utils";
-
-const locale = navigator.language;
 
 type Item =
 	| { type: "skeleton"; id: number }
@@ -40,33 +39,33 @@ type Item =
 
 type WeatherData = {
 	icon: string;
-	desc: string;
+	desc: {
+		en: string;
+		ru: string;
+	};
 	temperature: number;
 	temperatureUnit: ForecastData["current_weather_units"]["temperature"];
 };
 
-const getDate = () => {
+const getDate = (locale: string) => {
 	const now = new Date();
-	const date = new Intl.DateTimeFormat(locale, {
+	return new Intl.DateTimeFormat(locale, {
 		day: "numeric",
 		month: "long",
 		weekday: "long",
 	}).format(now);
-
-	return date;
 };
 
 const DateWithWeather = ({ className }: { className: string }) => {
 	const { setWeatherCity, storage } = useStorage();
+	const { language, t } = useI18n();
+	const locale = language === "ru" ? "ru-RU" : "en-US";
 
-	const [date, setDate] = useState(getDate());
-
+	const [date, setDate] = useState(getDate(locale));
 	const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-
 	const [selectedCity, setSelectedCity] = useState<NominatimData | null>(null);
 	const [open, setOpen] = useState(false);
 	const [isCitiesFetching, setIsCitiesFetching] = useState(false);
-
 	const [addressAutoCompletes, setAddressAutoCompletes] = useState<
 		NominatimData[]
 	>([]);
@@ -83,13 +82,15 @@ const DateWithWeather = ({ className }: { className: string }) => {
 			`https://api.open-meteo.com/v1/forecast?latitude=${storage.weatherCity.lat}&longitude=${storage.weatherCity.lon}` +
 				`&current_weather=true&temperature_unit=celsius&timezone=auto`,
 		);
-		if (res.status !== 200) {
-			return;
-		}
+		if (res.status !== 200) return;
 
 		const data = (await res.json()) as ForecastData;
 		const cw = data.current_weather;
-		const [icon, desc] = WEATHER_CODES[cw.weathercode] || ["🌡️", ""];
+		const [icon, desc] = WEATHER_CODES[cw.weathercode] || [
+			"🌡️",
+			{ en: "", ru: "" },
+		];
+
 		setWeatherData({
 			icon,
 			desc,
@@ -99,8 +100,12 @@ const DateWithWeather = ({ className }: { className: string }) => {
 	}, [storage.weatherCity]);
 
 	useInterval(() => {
-		setDate(getDate());
+		setDate(getDate(locale));
 	}, 1000);
+
+	useEffect(() => {
+		setDate(getDate(locale));
+	}, [locale]);
 
 	useIntervalWhen(
 		async () => {
@@ -126,12 +131,14 @@ const DateWithWeather = ({ className }: { className: string }) => {
 			setIsCitiesFetching(true);
 			const res = await fetch(
 				`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressQueryDebounced)}&format=json`,
+				{ headers: { "Accept-Language": language } },
 			);
 
 			const nominatimData = (await res.json()) as NominatimData[];
 
 			if (!nominatimData || nominatimData.length === 0) {
 				setAddressAutoCompletes([]);
+				setIsCitiesFetching(false);
 				return;
 			}
 
@@ -140,7 +147,7 @@ const DateWithWeather = ({ className }: { className: string }) => {
 		};
 
 		if (addressQueryDebounced) fetchCities();
-	}, [addressQueryDebounced]);
+	}, [addressQueryDebounced, language]);
 
 	const comboboxItems =
 		isDebouncePending() || isCitiesFetching
@@ -169,10 +176,10 @@ const DateWithWeather = ({ className }: { className: string }) => {
 					rel="noopener"
 					className="flex items-center gap-1 rounded-[0.375rem] px-1.5 py-0.5 text-base text-muted-foreground transition-colors duration-200 hover:bg-white/5 hover:text-white"
 				>
-					<span>{storage.weatherCity?.name ?? "загрузка..."}</span>
+					<span>{storage.weatherCity?.name ?? t("common.loading")}</span>
 					<span>
 						{weatherData ? (
-							`${weatherData.icon} ${weatherData.desc}`
+							`${weatherData.icon} ${weatherData.desc[language]}`
 						) : (
 							<Spinner />
 						)}
@@ -203,11 +210,13 @@ const DateWithWeather = ({ className }: { className: string }) => {
 								></DialogTrigger>
 							}
 						></TooltipTrigger>
-						<TooltipContent side="bottom">Изменить адрес</TooltipContent>
+						<TooltipContent side="bottom">
+							{t("weather.changeAddress")}
+						</TooltipContent>
 					</Tooltip>
 					<DialogContent>
 						<DialogHeader>
-							<DialogTitle>Изменить адрес</DialogTitle>
+							<DialogTitle>{t("weather.changeAddress")}</DialogTitle>
 						</DialogHeader>
 						<div className="min-h-48">
 							<Combobox
@@ -229,12 +238,12 @@ const DateWithWeather = ({ className }: { className: string }) => {
 								}}
 							>
 								<ComboboxInput
-									placeholder="Введите адрес"
+									placeholder={t("weather.addressPlaceholder")}
 									value={addressQuery}
 									onInput={(e) => setAddressQuery(e.currentTarget.value)}
 								/>
 								<ComboboxContent>
-									<ComboboxEmpty>Ничего не найдено</ComboboxEmpty>
+									<ComboboxEmpty>{t("common.notFound")}</ComboboxEmpty>
 									<ComboboxList>
 										{(item: Item) => {
 											if (item.type === "skeleton") {
