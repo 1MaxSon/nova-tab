@@ -18,7 +18,7 @@ const SearchBar = ({ className }: { className?: string }) => {
 				<SearchIcon className="pointer-events-none absolute left-5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 				<input
 					type="text"
-					placeholder="Поиск..."
+					placeholder="Search..."
 					autoComplete="off"
 					spellCheck="false"
 					value={searchQuery}

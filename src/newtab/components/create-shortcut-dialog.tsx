@@ -53,7 +53,11 @@ const CreateShortcutDialog = () => {
 				type="button"
 				className={cn([
 					shortcutItemClassName,
-					"border border-dashed size-full border-accent text-accent bg-accent/2 hover:bg-accent/10 transition-colors",
+					"border border-dashed size-full border-accent text-accent bg-accent/2 hover:bg-accent/10 transition-all duration-300 animate-in fade-in",
+					{
+						"opacity-0 hover:opacity-100 ":
+							storage.settings.transparentAddShortcut,
+					},
 				])}
 			>
 				<PlusIcon />

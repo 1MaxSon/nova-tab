@@ -1,16 +1,26 @@
 import { type IDBPDatabase, openDB } from "idb";
 import type { ShortcutData, WeatherCity } from "@/lib/types";
 
+export type SettingsData = {
+	transparentAddShortcut: boolean;
+	transparentChangeGeo: boolean;
+};
+
 export type StorageData = {
 	shortcuts: ShortcutData[];
 	wallpaper: object;
 	weatherCity: WeatherCity | null;
+	settings: SettingsData;
 };
 
-const DEFAULT_STORAGE_DATA: StorageData = {
+export const DEFAULT_STORAGE_DATA: StorageData = {
 	shortcuts: [],
 	wallpaper: {},
 	weatherCity: null,
+	settings: {
+		transparentAddShortcut: false,
+		transparentChangeGeo: false
+	},
 };
 
 const useChrome = typeof chrome !== "undefined" && chrome?.storage?.local;
@@ -20,6 +30,7 @@ function saveShortcuts(s: ShortcutData[]) {
 		? chrome.storage.local.set({ shortcuts: s })
 		: localStorage.setItem("nova_shortcuts", JSON.stringify(s));
 }
+
 function saveWallpaper(w: object) {
 	useChrome
 		? chrome.storage.local.set({ wallpaper: w })
@@ -30,6 +41,12 @@ function saveWeatherCity(c: WeatherCity) {
 	useChrome
 		? chrome.storage.local.set({ weatherCity: c })
 		: localStorage.setItem("nova_weather_city", JSON.stringify(c));
+}
+
+function saveSettings(settings: SettingsData) {
+	useChrome
+		? chrome.storage.local.set({ settings })
+		: localStorage.setItem("settings", JSON.stringify(settings));
 }
 
 function normalizeShortcutData(input: unknown): ShortcutData[] {
@@ -135,6 +152,7 @@ export {
 	getIcons,
 	loadData,
 	saveIcon,
+	saveSettings,
 	saveShortcuts,
 	saveWallpaper,
 	saveWeatherCity,

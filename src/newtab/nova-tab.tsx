@@ -5,6 +5,9 @@ import DateWithWeather from "@/newtab/components/date-with-weather";
 import SearchBar from "@/newtab/components/search-bar";
 
 const Shortcuts = lazy(() => import("@/newtab/components/shortcuts"));
+const SettingsDrawer = lazy(
+	() => import("@/newtab/components/settings-drawer"),
+);
 
 export default function NovaTab() {
 	return (
@@ -22,6 +25,10 @@ export default function NovaTab() {
 
 				<Suspense fallback={<Spinner />}>
 					<Shortcuts className="w-full" />
+				</Suspense>
+
+				<Suspense fallback={<Spinner className="absolute top-4 right-4" />}>
+					<SettingsDrawer />
 				</Suspense>
 			</main>
 		</>

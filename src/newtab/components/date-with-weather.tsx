@@ -1,5 +1,5 @@
 import { MapPinIcon } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useStorage } from "@/components/providers/storage-provider";
 import { Button } from "@/components/ui/button";
@@ -65,6 +65,7 @@ const DateWithWeather = ({ className }: { className: string }) => {
 
 	const [selectedCity, setSelectedCity] = useState<NominatimData | null>(null);
 	const [open, setOpen] = useState(false);
+	const [isCitiesFetching, setIsCitiesFetching] = useState(false);
 
 	const [addressAutoCompletes, setAddressAutoCompletes] = useState<
 		NominatimData[]
@@ -75,33 +76,34 @@ const DateWithWeather = ({ className }: { className: string }) => {
 		800,
 	);
 
+	const fetchWeather = useCallback(async () => {
+		if (!storage.weatherCity) return;
+
+		const res = await fetch(
+			`https://api.open-meteo.com/v1/forecast?latitude=${storage.weatherCity.lat}&longitude=${storage.weatherCity.lon}` +
+				`&current_weather=true&temperature_unit=celsius&timezone=auto`,
+		);
+		if (res.status !== 200) {
+			return;
+		}
+
+		const data = (await res.json()) as ForecastData;
+		const cw = data.current_weather;
+		const [icon, desc] = WEATHER_CODES[cw.weathercode] || ["🌡️", ""];
+		setWeatherData({
+			icon,
+			desc,
+			temperature: Math.floor(cw.temperature),
+			temperatureUnit: data.current_weather_units.temperature,
+		});
+	}, [storage.weatherCity]);
+
 	useInterval(() => {
 		setDate(getDate());
 	}, 1000);
 
 	useIntervalWhen(
 		async () => {
-			const fetchWeather = async () => {
-				if (!storage.weatherCity) return;
-
-				const res = await fetch(
-					`https://api.open-meteo.com/v1/forecast?latitude=${storage.weatherCity.lat}&longitude=${storage.weatherCity.lon}` +
-						`&current_weather=true&temperature_unit=celsius&timezone=auto`,
-				);
-				if (res.status !== 200) {
-					return;
-				}
-
-				const data = (await res.json()) as ForecastData;
-				const cw = data.current_weather;
-				const [icon, desc] = WEATHER_CODES[cw.weathercode] || ["🌡️", ""];
-				setWeatherData({
-					icon,
-					desc,
-					temperature: Math.floor(cw.temperature),
-					temperatureUnit: data.current_weather_units.temperature,
-				});
-			};
 			await fetchWeather();
 		},
 		{
@@ -116,7 +118,12 @@ const DateWithWeather = ({ className }: { className: string }) => {
 	}, [storage.weatherCity, setWeatherCity]);
 
 	useEffect(() => {
+		if (selectedCity) fetchWeather();
+	}, [selectedCity, fetchWeather]);
+
+	useEffect(() => {
 		const fetchCities = async () => {
+			setIsCitiesFetching(true);
 			const res = await fetch(
 				`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressQueryDebounced)}&format=json`,
 			);
@@ -129,14 +136,16 @@ const DateWithWeather = ({ className }: { className: string }) => {
 			}
 
 			setAddressAutoCompletes(nominatimData);
+			setIsCitiesFetching(false);
 		};
 
 		if (addressQueryDebounced) fetchCities();
 	}, [addressQueryDebounced]);
 
-	const comboboxItems = isDebouncePending()
-		? [0, 1, 2, 3].map((i) => ({ type: "skeleton", id: i }))
-		: addressAutoCompletes.map((c) => ({ type: "city", data: c }));
+	const comboboxItems =
+		isDebouncePending() || isCitiesFetching
+			? [0, 1, 2, 3].map((i) => ({ type: "skeleton", id: i }))
+			: addressAutoCompletes.map((c) => ({ type: "city", data: c }));
 
 	const weatherLink = useMemo(() => {
 		if (!storage.weatherCity) return "#";
@@ -177,9 +186,21 @@ const DateWithWeather = ({ className }: { className: string }) => {
 					<Tooltip>
 						<TooltipTrigger
 							render={
-								<DialogTrigger render={<Button variant="ghost" size="icon" />}>
-									<MapPinIcon className="text-muted-foreground" />
-								</DialogTrigger>
+								<DialogTrigger
+									render={
+										<Button
+											variant="ghost"
+											size="icon"
+											className={
+												storage.settings.transparentChangeGeo
+													? "opacity-0 hover:opacity-100 transition-opacity duration-300"
+													: ""
+											}
+										>
+											<MapPinIcon className="text-muted-foreground" />
+										</Button>
+									}
+								></DialogTrigger>
 							}
 						></TooltipTrigger>
 						<TooltipContent side="bottom">Изменить адрес</TooltipContent>
@@ -188,50 +209,54 @@ const DateWithWeather = ({ className }: { className: string }) => {
 						<DialogHeader>
 							<DialogTitle>Изменить адрес</DialogTitle>
 						</DialogHeader>
-						<Combobox
-							items={comboboxItems}
-							filteredItems={comboboxItems}
-							value={selectedCity}
-							onValueChange={(itemValue) => {
-								setSelectedCity(itemValue);
-								if (itemValue) {
-									setOpen(false);
-									setWeatherCity({
-										name: itemValue.name,
-										lat: parseFloat(itemValue.lat),
-										lon: parseFloat(itemValue.lon),
-									});
-								}
-							}}
-						>
-							<ComboboxInput
-								placeholder="Введите адрес"
-								value={addressQuery}
-								onInput={(e) => setAddressQuery(e.currentTarget.value)}
-							/>
-							<ComboboxContent>
-								<ComboboxEmpty>Ничего не найдено</ComboboxEmpty>
-								<ComboboxList>
-									{(item: Item) => {
-										if (item.type === "skeleton") {
+						<div className="min-h-48">
+							<Combobox
+								items={comboboxItems}
+								filteredItems={comboboxItems}
+								value={selectedCity}
+								onValueChange={(itemValue) => {
+									setSelectedCity(itemValue);
+									if (itemValue) {
+										setOpen(false);
+										setWeatherCity({
+											name: itemValue.name,
+											lat: parseFloat(itemValue.lat),
+											lon: parseFloat(itemValue.lon),
+										});
+										setAddressQuery("");
+										setAddressAutoCompletes([]);
+									}
+								}}
+							>
+								<ComboboxInput
+									placeholder="Введите адрес"
+									value={addressQuery}
+									onInput={(e) => setAddressQuery(e.currentTarget.value)}
+								/>
+								<ComboboxContent>
+									<ComboboxEmpty>Ничего не найдено</ComboboxEmpty>
+									<ComboboxList>
+										{(item: Item) => {
+											if (item.type === "skeleton") {
+												return (
+													<ComboboxItem key={item.id} disabled value={item.id}>
+														<Skeleton className="h-5 w-full" />
+													</ComboboxItem>
+												);
+											}
+
+											const city = item.data;
+
 											return (
-												<ComboboxItem key={item.id} disabled value={item.id}>
-													<Skeleton className="h-5 w-full" />
+												<ComboboxItem key={city.osm_id} value={city}>
+													{city.display_name}
 												</ComboboxItem>
 											);
-										}
-
-										const city = item.data;
-
-										return (
-											<ComboboxItem key={city.osm_id} value={city}>
-												{city.display_name}
-											</ComboboxItem>
-										);
-									}}
-								</ComboboxList>
-							</ComboboxContent>
-						</Combobox>
+										}}
+									</ComboboxList>
+								</ComboboxContent>
+							</Combobox>
+						</div>
 					</DialogContent>
 				</Dialog>
 			</div>

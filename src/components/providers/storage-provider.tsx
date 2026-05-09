@@ -9,8 +9,11 @@ import {
 	useState,
 } from "react";
 import {
+	DEFAULT_STORAGE_DATA,
 	loadData,
+	type SettingsData,
 	type StorageData,
+	saveSettings,
 	saveShortcuts,
 	saveWeatherCity,
 } from "@/lib/storage";
@@ -20,6 +23,7 @@ type StorageProviderContextType = {
 	storage: StorageData;
 	setShortcuts: Dispatch<SetStateAction<ShortcutData[]>>;
 	setWeatherCity: Dispatch<SetStateAction<WeatherCity | null>>;
+	setSettings: Dispatch<SetStateAction<SettingsData>>;
 };
 
 const StorageContext = createContext<StorageProviderContextType | null>(null);
@@ -35,11 +39,16 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 
 	const [weatherCity, setWeatherCity] = useState<WeatherCity | null>(null);
 
+	const [settings, setSettings] = useState<SettingsData>(
+		DEFAULT_STORAGE_DATA.settings,
+	);
+
 	useEffect(() => {
 		const loadStorageData = async () => {
 			const data = await loadData();
 			setShortcuts(data.shortcuts);
 			setWeatherCity(data.weatherCity);
+			setSettings(data.settings);
 			isDataLoaded.current = true;
 		};
 
@@ -53,9 +62,11 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 			shortcuts,
 			weatherCity,
 			wallpaper: {},
+			settings,
 		},
 		setShortcuts,
 		setWeatherCity,
+		setSettings,
 	};
 
 	useEffect(() => {
@@ -69,6 +80,12 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 
 		saveShortcuts(shortcuts);
 	}, [shortcuts]);
+
+	useEffect(() => {
+		if (!isDataLoaded.current) return;
+
+		if (settings) saveSettings(settings);
+	}, [settings]);
 
 	return (
 		<StorageContext.Provider value={storageData}>

@@ -87,8 +87,7 @@ export async function getFaviconDisplay(url: string): Promise<string | null> {
 			return new URL(bestIcon.href, url).href;
 		}
 
-		// 3. fallback favicon.ico
-		return new URL("/favicon.ico", url).href;
+		return `https://icons.duckduckgo.com/ip3/${domainFromUrl(url)}.ico`;
 	} catch {
 		return null;
 	}
