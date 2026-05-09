@@ -35,6 +35,7 @@ const translations = {
 		"shortcut.colorDescription":
 			"If it is empty, a color based on the icon will be used.",
 		"shortcut.iconDescription": "The colors will not be changed",
+		"shortcut.faviconError": "Failed to fetch favicon",
 		"shortcut.group": "Group",
 		"shortcut.createGroup": "Create a group",
 		"shortcut.addToGroup": "Add to the group",
@@ -74,6 +75,7 @@ const translations = {
 		"shortcut.colorDescription":
 			"Если оставить пустым, цвет будет подобран по иконке.",
 		"shortcut.iconDescription": "Цвета не изменятся",
+		"shortcut.faviconError": "Не удалось загрузить фавикон",
 		"shortcut.group": "Группа",
 		"shortcut.createGroup": "Создать группу",
 		"shortcut.addToGroup": "Добавить в группу",

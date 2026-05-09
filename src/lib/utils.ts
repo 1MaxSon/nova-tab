@@ -41,8 +41,11 @@ export type CreateShortcutInput = PickTyped<ShortcutType, "url"> &
 
 export async function createShortcut(
 	data: CreateShortcutInput,
+	options: { faviconErrorMessage?: string } = {},
 ): Promise<ShortcutType> {
 	const { url, name, accentColor, mutedColor } = data;
+	const faviconErrorMessage =
+		options.faviconErrorMessage ?? "Failed to fetch favicon";
 	const iconUrl = await getFaviconDisplay(url);
 
 	if (import.meta.env.DEV) {
@@ -51,15 +54,15 @@ export async function createShortcut(
 
 	let iconBlob: Blob | undefined;
 
-	if (!iconUrl) alert("Failed to fetch favicon");
+	if (!iconUrl) alert(faviconErrorMessage);
 	else {
 		try {
 			const res = await fetch(iconUrl);
 
-			if (res.status !== 200) alert("Failed to fetch favicon");
+			if (res.status !== 200) alert(faviconErrorMessage);
 			iconBlob = await res.blob();
 		} catch {
-			alert("Failed to fetch favicon");
+			alert(faviconErrorMessage);
 		}
 	}
 

@@ -35,7 +35,9 @@ const CreateShortcutDialog = () => {
 		setIsPending(true);
 		setOpen(false);
 
-		const newShortcut = await createShortcut(formData);
+		const newShortcut = await createShortcut(formData, {
+			faviconErrorMessage: t("shortcut.faviconError"),
+		});
 		setShortcuts([...storage.shortcuts, newShortcut]);
 
 		setFormData({ url: "", name: "" });
