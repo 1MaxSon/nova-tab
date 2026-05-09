@@ -1,5 +1,7 @@
 import { lazy, Suspense } from "react";
+import { useStorage } from "@/components/providers/storage-provider";
 import { Spinner } from "@/components/ui/spinner";
+import { THEMES } from "@/lib/constants";
 import Clock from "@/newtab/components/clock";
 import DateWithWeather from "@/newtab/components/date-with-weather";
 import SearchBar from "@/newtab/components/search-bar";
@@ -10,9 +12,29 @@ const SettingsDrawer = lazy(
 );
 
 export default function NovaTab() {
+	const {
+		customWallpaperUrl,
+		storage: { settings, wallpaper },
+	} = useStorage();
+
+	const selectedTheme =
+		THEMES.find((theme) => theme.id === settings.theme) ?? THEMES[0];
+
+	const backgroundImage =
+		wallpaper.type === "custom" && customWallpaperUrl
+			? `${selectedTheme.customWallpaperOverlay}, url("${customWallpaperUrl}")`
+			: selectedTheme.wallpaper;
+
 	return (
 		<>
-			<div className="fixed inset-0 z-0 nova-gradient" />
+			<div
+				className="fixed inset-0 z-0 nova-gradient"
+				style={{
+					backgroundImage,
+					backgroundPosition: "center",
+					backgroundSize: "cover",
+				}}
+			/>
 			<div className="nova-bg-grain z-0" />
 
 			<main className="relative flex flex-col items-center justify-center px-12 py-6">

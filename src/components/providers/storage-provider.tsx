@@ -10,18 +10,24 @@ import {
 } from "react";
 import {
 	DEFAULT_STORAGE_DATA,
+	getCustomWallpaper,
 	loadData,
 	type SettingsData,
 	type StorageData,
+	type WallpaperData,
 	saveSettings,
 	saveShortcuts,
+	saveWallpaper,
 	saveWeatherCity,
 } from "@/lib/storage";
+import { THEMES } from "@/lib/constants";
 import type { ShortcutData, WeatherCity } from "@/lib/types";
 
 type StorageProviderContextType = {
 	storage: StorageData;
+	customWallpaperUrl: string | null;
 	setShortcuts: Dispatch<SetStateAction<ShortcutData[]>>;
+	setWallpaper: Dispatch<SetStateAction<WallpaperData>>;
 	setWeatherCity: Dispatch<SetStateAction<WeatherCity | null>>;
 	setSettings: Dispatch<SetStateAction<SettingsData>>;
 };
@@ -64,8 +70,21 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 		cachedData?.weatherCity || null,
 	);
 
+	const [wallpaper, setWallpaper] = useState<WallpaperData>(
+		cachedData?.wallpaper || DEFAULT_STORAGE_DATA.wallpaper,
+	);
+
+	const [customWallpaperUrl, setCustomWallpaperUrl] = useState<string | null>(
+		null,
+	);
+
 	const [settings, setSettings] = useState<SettingsData>(
-		cachedData?.settings || DEFAULT_STORAGE_DATA.settings,
+		cachedData?.settings
+			? {
+					...DEFAULT_STORAGE_DATA.settings,
+					...cachedData.settings,
+				}
+			: DEFAULT_STORAGE_DATA.settings,
 	);
 
 	useEffect(() => {
@@ -73,6 +92,7 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 			const data = await loadData();
 			setShortcuts(data.shortcuts);
 			setWeatherCity(data.weatherCity);
+			setWallpaper(data.wallpaper);
 			setSettings(data.settings);
 			setCachedData(data);
 			isDataLoaded.current = true;
@@ -87,10 +107,12 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 		storage: {
 			shortcuts,
 			weatherCity,
-			wallpaper: {},
+			wallpaper,
 			settings,
 		},
+		customWallpaperUrl,
 		setShortcuts,
+		setWallpaper,
 		setWeatherCity,
 		setSettings,
 	};
@@ -100,6 +122,28 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 
 		if (weatherCity) saveWeatherCity(weatherCity);
 	}, [weatherCity]);
+
+	useEffect(() => {
+		if (wallpaper.type !== "custom") {
+			setCustomWallpaperUrl(null);
+			return;
+		}
+
+		let objectUrl: string | null = null;
+		let ignore = false;
+
+		getCustomWallpaper().then((blob) => {
+			if (!blob || ignore) return;
+
+			objectUrl = URL.createObjectURL(blob);
+			setCustomWallpaperUrl(objectUrl);
+		});
+
+		return () => {
+			ignore = true;
+			if (objectUrl) URL.revokeObjectURL(objectUrl);
+		};
+	}, [wallpaper]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: no update on storage change
 	useEffect(() => {
@@ -118,6 +162,27 @@ const StorageProvider = ({ children }: { children: ReactNode }) => {
 
 		if (settings) saveSettings(settings);
 	}, [settings]);
+
+	useEffect(() => {
+		const theme =
+			THEMES.find((item) => item.id === settings.theme) ?? THEMES[0];
+
+		for (const [key, value] of Object.entries(theme.colors)) {
+			document.documentElement.style.setProperty(`--${key}`, value);
+		}
+	}, [settings.theme]);
+
+	useEffect(() => {
+		if (!isDataLoaded.current) return;
+
+		saveWallpaper(wallpaper);
+		setCachedData({
+			shortcuts,
+			weatherCity,
+			wallpaper,
+			settings,
+		});
+	}, [wallpaper, shortcuts, weatherCity, settings]);
 
 	return (
 		<StorageContext.Provider value={storageData}>

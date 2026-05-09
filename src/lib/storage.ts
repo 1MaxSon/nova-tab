@@ -1,25 +1,40 @@
 import { type IDBPDatabase, openDB } from "idb";
 import type { ShortcutData, WeatherCity } from "@/lib/types";
 
+export type WallpaperData =
+	| {
+			type: "preset";
+			id: string;
+	  }
+	| {
+			type: "custom";
+			updatedAt: number;
+	  };
+
 export type SettingsData = {
 	transparentAddShortcut: boolean;
 	transparentChangeGeo: boolean;
+	theme: string;
 };
 
 export type StorageData = {
 	shortcuts: ShortcutData[];
-	wallpaper: object;
+	wallpaper: WallpaperData;
 	weatherCity: WeatherCity | null;
 	settings: SettingsData;
 };
 
 export const DEFAULT_STORAGE_DATA: StorageData = {
 	shortcuts: [],
-	wallpaper: {},
+	wallpaper: {
+		type: "preset",
+		id: "nova",
+	},
 	weatherCity: null,
 	settings: {
 		transparentAddShortcut: false,
-		transparentChangeGeo: false
+		transparentChangeGeo: false,
+		theme: "nova",
 	},
 };
 
@@ -31,10 +46,25 @@ function saveShortcuts(s: ShortcutData[]) {
 		: localStorage.setItem("nova_shortcuts", JSON.stringify(s));
 }
 
-function saveWallpaper(w: object) {
+function saveWallpaper(w: WallpaperData) {
 	useChrome
 		? chrome.storage.local.set({ wallpaper: w })
 		: localStorage.setItem("nova_wallpaper", JSON.stringify(w));
+}
+
+function normalizeWallpaperData(input: unknown): WallpaperData {
+	if (!input || typeof input !== "object") return DEFAULT_STORAGE_DATA.wallpaper;
+
+	const raw = input as Partial<WallpaperData>;
+	if (raw.type === "custom" && typeof raw.updatedAt === "number") {
+		return raw as WallpaperData;
+	}
+
+	if (raw.type === "preset" && typeof raw.id === "string") {
+		return raw as WallpaperData;
+	}
+
+	return DEFAULT_STORAGE_DATA.wallpaper;
 }
 
 function saveWeatherCity(c: WeatherCity) {
@@ -47,6 +77,15 @@ function saveSettings(settings: SettingsData) {
 	useChrome
 		? chrome.storage.local.set({ settings })
 		: localStorage.setItem("settings", JSON.stringify(settings));
+}
+
+function normalizeSettingsData(input: unknown): SettingsData {
+	if (!input || typeof input !== "object") return DEFAULT_STORAGE_DATA.settings;
+
+	return {
+		...DEFAULT_STORAGE_DATA.settings,
+		...(input as Partial<SettingsData>),
+	};
 }
 
 function normalizeShortcutData(input: unknown): ShortcutData[] {
@@ -83,8 +122,10 @@ async function loadData(): Promise<StorageData> {
 			chrome.storage.local.get(Object.keys(DEFAULT_STORAGE_DATA), (result) => {
 				resolve({
 					...DEFAULT_STORAGE_DATA,
-					shortcuts: normalizeShortcutData(result.shortcuts),
 					...result,
+					shortcuts: normalizeShortcutData(result.shortcuts),
+					wallpaper: normalizeWallpaperData(result.wallpaper),
+					settings: normalizeSettingsData(result.settings),
 				} as StorageData);
 			});
 		});
@@ -95,6 +136,8 @@ async function loadData(): Promise<StorageData> {
 
 const ICONS_DB_NAME = "IconCacheDB";
 const ICONS_STORE_NAME = "icons";
+const WALLPAPER_STORE_NAME = "wallpaper";
+const CUSTOM_WALLPAPER_KEY = "custom";
 
 type SavedIcon = {
 	id: number;
@@ -105,10 +148,13 @@ let dbPromise: Promise<IDBPDatabase> | null = null;
 
 const getDB = () => {
 	if (!dbPromise) {
-		dbPromise = openDB(ICONS_DB_NAME, 1, {
+		dbPromise = openDB(ICONS_DB_NAME, 2, {
 			upgrade(db) {
 				if (!db.objectStoreNames.contains(ICONS_STORE_NAME)) {
 					db.createObjectStore(ICONS_STORE_NAME);
+				}
+				if (!db.objectStoreNames.contains(WALLPAPER_STORE_NAME)) {
+					db.createObjectStore(WALLPAPER_STORE_NAME);
 				}
 			},
 		});
@@ -146,11 +192,24 @@ const getIconById = async (id: number): Promise<SavedIcon | null> => {
 	return await db.get(ICONS_STORE_NAME, id);
 };
 
+const getCustomWallpaper = async (): Promise<Blob | null> => {
+	const db = await getDB();
+	const wallpaper = await db.get(WALLPAPER_STORE_NAME, CUSTOM_WALLPAPER_KEY);
+	return wallpaper instanceof Blob ? wallpaper : null;
+};
+
+const saveCustomWallpaper = async (blob: Blob) => {
+	const db = await getDB();
+	await db.put(WALLPAPER_STORE_NAME, blob, CUSTOM_WALLPAPER_KEY);
+};
+
 export {
 	deleteIcon,
+	getCustomWallpaper,
 	getIconById as getIconByName,
 	getIcons,
 	loadData,
+	saveCustomWallpaper,
 	saveIcon,
 	saveSettings,
 	saveShortcuts,
