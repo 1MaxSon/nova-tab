@@ -31,7 +31,7 @@ import { useIntervalWhen } from "@/lib/hooks/use-interval-when";
 import { useI18n } from "@/lib/i18n";
 import type { ForecastData } from "@/lib/types/open-meteo";
 import type { NominatimData } from "@/lib/types/openstreetmap";
-import { buildYandexUrl, cn } from "@/lib/utils";
+import { buildWeatherProviderUrl, cn } from "@/lib/utils";
 
 type Item =
   | { type: "skeleton"; id: number }
@@ -167,11 +167,19 @@ const DateWithWeather = ({ className }: { className: string }) => {
 
   const weatherLink = useMemo(() => {
     if (!storage.weatherCity) return "#";
-    return buildYandexUrl({
-      latitude: storage.weatherCity.lat,
-      longitude: storage.weatherCity.lon,
-    });
-  }, [storage.weatherCity]);
+    return buildWeatherProviderUrl(
+      storage.settings.weatherProvider,
+      storage.weatherCity.name,
+      {
+        latitude: storage.weatherCity.lat,
+        longitude: storage.weatherCity.lon,
+      },
+    );
+  }, [
+    storage.settings.weatherProvider,
+    storage.weatherCity,
+    storage.settings.language,
+  ]);
 
   return (
     <div className={cn(["flex items-center gap-3.5", className])}>

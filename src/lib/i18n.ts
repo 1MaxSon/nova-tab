@@ -30,15 +30,21 @@ const translations = {
     "weather.changeAddress": "Change address",
     "weather.addressPlaceholder": "Enter an address",
     "weather.fetchingFailed": "Unknown weather",
+    "weather.provider": "Weather site",
+    "weather.providerDescription": "Choose where the weather widget opens",
+    "weather.provider.googleQuery": "weather in",
+    "weather.provider.yandex": "Yandex Weather",
+    "weather.provider.google": "Google Weather",
+    "weather.provider.wttr": "Wttr",
     "shortcut.createTitle": "Create a shortcut",
     "shortcut.editTitle": "Edit shortcut",
     "shortcut.url": "Url",
     "shortcut.name": "Name",
     "shortcut.bgColor": "Bg color",
     "shortcut.mutedColor": "Muted color",
-		"shortcut.newIcon": "New icon",
-		"shortcut.refreshIcon": "Fetch favicon again",
-		"shortcut.nameDescription":
+    "shortcut.newIcon": "New icon",
+    "shortcut.refreshIcon": "Fetch favicon again",
+    "shortcut.nameDescription":
       "If it is empty, the site domain will be used. For example Example.com",
     "shortcut.colorDescription":
       "If it is empty, a color based on the icon will be used.",
@@ -47,8 +53,6 @@ const translations = {
     "shortcut.group": "Group",
     "shortcut.createGroup": "Create a group",
     "shortcut.addToGroup": "Add to the group",
-    "language.en": "English",
-    "language.ru": "Russian",
   },
   ru: {
     "common.close": "Закрыть",
@@ -78,15 +82,21 @@ const translations = {
     "weather.changeAddress": "Изменить адрес",
     "weather.addressPlaceholder": "Введите адрес",
     "weather.fetchingFailed": "🌈",
+    "weather.provider": "Сайт погоды",
+    "weather.providerDescription": "Выберите, где открывается виджет погоды",
+    "weather.provider.googleQuery": "Погода",
+    "weather.provider.yandex": "Яндекс Погода",
+    "weather.provider.google": "Google Погода",
+    "weather.provider.wttr": "Wttr",
     "shortcut.createTitle": "Создать ярлык",
     "shortcut.editTitle": "Редактировать ярлык",
     "shortcut.url": "Url",
     "shortcut.name": "Название",
     "shortcut.bgColor": "Цвет фона",
     "shortcut.mutedColor": "Приглушенный цвет",
-		"shortcut.newIcon": "Новая иконка",
-		"shortcut.refreshIcon": "Получить фавикон заново",
-		"shortcut.nameDescription":
+    "shortcut.newIcon": "Новая иконка",
+    "shortcut.refreshIcon": "Получить фавикон заново",
+    "shortcut.nameDescription":
       "Если оставить пустым, будет использован домен сайта. Например Example.com",
     "shortcut.colorDescription":
       "Если оставить пустым, цвет будет подобран по иконке.",
@@ -95,14 +105,15 @@ const translations = {
     "shortcut.group": "Группа",
     "shortcut.createGroup": "Создать группу",
     "shortcut.addToGroup": "Добавить в группу",
-    "language.en": "Английский",
-    "language.ru": "Русский",
   },
 } as const satisfies Record<Language, Record<string, string>>;
 
 export type TranslationKey = keyof (typeof translations)["en"];
 
-export const languageOptions = ["en", "ru"] as const satisfies Language[];
+export const languageOptions: Record<Language, string> = {
+  en: "English",
+  ru: "Русский",
+};
 
 export function useI18n() {
   const {

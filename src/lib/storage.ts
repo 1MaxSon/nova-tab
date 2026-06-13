@@ -12,10 +12,15 @@ export type WallpaperData =
 	  };
 
 export type Language = "en" | "ru";
+export type WeatherProvider = "yandex" | "google" | "wttr";
 
 const getDefaultLanguage = (): Language => {
 	if (typeof navigator === "undefined") return "en";
 	return navigator.language.toLowerCase().startsWith("ru") ? "ru" : "en";
+};
+
+const getDefaultWeatherProvider = (language = getDefaultLanguage()): WeatherProvider => {
+	return language === "ru" ? "yandex" : "google";
 };
 
 export type SettingsData = {
@@ -23,6 +28,7 @@ export type SettingsData = {
 	transparentAddShortcut: boolean;
 	transparentChangeGeo: boolean;
 	theme: string;
+	weatherProvider: WeatherProvider;
 };
 
 export type StorageData = {
@@ -44,6 +50,7 @@ export const DEFAULT_STORAGE_DATA: StorageData = {
 		transparentAddShortcut: false,
 		transparentChangeGeo: false,
 		theme: "nova",
+		weatherProvider: getDefaultWeatherProvider(),
 	},
 };
 
@@ -109,11 +116,19 @@ function saveSettings(settings: SettingsData): Promise<void> {
 function normalizeSettingsData(input: unknown): SettingsData {
 	if (!input || typeof input !== "object") return DEFAULT_STORAGE_DATA.settings;
 	const raw = input as Partial<SettingsData>;
+	const language = raw.language === "ru" ? "ru" : "en";
+	const weatherProvider =
+		raw.weatherProvider === "yandex" ||
+		raw.weatherProvider === "google" ||
+		raw.weatherProvider === "wttr"
+			? raw.weatherProvider
+			: getDefaultWeatherProvider(language);
 
 	return {
 		...DEFAULT_STORAGE_DATA.settings,
 		...raw,
-		language: raw.language === "ru" ? "ru" : "en",
+		language,
+		weatherProvider,
 	};
 }
 
