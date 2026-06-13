@@ -28,10 +28,10 @@ const Clock = ({
 
 	useEffect(() => {
 		updateTime();
-		intervalId.current = setInterval(updateTime, 1000);
+		intervalId.current = window.setInterval(updateTime, 1000);
 
 		return () => {
-			clearInterval(intervalId.current);
+			window.clearInterval(intervalId.current);
 		};
 	}, [updateTime]);
 

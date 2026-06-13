@@ -39,11 +39,10 @@ export async function getCityName(coords: Coords) {
 export type CreateShortcutInput = PickTyped<ShortcutType, "url"> &
 	Partial<OmitTyped<ShortcutType, "url">>;
 
-export async function createShortcut(
-	data: CreateShortcutInput,
+export async function fetchFaviconBlob(
+	url: string,
 	options: { faviconErrorMessage?: string } = {},
-): Promise<ShortcutType> {
-	const { url, name, accentColor, mutedColor } = data;
+): Promise<{ iconUrl: string | null; iconBlob?: Blob }> {
 	const faviconErrorMessage =
 		options.faviconErrorMessage ?? "Failed to fetch favicon";
 	const iconUrl = await getFaviconDisplay(url);
@@ -65,6 +64,16 @@ export async function createShortcut(
 			alert(faviconErrorMessage);
 		}
 	}
+
+	return { iconUrl, iconBlob };
+}
+
+export async function createShortcut(
+	data: CreateShortcutInput,
+	options: { faviconErrorMessage?: string } = {},
+): Promise<ShortcutType> {
+	const { url, name, accentColor, mutedColor } = data;
+	const { iconBlob, iconUrl } = await fetchFaviconBlob(url, options);
 
 	const { shortcuts } = await loadData();
 

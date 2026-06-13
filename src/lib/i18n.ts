@@ -36,8 +36,9 @@ const translations = {
     "shortcut.name": "Name",
     "shortcut.bgColor": "Bg color",
     "shortcut.mutedColor": "Muted color",
-    "shortcut.newIcon": "New icon",
-    "shortcut.nameDescription":
+		"shortcut.newIcon": "New icon",
+		"shortcut.refreshIcon": "Fetch favicon again",
+		"shortcut.nameDescription":
       "If it is empty, the site domain will be used. For example Example.com",
     "shortcut.colorDescription":
       "If it is empty, a color based on the icon will be used.",
@@ -83,8 +84,9 @@ const translations = {
     "shortcut.name": "Название",
     "shortcut.bgColor": "Цвет фона",
     "shortcut.mutedColor": "Приглушенный цвет",
-    "shortcut.newIcon": "Новая иконка",
-    "shortcut.nameDescription":
+		"shortcut.newIcon": "Новая иконка",
+		"shortcut.refreshIcon": "Получить фавикон заново",
+		"shortcut.nameDescription":
       "Если оставить пустым, будет использован домен сайта. Например Example.com",
     "shortcut.colorDescription":
       "Если оставить пустым, цвет будет подобран по иконке.",

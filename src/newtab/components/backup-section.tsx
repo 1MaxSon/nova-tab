@@ -72,7 +72,7 @@ const BackupSection = () => {
 				<input
 					ref={fileInputRef}
 					type="file"
-					accept=".json"
+					accept=".zip"
 					className="hidden"
 					onChange={handleImport}
 				/>

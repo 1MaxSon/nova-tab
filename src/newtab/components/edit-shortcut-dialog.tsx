@@ -1,3 +1,4 @@
+import { RefreshCwIcon } from "lucide-react";
 import { type ComponentProps, memo, useState } from "react";
 import { useStorage } from "@/components/providers/storage-provider";
 import { Button } from "@/components/ui/button";
@@ -12,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useI18n } from "@/lib/i18n";
 import { saveIcon } from "@/lib/storage";
 import type { ShortcutGroupType, ShortcutType } from "@/lib/types";
-import type { CreateShortcutInput } from "@/lib/utils";
+import { fetchFaviconBlob, type CreateShortcutInput } from "@/lib/utils";
 import CreateShortcutForm from "@/newtab/components/create-shortcut-form";
 
 const EditShortcutDialog = ({
@@ -27,6 +28,7 @@ const EditShortcutDialog = ({
 	const { t } = useI18n();
 
 	const [open, setOpen] = useState(false);
+	const [isIconRefreshing, setIsIconRefreshing] = useState(false);
 
 	const [formData, setFormData] = useState<
 		OmitTyped<CreateShortcutInput, "groupId" | "id"> & { newIcon?: Blob }
@@ -88,6 +90,22 @@ const EditShortcutDialog = ({
 		setOpen(false);
 	};
 
+	const refreshIcon = async () => {
+		if (!formData.url) return;
+
+		setIsIconRefreshing(true);
+		const { iconBlob } = await fetchFaviconBlob(formData.url, {
+			faviconErrorMessage: t("shortcut.faviconError"),
+		});
+
+		if (iconBlob) {
+			await saveIcon({ id: shortcut.id, blob: iconBlob });
+			onIconChange();
+		}
+
+		setIsIconRefreshing(false);
+	};
+
 	return (
 		<Dialog open={open} onOpenChange={setOpen}>
 			<DialogTrigger {...props}>{children}</DialogTrigger>
@@ -104,22 +122,37 @@ const EditShortcutDialog = ({
 							<FieldLabel htmlFor="newIcon">
 								{t("shortcut.newIcon")} ({t("common.optional")})
 							</FieldLabel>
-							<Input
-								type="file"
-								name="newIcon"
-								id="newIcon"
-								accept="image/*"
-								onChange={(e) => {
-									if (!e.target.files) return;
+							<div className="flex gap-2">
+								<Input
+									type="file"
+									name="newIcon"
+									id="newIcon"
+									accept="image/*"
+									onChange={(e) => {
+										if (!e.target.files) return;
 
-									const files = Array.from(e.target.files);
+										const files = Array.from(e.target.files);
 
-									setFormData((prev) => ({
-										...prev,
-										newIcon: files.pop(),
-									}));
-								}}
-							/>
+										setFormData((prev) => ({
+											...prev,
+											newIcon: files.pop(),
+										}));
+									}}
+								/>
+								<Button
+									type="button"
+									variant="secondary"
+									size="icon"
+									disabled={isIconRefreshing || !formData.url}
+									title={t("shortcut.refreshIcon")}
+									aria-label={t("shortcut.refreshIcon")}
+									onClick={refreshIcon}
+								>
+									<RefreshCwIcon
+										className={isIconRefreshing ? "animate-spin" : undefined}
+									/>
+								</Button>
+							</div>
 							<FieldDescription>{t("shortcut.iconDescription")}</FieldDescription>
 						</Field>
 						<CreateShortcutForm
