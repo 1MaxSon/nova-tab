@@ -10,6 +10,7 @@ import {
 import { type ChangeEvent, useRef } from "react";
 import { useStorage } from "@/components/providers/storage-provider";
 import { Button } from "@/components/ui/button";
+import BackupSection from "@/newtab/components/backup-section";
 import {
 	Drawer,
 	DrawerClose,
@@ -216,6 +217,7 @@ const SettingsDrawer = () => {
 								{t("settings.transparentDescription")}
 							</FieldDescription>
 						</Field>
+						<BackupSection />
 					</FieldGroup>
 				</div>
 				<DrawerFooter>

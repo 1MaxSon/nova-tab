@@ -49,16 +49,32 @@ export const DEFAULT_STORAGE_DATA: StorageData = {
 
 const useChrome = typeof chrome !== "undefined" && chrome?.storage?.local;
 
-function saveShortcuts(s: ShortcutData[]) {
-	useChrome
-		? chrome.storage.local.set({ shortcuts: s })
-		: localStorage.setItem("nova_shortcuts", JSON.stringify(s));
+function saveToChromeStorage(data: Partial<StorageData>): Promise<void> {
+	return new Promise((resolve, reject) => {
+		chrome.storage.local.set(data, () => {
+			const error = chrome.runtime.lastError;
+			if (error) {
+				reject(new Error(error.message));
+				return;
+			}
+
+			resolve();
+		});
+	});
 }
 
-function saveWallpaper(w: WallpaperData) {
-	useChrome
-		? chrome.storage.local.set({ wallpaper: w })
-		: localStorage.setItem("nova_wallpaper", JSON.stringify(w));
+function saveShortcuts(s: ShortcutData[]): Promise<void> {
+	if (useChrome) return saveToChromeStorage({ shortcuts: s });
+
+	localStorage.setItem("nova_shortcuts", JSON.stringify(s));
+	return Promise.resolve();
+}
+
+function saveWallpaper(w: WallpaperData): Promise<void> {
+	if (useChrome) return saveToChromeStorage({ wallpaper: w });
+
+	localStorage.setItem("nova_wallpaper", JSON.stringify(w));
+	return Promise.resolve();
 }
 
 function normalizeWallpaperData(input: unknown): WallpaperData {
@@ -76,16 +92,18 @@ function normalizeWallpaperData(input: unknown): WallpaperData {
 	return DEFAULT_STORAGE_DATA.wallpaper;
 }
 
-function saveWeatherCity(c: WeatherCity) {
-	useChrome
-		? chrome.storage.local.set({ weatherCity: c })
-		: localStorage.setItem("nova_weather_city", JSON.stringify(c));
+function saveWeatherCity(c: WeatherCity | null): Promise<void> {
+	if (useChrome) return saveToChromeStorage({ weatherCity: c });
+
+	localStorage.setItem("nova_weather_city", JSON.stringify(c));
+	return Promise.resolve();
 }
 
-function saveSettings(settings: SettingsData) {
-	useChrome
-		? chrome.storage.local.set({ settings })
-		: localStorage.setItem("settings", JSON.stringify(settings));
+function saveSettings(settings: SettingsData): Promise<void> {
+	if (useChrome) return saveToChromeStorage({ settings });
+
+	localStorage.setItem("settings", JSON.stringify(settings));
+	return Promise.resolve();
 }
 
 function normalizeSettingsData(input: unknown): SettingsData {
@@ -220,6 +238,9 @@ export {
 	getIconById as getIconByName,
 	getIcons,
 	loadData,
+	normalizeSettingsData,
+	normalizeShortcutData,
+	normalizeWallpaperData,
 	saveCustomWallpaper,
 	saveIcon,
 	saveSettings,
