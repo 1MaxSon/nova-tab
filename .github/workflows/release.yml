@@ -53,18 +53,15 @@ jobs:
           CRX_PRIVATE_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
         run: |
           if [ -z "$CRX_PRIVATE_KEY" ]; then
-            echo "CRX_PRIVATE_KEY secret is required. Store base64-encoded key.pem in repository secrets."
+            echo "CRX_PRIVATE_KEY secret is required."
             exit 1
           fi
-
           echo "$CRX_PRIVATE_KEY" | base64 --decode > crx-private-key.pem
           chmod 600 crx-private-key.pem
 
       - name: Build signed CRX
         shell: bash
-        run: |
-          google-chrome --pack-extension="$(pwd)/dist" --pack-extension-key="$(pwd)/crx-private-key.pem"
-          mv dist.crx nova-tab.crx
+        run: npx crx3 pack dist -o nova-tab.crx -p crx-private-key.pem
 
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
