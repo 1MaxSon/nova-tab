@@ -20,6 +20,12 @@ const translations = {
       "Make the add shortcut button transparent",
     "settings.transparentChangeGeo": "Make the change geo button transparent",
     "settings.transparentDescription": "It will become visible on hover",
+    "settings.backupExport": "Export",
+    "settings.backupImport": "Import",
+    "settings.backupDescription":
+      "Backup includes settings, shortcuts, and weather city",
+    "settings.backupError": "Failed to complete the operation",
+    "settings.backupInvalidFile": "Invalid backup file",
     "search.placeholder": "Search...",
     "weather.changeAddress": "Change address",
     "weather.addressPlaceholder": "Enter an address",
@@ -61,6 +67,12 @@ const translations = {
     "settings.transparentChangeGeo":
       "Сделать кнопку смены геолокации прозрачной",
     "settings.transparentDescription": "Она появится при наведении",
+    "settings.backupExport": "Экспортировать",
+    "settings.backupImport": "Импортировать",
+    "settings.backupDescription":
+      "Резервная копия включает настройки, ярлыки и город погоды",
+    "settings.backupError": "Не удалось выполнить операцию",
+    "settings.backupInvalidFile": "Некорректный файл резервной копии",
     "search.placeholder": "Поиск...",
     "weather.changeAddress": "Изменить адрес",
     "weather.addressPlaceholder": "Введите адрес",

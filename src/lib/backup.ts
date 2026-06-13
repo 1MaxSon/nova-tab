@@ -1,4 +1,3 @@
-import type { WeatherCity } from "@/lib/types";
 import {
 	loadData,
 	normalizeSettingsData,
@@ -12,6 +11,7 @@ import {
 	type StorageData,
 	type WallpaperData,
 } from "@/lib/storage";
+import type { WeatherCity } from "@/lib/types";
 
 type BackupFile = StorageData & {
 	version: 1;
@@ -26,6 +26,7 @@ type BackupPayload = {
 };
 
 const BACKUP_FILE_NAME = "nova-backup.json";
+const INVALID_BACKUP_FILE_ERROR = "INVALID_BACKUP_FILE";
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
 	return Boolean(value) && typeof value === "object";
@@ -52,7 +53,7 @@ const readBackupFile = async (file: File): Promise<BackupPayload> => {
 	const parsed: unknown = JSON.parse(text);
 
 	if (!isRecord(parsed)) {
-		throw new Error("Некорректный файл резервной копии");
+		throw new Error(INVALID_BACKUP_FILE_ERROR);
 	}
 
 	return {
@@ -103,4 +104,4 @@ async function importData(file: File): Promise<void> {
 	window.location.reload();
 }
 
-export { exportData, importData };
+export { exportData, importData, INVALID_BACKUP_FILE_ERROR };

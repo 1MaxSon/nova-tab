@@ -3,10 +3,12 @@ import { type ChangeEvent, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Field, FieldContent, FieldDescription } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
-import { exportData, importData } from "@/lib/backup";
+import { exportData, importData, INVALID_BACKUP_FILE_ERROR } from "@/lib/backup";
+import { useI18n } from "@/lib/i18n";
 
 const BackupSection = () => {
 	const fileInputRef = useRef<HTMLInputElement>(null);
+	const { t } = useI18n();
 	const [isLoading, setIsLoading] = useState(false);
 	const [error, setError] = useState<string | null>(null);
 
@@ -17,11 +19,15 @@ const BackupSection = () => {
 		try {
 			await action();
 		} catch (caughtError) {
-			setError(
-				caughtError instanceof Error
-					? caughtError.message
-					: "Не удалось выполнить операцию",
-			);
+			if (
+				caughtError instanceof Error &&
+				caughtError.message === INVALID_BACKUP_FILE_ERROR
+			) {
+				setError(t("settings.backupInvalidFile"));
+				return;
+			}
+
+			setError(t("settings.backupError"));
 		} finally {
 			setIsLoading(false);
 		}
@@ -51,7 +57,7 @@ const BackupSection = () => {
 						onClick={handleExport}
 					>
 						{isLoading ? <Spinner /> : <DownloadIcon />}
-						Экспортировать
+						{t("settings.backupExport")}
 					</Button>
 					<Button
 						type="button"
@@ -60,7 +66,7 @@ const BackupSection = () => {
 						onClick={() => fileInputRef.current?.click()}
 					>
 						{isLoading ? <Spinner /> : <UploadIcon />}
-						Импортировать
+						{t("settings.backupImport")}
 					</Button>
 				</div>
 				<input
@@ -72,7 +78,7 @@ const BackupSection = () => {
 				/>
 			</FieldContent>
 			<FieldDescription>
-				{error ?? "Резервная копия включает настройки, закладки и город погоды"}
+				{error ?? t("settings.backupDescription")}
 			</FieldDescription>
 		</Field>
 	);
