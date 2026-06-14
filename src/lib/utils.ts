@@ -6,12 +6,12 @@ import {
   extractIconPalette,
   generatePreviousId,
   getContrastYIQ,
-  getFaviconDisplay,
+  parseFavicon,
 } from "@/lib/helpers";
 import { loadData, saveIcon } from "@/lib/storage";
 import type { ShortcutType } from "@/lib/types";
 import type { Coords } from "@/lib/types/open-meteo";
-import type { WeatherProvider } from "@/lib/storage";
+import type { SavedIcon, WeatherProvider } from "@/lib/storage";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -69,10 +69,20 @@ export type CreateShortcutInput = PickTyped<ShortcutType, "url"> &
 export async function fetchFaviconBlob(
   url: string,
   options: { faviconErrorMessage?: string } = {},
-): Promise<{ iconUrl: string | null; iconBlob?: Blob }> {
+): Promise<
+  | { iconUrl: string | null; iconBlob?: Blob; iconFormat: SavedIcon["format"] }
+  | undefined
+> {
   const faviconErrorMessage =
     options.faviconErrorMessage ?? "Failed to fetch favicon";
-  const iconUrl = await getFaviconDisplay(url);
+
+  const result = await parseFavicon(url);
+  if (!result) {
+    alert(faviconErrorMessage);
+    return;
+  }
+
+  const { url: iconUrl, format: iconFormat } = result;
 
   if (import.meta.env.DEV) {
     console.log(`Fetched favicon url: ${iconUrl}`);
@@ -92,15 +102,19 @@ export async function fetchFaviconBlob(
     }
   }
 
-  return { iconUrl, iconBlob };
+  return { iconUrl, iconBlob, iconFormat };
 }
 
 export async function createShortcut(
   data: CreateShortcutInput,
   options: { faviconErrorMessage?: string } = {},
-): Promise<ShortcutType> {
+): Promise<ShortcutType | undefined> {
   const { url, name, accentColor, mutedColor } = data;
-  const { iconBlob, iconUrl } = await fetchFaviconBlob(url, options);
+  const result = await fetchFaviconBlob(url, options);
+
+  if (!result) return;
+
+  const { iconBlob, iconUrl, iconFormat } = result;
 
   const { shortcuts } = await loadData();
 
@@ -113,7 +127,7 @@ export async function createShortcut(
       : fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
 
   if (iconBlob) {
-    saveIcon({ id: previousShortcutId, blob: iconBlob });
+    saveIcon({ id: previousShortcutId, blob: iconBlob, format: iconFormat });
   }
 
   const iconPalette = iconUrl ? await extractIconPalette(iconUrl) : undefined;

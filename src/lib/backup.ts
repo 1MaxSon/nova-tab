@@ -1,33 +1,34 @@
-import JSZip from "jszip";
+import { EXT_TO_MIME } from "@/lib/constants";
 import {
-	getCustomWallpaper,
-	getIcons,
-	loadData,
-	normalizeSettingsData,
-	normalizeShortcutData,
-	normalizeWallpaperData,
-	saveCustomWallpaper,
-	saveIcon,
-	saveSettings,
-	saveShortcuts,
-	saveWallpaper,
-	saveWeatherCity,
-	type SettingsData,
-	type StorageData,
-	type WallpaperData,
+  getCustomWallpaper,
+  getIcons,
+  loadData,
+  normalizeSettingsData,
+  normalizeShortcutData,
+  normalizeWallpaperData,
+  saveCustomWallpaper,
+  saveIcon,
+  saveSettings,
+  saveShortcuts,
+  saveWallpaper,
+  saveWeatherCity,
+  type SettingsData,
+  type StorageData,
+  type WallpaperData,
 } from "@/lib/storage";
 import type { WeatherCity } from "@/lib/types";
+import JSZip from "jszip";
 
 type BackupFile = StorageData & {
-	version: 1;
-	exportedAt: string;
+  version: 1;
+  exportedAt: string;
 };
 
 type BackupPayload = {
-	shortcuts: unknown;
-	wallpaper: unknown;
-	weatherCity: unknown;
-	settings: unknown;
+  shortcuts: unknown;
+  wallpaper: unknown;
+  weatherCity: unknown;
+  settings: unknown;
 };
 
 const BACKUP_FILE_NAME = "nova-backup.zip";
@@ -37,166 +38,176 @@ const ICONS_DIR_NAME = "icons";
 const INVALID_BACKUP_FILE_ERROR = "INVALID_BACKUP_FILE";
 
 const isRecord = (value: unknown): value is Record<string, unknown> => {
-	return Boolean(value) && typeof value === "object";
+  return Boolean(value) && typeof value === "object";
 };
 
 const normalizeWeatherCity = (input: unknown): WeatherCity | null => {
-	if (input === null || input === undefined) return null;
-	if (!isRecord(input)) return null;
+  if (input === null || input === undefined) return null;
+  if (!isRecord(input)) return null;
 
-	const { name, lat, lon } = input;
-	if (
-		typeof name !== "string" ||
-		typeof lat !== "number" ||
-		typeof lon !== "number"
-	) {
-		return null;
-	}
+  const { name, lat, lon } = input;
+  if (
+    typeof name !== "string" ||
+    typeof lat !== "number" ||
+    typeof lon !== "number"
+  ) {
+    return null;
+  }
 
-	return { name, lat, lon };
+  return { name, lat, lon };
 };
 
 const downloadBlob = (blob: Blob, fileName: string) => {
-	const url = URL.createObjectURL(blob);
-	const link = document.createElement("a");
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
 
-	link.href = url;
-	link.download = fileName;
-	link.style.display = "none";
-	document.body.append(link);
-	link.click();
-	link.remove();
-	URL.revokeObjectURL(url);
+  link.href = url;
+  link.download = fileName;
+  link.style.display = "none";
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 };
 
 const parseBackupPayload = (text: string): BackupPayload => {
-	try {
-		const parsed: unknown = JSON.parse(text);
+  try {
+    const parsed: unknown = JSON.parse(text);
 
-		if (!isRecord(parsed)) {
-			throw new Error(INVALID_BACKUP_FILE_ERROR);
-		}
+    if (!isRecord(parsed)) {
+      throw new Error(INVALID_BACKUP_FILE_ERROR);
+    }
 
-		return {
-			shortcuts: parsed.shortcuts,
-			wallpaper: parsed.wallpaper,
-			weatherCity: parsed.weatherCity,
-			settings: parsed.settings,
-		};
-	} catch {
-		throw new Error(INVALID_BACKUP_FILE_ERROR);
-	}
+    return {
+      shortcuts: parsed.shortcuts,
+      wallpaper: parsed.wallpaper,
+      weatherCity: parsed.weatherCity,
+      settings: parsed.settings,
+    };
+  } catch {
+    throw new Error(INVALID_BACKUP_FILE_ERROR);
+  }
 };
 
 const readBackupData = async (zip: JSZip): Promise<BackupPayload> => {
-	const dataFile = zip.file(DATA_FILE_NAME);
+  const dataFile = zip.file(DATA_FILE_NAME);
 
-	if (!dataFile) {
-		throw new Error(INVALID_BACKUP_FILE_ERROR);
-	}
+  if (!dataFile) {
+    throw new Error(INVALID_BACKUP_FILE_ERROR);
+  }
 
-	const text = await dataFile.async("text");
-	return parseBackupPayload(text);
+  const text = await dataFile.async("text");
+  return parseBackupPayload(text);
 };
 
 const restoreWallpaper = async (zip: JSZip) => {
-	const wallpaperFile = zip.file(WALLPAPER_FILE_NAME);
+  const wallpaperFile = zip.file(WALLPAPER_FILE_NAME);
 
-	if (!wallpaperFile) return;
+  if (!wallpaperFile) return;
 
-	const blob = await wallpaperFile.async("blob");
-	await saveCustomWallpaper(blob);
+  const blob = await wallpaperFile.async("blob");
+  await saveCustomWallpaper(blob);
 };
 
 const getIconId = (path: string): number | null => {
-	const pathParts = path.split("/");
-	const fileName = pathParts[pathParts.length - 1];
-	if (!fileName) return null;
+  const pathParts = path.split("/");
+  const fileName = pathParts[pathParts.length - 1];
+  if (!fileName) return null;
 
-	const extensionIndex = fileName.lastIndexOf(".");
-	const idText =
-		extensionIndex === -1 ? fileName : fileName.slice(0, extensionIndex);
-	const id = Number(idText);
+  const extensionIndex = fileName.lastIndexOf(".");
+  const idText =
+    extensionIndex === -1 ? fileName : fileName.slice(0, extensionIndex);
+  const id = Number(idText);
 
-	return Number.isInteger(id) ? id : null;
+  return Number.isInteger(id) ? id : null;
 };
 
 const restoreIcons = async (zip: JSZip) => {
-	const iconsFolder = zip.folder(ICONS_DIR_NAME);
-	if (!iconsFolder) return;
+  const iconsFolder = zip.folder(ICONS_DIR_NAME);
 
-	const restoreTasks: Promise<void>[] = [];
+  if (!iconsFolder) return;
 
-	iconsFolder.forEach((relativePath, iconFile) => {
-		if (iconFile.dir) return;
+  const restoreTasks: Promise<void>[] = [];
 
-		const id = getIconId(relativePath);
-		if (id === null) return;
+  iconsFolder.forEach((relativePath, iconFile) => {
+    if (iconFile.dir) return;
 
-		restoreTasks.push(
-			iconFile.async("blob").then((blob) => saveIcon({ id, blob })),
-		);
-	});
+    const id = getIconId(relativePath);
 
-	await Promise.all(restoreTasks);
+    if (id === null) return;
+
+    const format = iconFile.name.split(".").pop() ?? "png";
+
+    restoreTasks.push(
+      iconFile.async("arraybuffer").then((buffer) => {
+        const resolvedBlob = new Blob([buffer], {
+          type: EXT_TO_MIME[format] ?? "image/x-icon",
+        });
+
+        return saveIcon({ id, blob: resolvedBlob, format });
+      }),
+    );
+  });
+
+  await Promise.all(restoreTasks);
 };
 
 async function exportData(): Promise<void> {
-	const zip = new JSZip();
-	const data = await loadData();
-	const backup: BackupFile = {
-		version: 1,
-		exportedAt: new Date().toISOString(),
-		...data,
-	};
+  const zip = new JSZip();
+  const data = await loadData();
+  const backup: BackupFile = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    ...data,
+  };
 
-	zip.file(DATA_FILE_NAME, JSON.stringify(backup, null, 2));
+  zip.file(DATA_FILE_NAME, JSON.stringify(backup, null, 2));
 
-	if (data.wallpaper.type === "custom") {
-		const wallpaper = await getCustomWallpaper();
-		if (wallpaper) {
-			zip.file(WALLPAPER_FILE_NAME, wallpaper);
-		}
-	}
+  if (data.wallpaper.type === "custom") {
+    const wallpaper = await getCustomWallpaper();
+    if (wallpaper) {
+      zip.file(WALLPAPER_FILE_NAME, wallpaper);
+    }
+  }
 
-	const iconsFolder = zip.folder(ICONS_DIR_NAME);
-	const icons = await getIcons();
+  const iconsFolder = zip.folder(ICONS_DIR_NAME);
+  const icons = await getIcons();
 
-	for (const icon of icons) {
-		iconsFolder?.file(`${icon.id}.png`, icon.blob);
-	}
+  for (const icon of icons) {
+    iconsFolder?.file(`${icon.id}.${icon.format}`, icon.blob);
+  }
 
-	const blob = await zip.generateAsync({
-		type: "blob",
-		mimeType: "application/zip",
-	});
-	downloadBlob(blob, BACKUP_FILE_NAME);
+  const blob = await zip.generateAsync({
+    type: "blob",
+    mimeType: "application/zip",
+  });
+  downloadBlob(blob, BACKUP_FILE_NAME);
 }
 
 async function importData(file: File): Promise<void> {
-	let zip: JSZip;
+  let zip: JSZip;
 
-	try {
-		zip = await JSZip.loadAsync(file);
-	} catch {
-		throw new Error(INVALID_BACKUP_FILE_ERROR);
-	}
+  try {
+    zip = await JSZip.loadAsync(file);
+  } catch {
+    throw new Error(INVALID_BACKUP_FILE_ERROR);
+  }
 
-	const payload = await readBackupData(zip);
-	const shortcuts = normalizeShortcutData(payload.shortcuts);
-	const wallpaper: WallpaperData = normalizeWallpaperData(payload.wallpaper);
-	const weatherCity = normalizeWeatherCity(payload.weatherCity);
-	const settings: SettingsData = normalizeSettingsData(payload.settings);
+  const payload = await readBackupData(zip);
+  const shortcuts = normalizeShortcutData(payload.shortcuts);
+  const wallpaper: WallpaperData = normalizeWallpaperData(payload.wallpaper);
+  const weatherCity = normalizeWeatherCity(payload.weatherCity);
+  const settings: SettingsData = normalizeSettingsData(payload.settings);
 
-	await Promise.all([restoreWallpaper(zip), restoreIcons(zip)]);
-	await Promise.all([
-		saveShortcuts(shortcuts),
-		saveWallpaper(wallpaper),
-		saveWeatherCity(weatherCity),
-		saveSettings(settings),
-	]);
+  await Promise.all([restoreWallpaper(zip), restoreIcons(zip)]);
+  await Promise.all([
+    saveShortcuts(shortcuts),
+    saveWallpaper(wallpaper),
+    saveWeatherCity(weatherCity),
+    saveSettings(settings),
+  ]);
 
-	window.location.reload();
+  window.location.reload();
 }
 
 export { exportData, importData, INVALID_BACKUP_FILE_ERROR };
