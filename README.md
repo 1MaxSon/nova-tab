@@ -4,10 +4,12 @@ A customizable Chrome new tab extension built with React, TypeScript, Vite, and 
 
 Nova Tab replaces the default new tab page with a focused dashboard: clock, date, weather, search, draggable shortcuts, themes, custom wallpapers, and English/Russian localization.
 
-<div style="display:flex;">
-  <img src=".github/assets/theme_nova.png" width="50%">
-  <img src=".github/assets/theme_ember.png" width="50%">
-</div>
+<table>
+  <tr>
+    <td><img src=".github/assets/theme_nova.png" alt="Nova Theme" /></td>
+    <td><img src=".github/assets/theme_ember.png" alt="Ember Theme" /></td>
+  </tr>
+</table>
 
 ## Features
 
