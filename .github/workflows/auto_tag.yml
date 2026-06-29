@@ -1,31 +1,118 @@
-name: Auto tag
+name: Release extension
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  tag:
+  release:
+    name: Tag, build, and publish release
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Create version tag if missing
+      - name: Prepare release
+        id: release
         shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           VERSION="v$(node -p "require('./package.json').version")"
-          
-          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+
+          if git rev-parse -q --verify "refs/tags/$VERSION" >/dev/null; then
             echo "Tag $VERSION already exists, skipping."
           else
             git tag "$VERSION"
             git push origin "$VERSION"
             echo "Created tag $VERSION"
           fi
+
+          echo "tag=$VERSION" >> "$GITHUB_OUTPUT"
+
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "Release $VERSION already exists, skipping."
+            echo "should_publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Set up pnpm
+        if: steps.release.outputs.should_publish == 'true'
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - name: Set up Node.js
+        if: steps.release.outputs.should_publish == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        if: steps.release.outputs.should_publish == 'true'
+        run: pnpm install --frozen-lockfile
+
+      - name: Build extension
+        if: steps.release.outputs.should_publish == 'true'
+        run: pnpm build
+
+      - name: Validate extension version
+        if: steps.release.outputs.should_publish == 'true'
+        shell: bash
+        run: |
+          tag_version="${{ steps.release.outputs.tag }}"
+          tag_version="${tag_version#v}"
+          manifest_version="$(node -p "require('./dist/manifest.json').version")"
+
+          if [ "$tag_version" != "$manifest_version" ]; then
+            echo "Tag version v$tag_version does not match dist/manifest.json version $manifest_version."
+            echo "Update package.json/manifest version or push a matching tag."
+            exit 1
+          fi
+
+      - name: Create ZIP artifact
+        if: steps.release.outputs.should_publish == 'true'
+        shell: bash
+        run: |
+          cd dist
+          zip -r ../nova-tab.zip .
+
+      - name: Restore CRX private key
+        if: steps.release.outputs.should_publish == 'true'
+        shell: bash
+        env:
+          CRX_PRIVATE_KEY: ${{ secrets.CRX_PRIVATE_KEY }}
+        run: |
+          if [ -z "$CRX_PRIVATE_KEY" ]; then
+            echo "CRX_PRIVATE_KEY secret is required."
+            exit 1
+          fi
+          echo "$CRX_PRIVATE_KEY" | base64 --decode > crx-private-key.pem
+          chmod 600 crx-private-key.pem
+
+      - name: Build signed CRX
+        if: steps.release.outputs.should_publish == 'true'
+        shell: bash
+        run: pnpm dlx crx3 pack dist -o nova-tab.crx -p crx-private-key.pem
+
+      - name: Publish GitHub Release
+        if: steps.release.outputs.should_publish == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release.outputs.tag }}
+          name: Nova Tab ${{ steps.release.outputs.tag }}
+          files: |
+            nova-tab.zip
+            nova-tab.crx
+          fail_on_unmatched_files: true
+          generate_release_notes: true
