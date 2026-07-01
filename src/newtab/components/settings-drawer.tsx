@@ -11,7 +11,6 @@ import {
 import { type ChangeEvent, useRef } from "react";
 import { useStorage } from "@/components/providers/storage-provider";
 import { Button } from "@/components/ui/button";
-import BackupSection from "@/newtab/components/backup-section";
 import {
   Drawer,
   DrawerClose,
@@ -28,12 +27,16 @@ import {
   FieldDescription,
   FieldGroup,
   FieldLabel,
+  FieldLegend,
+  FieldSet,
 } from "@/components/ui/field";
+import { Switch } from "@/components/ui/switch";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { THEMES } from "@/lib/constants";
 import { languageOptions, useI18n } from "@/lib/i18n";
-import { saveCustomWallpaper } from "@/lib/storage";
-import { Switch } from "@/components/ui/switch";
 import type { Language, SettingsData, WeatherProvider } from "@/lib/storage";
+import { saveCustomWallpaper } from "@/lib/storage";
+import BackupSection from "@/newtab/components/backup-section";
 
 const weatherProviderOptions = [
   "yandex",
@@ -145,6 +148,66 @@ const SettingsDrawer = () => {
                 {t("weather.providerDescription")}
               </FieldDescription>
             </Field>
+            <FieldSet>
+              <FieldLegend>{t("settings.units.title")}</FieldLegend>
+              <FieldGroup>
+                <Field>
+                  <FieldLabel className="text-muted-foreground">
+                    {t("settings.units.temp")}
+                  </FieldLabel>
+                  <ToggleGroup
+                    size="lg"
+                    className="w-full"
+                    variant="outline"
+                    spacing={0}
+                    value={[settings.weatherUnit]}
+                    onValueChange={(value) => {
+                      const unit = value[0];
+                      if (unit === "celsius" || unit === "fahrenheit") {
+                        setSetting("weatherUnit", unit);
+                      }
+                    }}
+                  >
+                    <ToggleGroupItem value="celsius" className="flex-1/2">
+                      °C
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="fahrenheit" className="flex-1/2">
+                      °F
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </Field>
+                <Field>
+                  <FieldLabel className="text-muted-foreground">
+                    {t("settings.units.wind")}
+                  </FieldLabel>
+                  <ToggleGroup
+                    size="lg"
+                    className="w-full"
+                    variant="outline"
+                    spacing={0}
+                    value={[settings.windSpeedUnit]}
+                    onValueChange={(value) => {
+                      const unit = value[0] as SettingsData["windSpeedUnit"];
+                      const acceptUnits = ["ms", "kmh", "mph"];
+
+                      if (acceptUnits.includes(unit)) {
+                        setSetting("windSpeedUnit", unit);
+                      }
+                    }}
+                  >
+                    <ToggleGroupItem value="ms" className="flex-1/3">
+                      {t("settings.units.ms")}
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="kmh" className="flex-1/3">
+                      {t("settings.units.kmh")}
+                    </ToggleGroupItem>
+                    <ToggleGroupItem value="mph" className="flex-1/3">
+                      {t("settings.units.mph")}
+                    </ToggleGroupItem>
+                  </ToggleGroup>
+                </Field>
+              </FieldGroup>
+            </FieldSet>
             <Field>
               <FieldContent>
                 <FieldLabel>

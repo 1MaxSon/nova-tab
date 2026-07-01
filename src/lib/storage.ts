@@ -31,6 +31,8 @@ export type SettingsData = {
   transparentChangeGeo: boolean;
   theme: string;
   weatherProvider: WeatherProvider;
+  weatherUnit: "celsius" | "fahrenheit";
+  windSpeedUnit: "ms" | "kmh" | "mph";
 };
 
 export type StorageData = {
@@ -53,6 +55,8 @@ export const DEFAULT_STORAGE_DATA: StorageData = {
     transparentChangeGeo: false,
     theme: "nova",
     weatherProvider: getDefaultWeatherProvider(),
+    weatherUnit: "celsius",
+    windSpeedUnit: "ms",
   },
 };
 

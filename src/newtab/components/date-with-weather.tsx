@@ -1,4 +1,4 @@
-import { MapPinIcon } from "lucide-react";
+import { ArrowUp, MapPinIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDebounce } from "use-debounce";
 import { useStorage } from "@/components/providers/storage-provider";
@@ -45,6 +45,8 @@ type WeatherData = {
   };
   temperature: number;
   temperatureUnit: ForecastData["current_weather_units"]["temperature"];
+  windSpeed: ForecastData["current_weather"]["windspeed"];
+  windDirection: ForecastData["current_weather"]["winddirection"];
 };
 
 const getDate = (locale: string) => {
@@ -84,7 +86,7 @@ const DateWithWeather = ({ className }: { className: string }) => {
 
       const res = await fetch(
         `https://api.open-meteo.com/v1/forecast?latitude=${storage.weatherCity.lat}&longitude=${storage.weatherCity.lon}` +
-          `&current_weather=true&temperature_unit=celsius&timezone=auto`,
+          `&current_weather=true&temperature_unit=${storage.settings.weatherUnit}&timezone=auto&wind_speed_unit=${storage.settings.windSpeedUnit}`,
         {
           signal: AbortSignal.timeout(10000),
         },
@@ -92,6 +94,7 @@ const DateWithWeather = ({ className }: { className: string }) => {
       if (res.status !== 200) return;
 
       const data = (await res.json()) as ForecastData;
+
       const cw = data.current_weather;
       const [icon, desc] = WEATHER_CODES[cw.weathercode] || [
         "🌡️",
@@ -103,12 +106,18 @@ const DateWithWeather = ({ className }: { className: string }) => {
         desc,
         temperature: Math.floor(cw.temperature),
         temperatureUnit: data.current_weather_units.temperature,
+        windSpeed: data.current_weather.windspeed,
+        windDirection: data.current_weather.winddirection,
       });
     } catch {
     } finally {
       setIsWeatherFetching(false);
     }
-  }, [storage.weatherCity]);
+  }, [
+    storage.weatherCity,
+    storage.settings.weatherUnit,
+    storage.settings.windSpeedUnit,
+  ]);
 
   useInterval(() => {
     setDate(getDate(locale));
@@ -134,8 +143,18 @@ const DateWithWeather = ({ className }: { className: string }) => {
   }, [storage.weatherCity, setWeatherCity]);
 
   useEffect(() => {
-    if (selectedCity) fetchWeather();
-  }, [selectedCity, fetchWeather]);
+    if (
+      selectedCity ||
+      storage.settings.weatherUnit ||
+      storage.settings.windSpeedUnit
+    )
+      fetchWeather();
+  }, [
+    selectedCity,
+    fetchWeather,
+    storage.settings.weatherUnit,
+    storage.settings.windSpeedUnit,
+  ]);
 
   useEffect(() => {
     const fetchCities = async () => {
@@ -166,7 +185,7 @@ const DateWithWeather = ({ className }: { className: string }) => {
       : addressAutoCompletes.map((c) => ({ type: "city", data: c }));
 
   const weatherLink = useMemo(() => {
-    if (!storage.weatherCity) return "#";
+    if (!storage.weatherCity || !storage.settings.language) return "#";
     return buildWeatherProviderUrl(
       storage.settings.weatherProvider,
       storage.weatherCity.name,
@@ -215,7 +234,21 @@ const DateWithWeather = ({ className }: { className: string }) => {
               }
             />
             <TooltipContent side="bottom">
-              {storage.weatherCity.name}, {storage.weatherCity.lat} / {storage.weatherCity.lon}
+              <div className="flex flex-col gap-1">
+                <span>
+                  {`${storage.weatherCity.name}, ${storage.weatherCity.lat} / ${storage.weatherCity.lon}`}
+                </span>
+                {weatherData && (
+                  <div className="flex items-center">
+                    {`${t("weather.windSpeed")}: 
+                    ${weatherData.windSpeed} ${t(`settings.units.${storage.settings.windSpeedUnit}`).toLowerCase()}`}
+                    <ArrowUp
+                    className="size-4 ml-1"
+                      style={{ rotate: `${weatherData.windDirection}deg` }}
+                    />
+                  </div>
+                )}
+              </div>
             </TooltipContent>
           </Tooltip>
         ) : (
