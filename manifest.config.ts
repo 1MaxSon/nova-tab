@@ -6,13 +6,15 @@ const isDev = process.env.NODE_ENV === "development";
 export default defineManifest({
   manifest_version: 3,
   name: `Nova Tab${isDev ? " DEV" : ""}`,
+  description:
+    "Nova Tab replaces the default new tab page with a focused dashboard: clock, date, weather, search, draggable shortcuts, themes, custom wallpapers",
   version: pkg.version,
   icons: {
-    48: "public/logo.png",
+    128: "public/icon.png",
   },
   action: {
     default_icon: {
-      48: "public/logo.png",
+      128: "public/icon.png",
     },
   },
   permissions: ["storage", "search"],

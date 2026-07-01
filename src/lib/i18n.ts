@@ -3,6 +3,7 @@ import type { Language } from "@/lib/storage";
 
 const translations = {
   en: {
+    "window.title": "New Tab",
     "common.close": "Close",
     "common.create": "Create",
     "common.save": "Save",
@@ -55,6 +56,7 @@ const translations = {
     "shortcut.addToGroup": "Add to the group",
   },
   ru: {
+    "window.title": "Новая вкладка",
     "common.close": "Закрыть",
     "common.create": "Создать",
     "common.save": "Сохранить",
