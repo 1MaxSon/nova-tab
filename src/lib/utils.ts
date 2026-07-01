@@ -24,12 +24,6 @@ export function buildYandexUrl(coords: Coords) {
 }
 
 export function buildGoogleWeatherUrl(cityName: string, coords: Coords) {
-  // 	const { t } = useI18n();
-
-  //   const query = cityName
-  //     ? `${t('weather.provider.googleQuery')} ${cityName}`
-  //     : `${t('weather.provider.googleQuery')} ${coords.latitude},${coords.longitude}`;
-
   const query = cityName
     ? `weather ${cityName}`
     : `weather ${coords.latitude},${coords.longitude}`;

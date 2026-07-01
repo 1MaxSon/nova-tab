@@ -188,28 +188,42 @@ const DateWithWeather = ({ className }: { className: string }) => {
       </span>
       <span className="size-1 rounded-full bg-[#c9a96e] opacity-60 shrink-0 hidden md:inline-block" />
       <div className="flex items-center gap-2">
-        <a
-          id="weather-link"
-          href={weatherLink}
-          target="_blank"
-          rel="noopener"
-          className="flex items-center gap-1 rounded-[0.375rem] px-1.5 py-0.5 text-base text-muted-foreground transition-colors duration-200 hover:bg-white/5 hover:text-white"
-        >
-          <span>{storage.weatherCity?.name ?? t("common.loading")}</span>
-          <span>
-            {isWeatherFetching ? (
-              <Spinner />
-            ) : weatherData ? (
-              `${weatherData.icon} ${weatherData.desc[language]}`
-            ) : (
-              <span>{t("weather.fetchingFailed")}</span>
-            )}
+        {storage.weatherCity ? (
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <a
+                  href={weatherLink}
+                  target="_blank"
+                  rel="noopener"
+                  className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-base text-muted-foreground transition-colors duration-200 hover:bg-white/5 hover:text-white"
+                >
+                  <span>
+                    {isWeatherFetching ? (
+                      <Spinner />
+                    ) : weatherData ? (
+                      `${weatherData.icon} ${weatherData.desc[language]}`
+                    ) : (
+                      <span>{t("weather.fetchingFailed")}</span>
+                    )}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {weatherData &&
+                      `${weatherData.temperature} ${weatherData.temperatureUnit}`}
+                  </span>
+                </a>
+              }
+            />
+            <TooltipContent side="bottom">
+              {storage.weatherCity.name}, {storage.weatherCity.lat} / {storage.weatherCity.lon}
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <span className="text-base text-muted-foreground">
+            {t("weather.selectCity")}
           </span>
-          <span className="text-muted-foreground">
-            {weatherData &&
-              `${weatherData.temperature} ${weatherData.temperatureUnit}`}
-          </span>
-        </a>
+        )}
+
         <Dialog open={open} onOpenChange={setOpen}>
           <Tooltip>
             <TooltipTrigger
