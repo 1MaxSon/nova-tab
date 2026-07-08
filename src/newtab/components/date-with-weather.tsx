@@ -206,7 +206,7 @@ const DateWithWeather = ({ className }: { className: string }) => {
         {date}
       </span>
       <span className="size-1 rounded-full bg-[#c9a96e] opacity-60 shrink-0 hidden md:inline-block" />
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 relative">
         {storage.weatherCity ? (
           <Tooltip>
             <TooltipTrigger
@@ -268,7 +268,7 @@ const DateWithWeather = ({ className }: { className: string }) => {
                       size="icon"
                       className={
                         storage.settings.transparentChangeGeo
-                          ? "opacity-0 hover:opacity-100 transition-opacity duration-300"
+                          ? "opacity-0 hover:opacity-100 transition-opacity duration-300 absolute -right-10"
                           : ""
                       }
                     >
