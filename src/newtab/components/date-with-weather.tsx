@@ -215,7 +215,7 @@ const DateWithWeather = ({ className }: { className: string }) => {
                   href={weatherLink}
                   target="_blank"
                   rel="noopener"
-                  className="flex items-center gap-1 rounded-md px-1.5 py-0.5 text-base text-muted-foreground transition-colors duration-200 hover:bg-white/5 hover:text-white"
+                  className="flex items-center gap-1 rounded-md text-base text-muted-foreground transition-colors duration-200 hover:bg-white/5 hover:text-white"
                 >
                   <span>
                     {isWeatherFetching ? (
