@@ -1,4 +1,5 @@
 import { type IDBPDatabase, openDB } from "idb";
+import type { SearchEngine } from "@/lib/search-engines";
 import type { ShortcutData, WeatherCity } from "@/lib/types";
 
 export type WallpaperData =
@@ -33,6 +34,7 @@ export type SettingsData = {
   weatherProvider: WeatherProvider;
   weatherUnit: "celsius" | "fahrenheit";
   windSpeedUnit: "ms" | "kmh" | "mph";
+  searchEngine: SearchEngine | "default";
 };
 
 export type StorageData = {
@@ -57,6 +59,7 @@ export const DEFAULT_STORAGE_DATA: StorageData = {
     weatherProvider: getDefaultWeatherProvider(),
     weatherUnit: "celsius",
     windSpeedUnit: "ms",
+    searchEngine: "default",
   },
 };
 

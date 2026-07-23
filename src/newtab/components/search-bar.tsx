@@ -1,10 +1,19 @@
-import { ChevronRightIcon, SearchIcon } from "lucide-react";
+import { ChevronRightIcon } from "lucide-react";
 import { useId, useRef, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
+import { useStorage } from "@/components/providers/storage-provider";
 import { InputGroup, InputGroupAddon } from "@/components/ui/input-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useChromeSearch } from "@/lib/hooks/use-chrome-search";
 import { useI18n } from "@/lib/i18n";
+import { getSearchUrl, searchEngineIcons } from "@/lib/search-engines";
+import type { SettingsData } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 type DuckDuckGoSuggestions = [string, string[]];
@@ -20,6 +29,9 @@ const SearchBar = ({ className }: { className?: string }) => {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
   const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
+  const {
+    storage: { settings },
+  } = useStorage();
 
   const loadSuggestions = useDebouncedCallback(async (searchValue: string) => {
     const normalizedSearchValue = searchValue.trim();
@@ -61,7 +73,9 @@ const SearchBar = ({ className }: { className?: string }) => {
 
     setIsSuggestionsOpen(false);
     setActiveSuggestionIndex(-1);
-    search(query);
+
+    if (settings.searchEngine === "default") search(query);
+    else window.location.href = getSearchUrl(settings.searchEngine, query);
   };
 
   const updateQuery = (query: string) => {
@@ -222,7 +236,7 @@ const SearchInput = ({
     <div data-slot="command-input-wrapper" className="p-1 pb-0">
       <InputGroup className="h-14 w-full rounded-full border border-white/10 bg-white/5 p-2 text-base text-white outline-none transition duration-200 focus:border-white/20 focus:bg-white/10 *:data-[slot=input-group-addon]:pl-2!">
         <InputGroupAddon align="inline-start">
-          <SearchIcon className="pointer-events-none size-5 text-muted-foreground" />
+          <SearchEngineMenu />
         </InputGroupAddon>
         <input
           data-slot="command-input"
@@ -242,5 +256,49 @@ const SearchInput = ({
         </InputGroupAddon>
       </InputGroup>
     </div>
+  );
+};
+
+const SearchEngineMenu = () => {
+  const {
+    setSettings,
+    storage: { settings },
+  } = useStorage();
+
+  const TriggerIcon = searchEngineIcons[settings.searchEngine].icon;
+
+  return (
+    <Select
+      onValueChange={(val) => {
+        const engine = val as SettingsData["searchEngine"];
+
+        setSettings({
+          ...settings,
+          searchEngine: engine,
+        });
+      }}
+      value={settings.searchEngine}
+    >
+      <SelectTrigger className="border-none px-0 pl-1">
+        <TriggerIcon />
+      </SelectTrigger>
+      <SelectContent
+        alignItemWithTrigger={false}
+        align="start"
+        className="mt-4"
+      >
+        {Object.entries(searchEngineIcons).map(([engine, meta]) => {
+          const Icon = meta.icon;
+          return (
+            <SelectItem key={engine} value={engine}>
+              <div className="flex items-center gap-2">
+                <Icon className="size-4" />
+                <span className="capitalize">{meta.label}</span>
+              </div>
+            </SelectItem>
+          );
+        })}
+      </SelectContent>
+    </Select>
   );
 };

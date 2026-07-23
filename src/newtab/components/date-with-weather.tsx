@@ -201,7 +201,7 @@ const DateWithWeather = ({ className }: { className: string }) => {
   ]);
 
   return (
-    <div className={cn(["flex items-center gap-3.5", className])}>
+    <div className={cn(["flex items-center gap-3.5 min-h-7", className])}>
       <span className="text-[0.85rem] font-normal uppercase tracking-[0.12em] text-[rgba(255,255,255,0.45)]">
         {date}
       </span>

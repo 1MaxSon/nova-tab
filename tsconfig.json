@@ -5,10 +5,8 @@
   ],
   "files": [],
   "compilerOptions": {
-    // for shadcn/ui
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   }
 }

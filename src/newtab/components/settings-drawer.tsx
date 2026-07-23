@@ -9,6 +9,7 @@ import {
   UploadIcon,
 } from "lucide-react";
 import { type ChangeEvent, useRef } from "react";
+import pkg from "@/../package.json";
 import { useStorage } from "@/components/providers/storage-provider";
 import { Button } from "@/components/ui/button";
 import {
@@ -90,7 +91,9 @@ const SettingsDrawer = () => {
       </DrawerTrigger>
       <DrawerContent>
         <DrawerHeader>
-          <DrawerTitle>{t("settings.title")}</DrawerTitle>
+          <DrawerTitle className="flex items-center justify-between">
+            {t("settings.title")} <span className="text-muted-foreground text-sm">v{pkg.version}</span>
+          </DrawerTitle>
           <DrawerDescription></DrawerDescription>
         </DrawerHeader>
         <div className="overflow-y-auto px-4">
