@@ -161,6 +161,7 @@ const SearchBar = ({ className }: { className?: string }) => {
           role="combobox"
           spellCheck="false"
           value={searchQuery}
+          id="searchInput"
         />
         {shouldShowSuggestions && (
           <div className="absolute top-full z-40 mt-1 w-full animate-in fade-in-0 zoom-in-95 px-4">
@@ -290,7 +291,11 @@ const SearchEngineMenu = () => {
         {Object.entries(searchEngineIcons).map(([engine, meta]) => {
           const Icon = meta.icon;
           return (
-            <SelectItem key={engine} value={engine}>
+            <SelectItem
+              key={engine}
+              value={engine}
+              className="focus:bg-primary/60"
+            >
               <div className="flex items-center gap-2">
                 <Icon className="size-4" />
                 <span className="capitalize">{meta.label}</span>

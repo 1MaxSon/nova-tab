@@ -20,14 +20,14 @@ const BraveIcon = (props: ComponentProps<"svg">) => {
           gradientTransform="matrix(2.05, 0, 0, -2.05, 38.49, 992.77)"
           gradientUnits="userSpaceOnUse"
         >
-          <stop offset="0" stop-color="#f1562b" />
-          <stop offset="0.3" stop-color="#f1542b" />
-          <stop offset="0.41" stop-color="#f04d2a" />
-          <stop offset="0.49" stop-color="#ef4229" />
-          <stop offset="0.5" stop-color="#ef4029" />
-          <stop offset="0.56" stop-color="#e83e28" />
-          <stop offset="0.67" stop-color="#e13c26" />
-          <stop offset="1" stop-color="#df3c26" />
+          <stop offset="0" stopColor="#f1562b" />
+          <stop offset="0.3" stopColor="#f1542b" />
+          <stop offset="0.41" stopColor="#f04d2a" />
+          <stop offset="0.49" stopColor="#ef4229" />
+          <stop offset="0.5" stopColor="#ef4029" />
+          <stop offset="0.56" stopColor="#e83e28" />
+          <stop offset="0.67" stopColor="#e13c26" />
+          <stop offset="1" stopColor="#df3c26" />
         </linearGradient>
       </defs>
       <title>brave-browser</title>

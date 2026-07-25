@@ -17,12 +17,12 @@ const BingIcon = (props: ComponentProps<"svg">) => {
       <path
         d="M13.164 17.24a4.385 4.385 0 00-.202.125 511.45 511.45 0 00-1.795 1.115 163.087 163.087 0 01-.989.614l-.463.288a99.198 99.198 0 01-1.502.941c-.326.2-.704.334-1.09.387-.18.024-.52.024-.7 0a2.807 2.807 0 01-1.318-.538 3.665 3.665 0 01-.543-.545 2.837 2.837 0 01-.506-1.141 2.161 2.161 0 00-.041-.182c-.008-.008.006.138.032.33.027.199.085.487.147.733.482 1.907 1.85 3.457 3.705 4.195a6.31 6.31 0 001.658.412c.22.025.844.035 1.074.017 1.054-.08 1.972-.393 2.913-.992a325.28 325.28 0 01.937-.596l.384-.244.684-.435.234-.149.009-.005.025-.017.013-.007.172-.11.597-.38c.76-.481.987-.65 1.34-.998.148-.146.37-.394.381-.425.002-.007.042-.068.088-.136a2.49 2.49 0 00.373-1.023 4.181 4.181 0 000-.847 4.336 4.336 0 00-.318-1.137c-.224-.472-.7-.9-1.383-1.245a2.972 2.972 0 00-.406-.181c-.01 0-.646.392-1.413.87a7089.171 7089.171 0 00-1.658 1.031l-.439.274z"
         fill="url(#lobe-icons-bing-1-_R_0_)"
-        fill-rule="nonzero"
+        fillRule="nonzero"
       />
       <path
         d="M4.003 14.946l.004 3.33.042.193c.134.604.366 1.04.77 1.445a2.701 2.701 0 001.955.814c.536 0 1-.135 1.479-.43l.703-.435.556-.346V8.003c0-2.306-.004-3.675-.012-3.782a2.734 2.734 0 00-.797-1.765c-.145-.144-.268-.24-.637-.496A1780.102 1780.102 0 015.762.362C5.406.115 5.38.098 5.271.059a.943.943 0 00-1.254.696C4.003.818 4 1.659 4 6.223v5.394H4l.003 3.329z"
         fill="url(#lobe-icons-bing-2-_R_0_)"
-        fill-rule="nonzero"
+        fillRule="nonzero"
       />
       <defs>
         <radialGradient
@@ -34,8 +34,8 @@ const BingIcon = (props: ComponentProps<"svg">) => {
           id="lobe-icons-bing-0-_R_0_"
           r="143.691%"
         >
-          <stop offset="0%" stop-color="#00CACC" />
-          <stop offset="100%" stop-color="#048FCE" />
+          <stop offset="0%" stopColor="#00CACC" />
+          <stop offset="100%" stopColor="#048FCE" />
         </radialGradient>
         <radialGradient
           cx="13.893%"
@@ -46,8 +46,8 @@ const BingIcon = (props: ComponentProps<"svg">) => {
           id="lobe-icons-bing-1-_R_0_"
           r="149.21%"
         >
-          <stop offset="0%" stop-color="#00BBEC" />
-          <stop offset="100%" stop-color="#2756A9" />
+          <stop offset="0%" stopColor="#00BBEC" />
+          <stop offset="100%" stopColor="#2756A9" />
         </radialGradient>
         <linearGradient
           id="lobe-icons-bing-2-_R_0_"
@@ -56,8 +56,8 @@ const BingIcon = (props: ComponentProps<"svg">) => {
           y1="0%"
           y2="100%"
         >
-          <stop offset="0%" stop-color="#00BBEC" />
-          <stop offset="100%" stop-color="#2756A9" />
+          <stop offset="0%" stopColor="#00BBEC" />
+          <stop offset="100%" stopColor="#2756A9" />
         </linearGradient>
       </defs>
     </svg>

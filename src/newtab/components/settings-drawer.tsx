@@ -92,7 +92,10 @@ const SettingsDrawer = () => {
       <DrawerContent>
         <DrawerHeader>
           <DrawerTitle className="flex items-center justify-between">
-            {t("settings.title")} <span className="text-muted-foreground text-sm">v{pkg.version}</span>
+            {t("settings.title")}{" "}
+            <span className="text-muted-foreground text-sm">
+              v{pkg.version}
+            </span>
           </DrawerTitle>
           <DrawerDescription></DrawerDescription>
         </DrawerHeader>
@@ -155,7 +158,10 @@ const SettingsDrawer = () => {
               <FieldLegend>{t("settings.units.title")}</FieldLegend>
               <FieldGroup>
                 <Field>
-                  <FieldLabel className="text-muted-foreground">
+                  <FieldLabel
+                    className="text-muted-foreground"
+                    htmlFor="units-temp"
+                  >
                     {t("settings.units.temp")}
                   </FieldLabel>
                   <ToggleGroup
@@ -170,6 +176,7 @@ const SettingsDrawer = () => {
                         setSetting("weatherUnit", unit);
                       }
                     }}
+                    id="units-temp"
                   >
                     <ToggleGroupItem value="celsius" className="flex-1/2">
                       °C
@@ -180,7 +187,10 @@ const SettingsDrawer = () => {
                   </ToggleGroup>
                 </Field>
                 <Field>
-                  <FieldLabel className="text-muted-foreground">
+                  <FieldLabel
+                    className="text-muted-foreground"
+                    htmlFor="units-wind"
+                  >
                     {t("settings.units.wind")}
                   </FieldLabel>
                   <ToggleGroup
@@ -197,6 +207,7 @@ const SettingsDrawer = () => {
                         setSetting("windSpeedUnit", unit);
                       }
                     }}
+                    id="units-wind"
                   >
                     <ToggleGroupItem value="ms" className="flex-1/3">
                       {t("settings.units.ms")}
@@ -213,7 +224,7 @@ const SettingsDrawer = () => {
             </FieldSet>
             <Field>
               <FieldContent>
-                <FieldLabel>
+                <FieldLabel htmlFor="theme">
                   <PaletteIcon className="size-4" /> {t("settings.theme")}
                 </FieldLabel>
                 <div className="grid grid-cols-2 gap-2">
@@ -262,6 +273,7 @@ const SettingsDrawer = () => {
                   accept="image/*"
                   className="hidden"
                   onChange={handleCustomWallpaper}
+                  id="theme"
                 />
                 <Button
                   type="button"
