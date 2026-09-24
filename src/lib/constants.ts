@@ -237,3 +237,8 @@ export const MIME_TO_EXT = {
 export const EXT_TO_MIME = Object.fromEntries(
   Object.entries(MIME_TO_EXT).map(([mime, ext]) => [ext, mime]),
 ) as Record<string, SupportedMimeType>;
+
+export const GROUP_DROP_PREFIX = "shortcut-drop:";
+
+export const shortcutItemClassName =
+  "flex flex-col items-center justify-center rounded-lg relative aspect-video";

@@ -1,13 +1,13 @@
 import { defineManifest } from "@crxjs/vite-plugin";
 import pkg from "./package.json";
+import { isDev } from "./src/lib/helpers";
 
-const isDev = process.env.NODE_ENV === "development";
 
 export default defineManifest({
   manifest_version: 3,
-  name: `Nova Tab${isDev ? " DEV" : ""}`,
+  name: `Nova Tab Vue${isDev ? " DEV" : ""}`,
   description:
-    "Nova Tab replaces the default new tab page with a focused dashboard: clock, date, weather, search, draggable shortcuts, themes, custom wallpapers",
+    "Nova Tab replaces the default new tab page with a focused dashboard: clock, date, weather, search, draggable shortcuts, themes",
   version: pkg.version,
   icons: {
     128: "public/icon.png",
@@ -17,13 +17,9 @@ export default defineManifest({
       128: "public/icon.png",
     },
   },
-  permissions: ["storage", "search"],
+  permissions: ["storage", "search", "tabs"],
   host_permissions: [
     "<all_urls>",
-    // "https://api.open-meteo.com/*",
-    // "https://geocoding-api.open-meteo.com/*",
-    // "https://nominatim.openstreetmap.org/*",
-    // "https://icons.duckduckgo.com/ip3/*",
   ],
   chrome_url_overrides: {
     newtab: "src/newtab/index.html",

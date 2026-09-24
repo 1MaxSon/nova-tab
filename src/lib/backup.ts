@@ -1,20 +1,11 @@
 import { EXT_TO_MIME } from "@/lib/constants";
 import {
-  getCustomWallpaper,
   getIcons,
-  loadData,
   normalizeSettingsData,
   normalizeShortcutData,
-  normalizeWallpaperData,
-  saveCustomWallpaper,
   saveIcon,
-  saveSettings,
-  saveShortcuts,
-  saveWallpaper,
-  saveWeatherCity,
-  type SettingsData,
-  type StorageData,
-  type WallpaperData,
+  storage,
+  StorageData,
 } from "@/lib/storage";
 import type { WeatherCity } from "@/lib/types";
 import JSZip from "jszip";
@@ -33,7 +24,6 @@ type BackupPayload = {
 
 const BACKUP_FILE_NAME = "nova-backup.zip";
 const DATA_FILE_NAME = "data.json";
-const WALLPAPER_FILE_NAME = "wallpaper.jpg";
 const ICONS_DIR_NAME = "icons";
 const INVALID_BACKUP_FILE_ERROR = "INVALID_BACKUP_FILE";
 
@@ -100,15 +90,6 @@ const readBackupData = async (zip: JSZip): Promise<BackupPayload> => {
   return parseBackupPayload(text);
 };
 
-const restoreWallpaper = async (zip: JSZip) => {
-  const wallpaperFile = zip.file(WALLPAPER_FILE_NAME);
-
-  if (!wallpaperFile) return;
-
-  const blob = await wallpaperFile.async("blob");
-  await saveCustomWallpaper(blob);
-};
-
 const getIconId = (path: string): number | null => {
   const pathParts = path.split("/");
   const fileName = pathParts[pathParts.length - 1];
@@ -154,7 +135,7 @@ const restoreIcons = async (zip: JSZip) => {
 
 async function exportData(): Promise<void> {
   const zip = new JSZip();
-  const data = await loadData();
+  const data = storage;
   const backup: BackupFile = {
     version: 1,
     exportedAt: new Date().toISOString(),
@@ -162,13 +143,6 @@ async function exportData(): Promise<void> {
   };
 
   zip.file(DATA_FILE_NAME, JSON.stringify(backup, null, 2));
-
-  if (data.wallpaper.type === "custom") {
-    const wallpaper = await getCustomWallpaper();
-    if (wallpaper) {
-      zip.file(WALLPAPER_FILE_NAME, wallpaper);
-    }
-  }
 
   const iconsFolder = zip.folder(ICONS_DIR_NAME);
   const icons = await getIcons();
@@ -195,17 +169,13 @@ async function importData(file: File): Promise<void> {
 
   const payload = await readBackupData(zip);
   const shortcuts = normalizeShortcutData(payload.shortcuts);
-  const wallpaper: WallpaperData = normalizeWallpaperData(payload.wallpaper);
   const weatherCity = normalizeWeatherCity(payload.weatherCity);
-  const settings: SettingsData = normalizeSettingsData(payload.settings);
+  const settings = normalizeSettingsData(payload.settings);
 
-  await Promise.all([restoreWallpaper(zip), restoreIcons(zip)]);
-  await Promise.all([
-    saveShortcuts(shortcuts),
-    saveWallpaper(wallpaper),
-    saveWeatherCity(weatherCity),
-    saveSettings(settings),
-  ]);
+  await restoreIcons(zip);
+  storage.settings = settings;
+  storage.shortcuts = shortcuts;
+  storage.weatherCity = weatherCity;
 
   window.location.reload();
 }

@@ -1,5 +1,7 @@
-import { useStorage } from "@/components/providers/storage-provider";
-import type { Language } from "@/lib/storage";
+import { storage } from "@/lib/storage";
+import { computed } from "vue";
+
+export type Language = "en" | "ru";
 
 const translations = {
   en: {
@@ -34,10 +36,12 @@ const translations = {
     "settings.units.mph": "Mili/h",
     "search.placeholder": "Search...",
     "search.defaultEngine": "Default",
-    "weather.selectCity": "Select city ->",
+    "search.allowIncognito":
+      "To open a query in the default search engine in incognito mode, allow use in incognito mode. Or use another search engine from the list, except for the default search engine",
+    "weather.selectCity": "Select city",
     "weather.changeAddress": "Change address",
     "weather.addressPlaceholder": "Enter an address",
-    "weather.fetchingFailed": "Unknown weather",
+    "weather.fetchingFailed": "🌈",
     "weather.provider": "Weather site",
     "weather.providerDescription": "Choose where the weather widget opens",
     "weather.provider.googleQuery": "weather in",
@@ -54,7 +58,7 @@ const translations = {
     "shortcut.newIcon": "New icon",
     "shortcut.refreshIcon": "Fetch favicon again",
     "shortcut.nameDescription":
-      "If it is empty, the site domain will be used. For example Example.com",
+      "If it is empty, the site title will be used. For example Example.com",
     "shortcut.colorDescription":
       "If it is empty, a color based on the icon will be used.",
     "shortcut.iconDescription": "The colors will not be changed",
@@ -95,7 +99,9 @@ const translations = {
     "settings.units.mph": "Мили/ч",
     "search.placeholder": "Поиск...",
     "search.defaultEngine": "По умолчанию",
-    "weather.selectCity": "Выберите город ->",
+    "search.allowIncognito":
+      "Чтобы открыть запрос в поисковике по умолчанию в режиме инкогнито, разрешите использование в режиме инкогнито. Или используйте другуй поисковик из списка, кроме поисковика по умолчанию",
+    "weather.selectCity": "Выберите город",
     "weather.changeAddress": "Изменить адрес",
     "weather.addressPlaceholder": "Введите адрес",
     "weather.fetchingFailed": "🌈",
@@ -115,7 +121,7 @@ const translations = {
     "shortcut.newIcon": "Новая иконка",
     "shortcut.refreshIcon": "Получить фавикон заново",
     "shortcut.nameDescription":
-      "Если оставить пустым, будет использован домен сайта. Например Example.com",
+      "Если оставить пустым, будет использован заголовок сайта. Например, Example Domain",
     "shortcut.colorDescription":
       "Если оставить пустым, цвет будет подобран по иконке.",
     "shortcut.iconDescription": "Цвета не изменятся",
@@ -133,13 +139,8 @@ export const languageOptions: Record<Language, string> = {
   ru: "Русский",
 };
 
-export function useI18n() {
-  const {
-    storage: { settings },
-  } = useStorage();
+export const currentLanguage = computed(() => storage.settings.language);
 
-  const language = settings.language;
-  const t = (key: TranslationKey) => translations[language][key];
-
-  return { language, t };
-}
+export const t = (key: TranslationKey) => {
+  return translations[currentLanguage.value]?.[key] ?? key;
+};

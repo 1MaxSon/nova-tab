@@ -1,12 +1,12 @@
-import type { ComponentType, SVGProps } from "react";
-import BingIcon from "@/components/icons/bing-icon";
-import BraveIcon from "@/components/icons/brave-icon";
-import ChromeIcon from "@/components/icons/chrome-icon";
-import DuckDuckGoIcon from "@/components/icons/duckduckgo-icon";
-import EcosiaIcon from "@/components/icons/ecosia-icon";
-import GoogleIcon from "@/components/icons/google-icon";
-import YahooIcon from "@/components/icons/yahoo-icon";
-import YandexIcon from "@/components/icons/yandex-icon";
+import BraveIcon from "@/components/icons/BraveIcon.vue";
+import ChromeIcon from "@/components/icons/ChromeIcon.vue";
+import DuckDuckGoIcon from "@/components/icons/DuckDuckGoIcon.vue";
+import EcosiaIcon from "@/components/icons/EcosiaIcon.vue";
+import GoogleIcon from "@/components/icons/GoogleIcon.vue";
+import YahooIcon from "@/components/icons/YahooIcon.vue";
+import YandexIcon from "@/components/icons/YandexIcon.vue";
+import BingIcon from "@/components/icons/BingIcon.vue";
+import { Component } from "vue";
 
 export type SearchEngine =
   | "google"
@@ -35,7 +35,7 @@ export function getSearchUrl(engine: SearchEngine, query: string): string {
 
 type SearchEngineIcon = {
   label: string;
-  icon: ComponentType<SVGProps<SVGSVGElement>>;
+  icon: Component;
 };
 
 export const searchEngineIcons: Record<

@@ -1,30 +1,11 @@
-import { type IDBPDatabase, openDB } from "idb";
+import { getDefaultLanguage, getDefaultWeatherProvider } from "@/lib/helpers";
+import { Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
 import type { ShortcutData, WeatherCity } from "@/lib/types";
+import { IDBPDatabase, openDB } from "idb";
+import { reactive, watch } from "vue";
 
-export type WallpaperData =
-  | {
-      type: "preset";
-      id: string;
-    }
-  | {
-      type: "custom";
-      updatedAt: number;
-    };
-
-export type Language = "en" | "ru";
 export type WeatherProvider = "yandex" | "google" | "wttr";
-
-const getDefaultLanguage = (): Language => {
-  if (typeof navigator === "undefined") return "en";
-  return navigator.language.toLowerCase().startsWith("ru") ? "ru" : "en";
-};
-
-const getDefaultWeatherProvider = (
-  language = getDefaultLanguage(),
-): WeatherProvider => {
-  return language === "ru" ? "yandex" : "google";
-};
 
 export type SettingsData = {
   language: Language;
@@ -39,17 +20,13 @@ export type SettingsData = {
 
 export type StorageData = {
   shortcuts: ShortcutData[];
-  wallpaper: WallpaperData;
   weatherCity: WeatherCity | null;
   settings: SettingsData;
+  isLoaded: boolean;
 };
 
-export const DEFAULT_STORAGE_DATA: StorageData = {
+export const DEFAULT_STORAGE_DATA: Omit<StorageData, "isLoaded"> = {
   shortcuts: [],
-  wallpaper: {
-    type: "preset",
-    id: "nova",
-  },
   weatherCity: null,
   settings: {
     language: getDefaultLanguage(),
@@ -63,67 +40,76 @@ export const DEFAULT_STORAGE_DATA: StorageData = {
   },
 };
 
-const useChrome = typeof chrome !== "undefined" && chrome?.storage?.local;
+export const storage = reactive<StorageData>({
+  ...DEFAULT_STORAGE_DATA,
+  isLoaded: false,
+});
 
-function saveToChromeStorage(data: Partial<StorageData>): Promise<void> {
-  return new Promise((resolve, reject) => {
-    chrome.storage.local.set(data, () => {
-      const error = chrome.runtime.lastError;
-      if (error) {
-        reject(new Error(error.message));
-        return;
-      }
+let isSelfUpdating = false;
 
-      resolve();
-    });
-  });
+async function loadData() {
+  try {
+    const data = await chrome.storage.local.get(
+      Object.keys(DEFAULT_STORAGE_DATA),
+    );
+
+    if ("settings" in data) {
+      storage.settings = normalizeSettingsData(data.settings);
+    }
+    if ("shortcuts" in data) {
+      storage.shortcuts = normalizeShortcutData(data.shortcuts);
+    }
+    if ("weatherCity" in data) {
+      storage.weatherCity = normalizeWeatherCity(data.weatherCity);
+    }
+  } catch (error) {
+    console.error("Failed to load data from chrome.storage", error);
+  } finally {
+    storage.isLoaded = true;
+  }
 }
 
-function saveShortcuts(s: ShortcutData[]): Promise<void> {
-  if (useChrome) return saveToChromeStorage({ shortcuts: s });
+await loadData();
 
-  localStorage.setItem("nova_shortcuts", JSON.stringify(s));
-  return Promise.resolve();
-}
+watch(
+  () => storage,
+  async (newState) => {
+    if (!newState.isLoaded || isSelfUpdating) return;
 
-function saveWallpaper(w: WallpaperData): Promise<void> {
-  if (useChrome) return saveToChromeStorage({ wallpaper: w });
+    try {
+      await chrome.storage.local.set({
+        shortcuts: JSON.parse(JSON.stringify(newState.shortcuts)),
+        settings: JSON.parse(JSON.stringify(newState.settings)),
+        weatherCity: JSON.parse(JSON.stringify(newState.weatherCity)),
+      });
+    } catch (e) {
+      console.error("Error saving to chrome.storage:", e);
+    }
+  },
+  { deep: true },
+);
 
-  localStorage.setItem("nova_wallpaper", JSON.stringify(w));
-  return Promise.resolve();
-}
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== "local") return;
 
-function normalizeWallpaperData(input: unknown): WallpaperData {
-  if (!input || typeof input !== "object")
-    return DEFAULT_STORAGE_DATA.wallpaper;
+  isSelfUpdating = true;
 
-  const raw = input as Partial<WallpaperData>;
-  if (raw.type === "custom" && typeof raw.updatedAt === "number") {
-    return raw as WallpaperData;
+  if (changes.shortcuts) {
+    storage.shortcuts = normalizeShortcutData(changes.shortcuts.newValue);
+  }
+  if (changes.settings) {
+    storage.settings = normalizeSettingsData(changes.settings.newValue);
+  }
+  if (changes.weatherCity) {
+    storage.weatherCity = normalizeWeatherCity(changes.weatherCity.newValue);
   }
 
-  if (raw.type === "preset" && typeof raw.id === "string") {
-    return raw as WallpaperData;
-  }
+  setTimeout(() => {
+    isSelfUpdating = false;
+  }, 0);
+});
 
-  return DEFAULT_STORAGE_DATA.wallpaper;
-}
-
-function saveWeatherCity(c: WeatherCity | null): Promise<void> {
-  if (useChrome) return saveToChromeStorage({ weatherCity: c });
-
-  localStorage.setItem("nova_weather_city", JSON.stringify(c));
-  return Promise.resolve();
-}
-
-function saveSettings(settings: SettingsData): Promise<void> {
-  if (useChrome) return saveToChromeStorage({ settings });
-
-  localStorage.setItem("settings", JSON.stringify(settings));
-  return Promise.resolve();
-}
-
-function normalizeSettingsData(input: unknown): SettingsData {
+export function normalizeSettingsData(input: unknown): SettingsData {
   if (!input || typeof input !== "object") return DEFAULT_STORAGE_DATA.settings;
   const raw = input as Partial<SettingsData>;
   const language = raw.language === "ru" ? "ru" : "en";
@@ -142,56 +128,41 @@ function normalizeSettingsData(input: unknown): SettingsData {
   };
 }
 
-function normalizeShortcutData(input: unknown): ShortcutData[] {
+export function normalizeShortcutData(input: unknown): ShortcutData[] {
   if (!Array.isArray(input)) return [];
 
   return input
     .map((item): ShortcutData | null => {
       if (!item || typeof item !== "object") return null;
       const raw = item as Record<string, unknown>;
-      if (raw.type === "group") {
-        return {
-          ...(raw as object),
-          type: "group",
-        } as ShortcutData;
-      }
-      if (Array.isArray(raw.items)) {
-        return {
-          ...(raw as object),
-          type: "group",
-        } as ShortcutData;
+      if (raw.type === "group" || Array.isArray(raw.items)) {
+        return { ...raw, type: "group" } as ShortcutData;
       }
 
-      return {
-        ...(raw as object),
-        type: "shortcut",
-      } as ShortcutData;
+      return { ...raw, type: "shortcut" } as ShortcutData;
     })
     .filter(Boolean) as ShortcutData[];
 }
 
-async function loadData(): Promise<StorageData> {
-  if (typeof chrome !== "undefined" && chrome.storage?.local) {
-    return new Promise((resolve) => {
-      chrome.storage.local.get(Object.keys(DEFAULT_STORAGE_DATA), (result) => {
-        resolve({
-          ...DEFAULT_STORAGE_DATA,
-          ...result,
-          shortcuts: normalizeShortcutData(result.shortcuts),
-          wallpaper: normalizeWallpaperData(result.wallpaper),
-          settings: normalizeSettingsData(result.settings),
-        } as StorageData);
-      });
-    });
-  }
+export function normalizeWeatherCity(input: unknown): StorageData["weatherCity"] {
+  return isWeatherCity(input) ? input : DEFAULT_STORAGE_DATA.weatherCity;
+}
 
-  throw new Error("The app is not running in the chrome-extension environment");
+function isWeatherCity(obj: any): obj is WeatherCity {
+  return (
+    obj &&
+    typeof obj === "object" &&
+    "name" in obj &&
+    typeof obj.name === "string" &&
+    "lat" in obj &&
+    typeof obj.lat === "number" &&
+    "lon" in obj &&
+    typeof obj.lon === "number"
+  );
 }
 
 const ICONS_DB_NAME = "IconCacheDB";
 const ICONS_STORE_NAME = "icons";
-const WALLPAPER_STORE_NAME = "wallpaper";
-const CUSTOM_WALLPAPER_KEY = "custom";
 
 export type SavedIcon = {
   id: number;
@@ -208,16 +179,13 @@ const getDB = () => {
         if (!db.objectStoreNames.contains(ICONS_STORE_NAME)) {
           db.createObjectStore(ICONS_STORE_NAME);
         }
-        if (!db.objectStoreNames.contains(WALLPAPER_STORE_NAME)) {
-          db.createObjectStore(WALLPAPER_STORE_NAME);
-        }
       },
     });
   }
   return dbPromise;
 };
 
-const getIcons = async () => {
+export const getIcons = async () => {
   const db = await getDB();
   const icons = await db.getAll(ICONS_STORE_NAME);
 
@@ -233,47 +201,19 @@ const getIcons = async () => {
   });
 };
 
-const saveIcon = async (data: SavedIcon) => {
+export const saveIcon = async (data: SavedIcon) => {
   const { id, blob, format } = data;
   const db = await getDB();
   await db.put(ICONS_STORE_NAME, { id, blob, format }, id);
 };
 
-const deleteIcon = async (id: number) => {
+export const deleteIcon = async (id: number) => {
   const db = await getDB();
 
   db.delete(ICONS_STORE_NAME, id);
 };
 
-const getIconById = async (id: number): Promise<SavedIcon | null> => {
+export const getIconById = async (id: number): Promise<SavedIcon | null> => {
   const db = await getDB();
   return await db.get(ICONS_STORE_NAME, id);
-};
-
-const getCustomWallpaper = async (): Promise<Blob | null> => {
-  const db = await getDB();
-  const wallpaper = await db.get(WALLPAPER_STORE_NAME, CUSTOM_WALLPAPER_KEY);
-  return wallpaper instanceof Blob ? wallpaper : null;
-};
-
-const saveCustomWallpaper = async (blob: Blob) => {
-  const db = await getDB();
-  await db.put(WALLPAPER_STORE_NAME, blob, CUSTOM_WALLPAPER_KEY);
-};
-
-export {
-  deleteIcon,
-  getCustomWallpaper,
-  getIconById as getIconByName,
-  getIcons,
-  loadData,
-  normalizeSettingsData,
-  normalizeShortcutData,
-  normalizeWallpaperData,
-  saveCustomWallpaper,
-  saveIcon,
-  saveSettings,
-  saveShortcuts,
-  saveWallpaper,
-  saveWeatherCity,
 };

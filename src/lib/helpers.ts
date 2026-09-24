@@ -1,9 +1,20 @@
+import { Language } from "@/lib/i18n";
 import { SavedIcon } from "@/lib/storage";
+import { WeatherProvider } from "@/lib/storage";
 import type { ShortcutData } from "@/lib/types";
-import { Vibrant, WorkerPipeline } from "node-vibrant/worker";
-import PipelineWorker from "node-vibrant/worker.worker?worker";
 
-Vibrant.use(new WorkerPipeline(PipelineWorker as never));
+export const getDefaultLanguage = (): Language => {
+  if (typeof navigator === "undefined") return "en";
+  return navigator.language.toLowerCase().startsWith("ru") ? "ru" : "en";
+};
+
+export const getDefaultWeatherProvider = (
+  language = getDefaultLanguage(),
+): WeatherProvider => {
+  return language === "ru" ? "yandex" : "google";
+};
+
+export const isDev = process.env.NODE_ENV === "development";
 
 export function domainFromUrl(url: string) {
   try {
@@ -16,6 +27,7 @@ export function domainFromUrl(url: string) {
 export type FaviconResult = {
   url: string;
   format: SavedIcon["format"];
+  title: string;
 };
 
 export async function parseFavicon(url: string): Promise<FaviconResult | null> {
@@ -29,6 +41,7 @@ export async function parseFavicon(url: string): Promise<FaviconResult | null> {
     const html = await response.text();
 
     const doc = new DOMParser().parseFromString(html, "text/html");
+    const docTitle = doc.title;
 
     const links = Array.from(
       doc.querySelectorAll<HTMLLinkElement>("link[rel]"),
@@ -77,7 +90,7 @@ export async function parseFavicon(url: string): Promise<FaviconResult | null> {
     if (svgIcon?.href) {
       const faviconUrl = new URL(svgIcon.href, url).href;
 
-      return { url: faviconUrl, format: "svg" };
+      return { url: faviconUrl, format: "svg", title: docTitle };
     }
 
     const bestIcon = filteredIcons
@@ -97,22 +110,18 @@ export async function parseFavicon(url: string): Promise<FaviconResult | null> {
       return {
         url: resolvedUrl,
         format: resolvedUrl.split(".").pop() ?? "png",
+        title: docTitle,
       };
     }
 
     return {
       url: `https://icons.duckduckgo.com/ip3/${domainFromUrl(url)}.ico`,
       format: "ico",
+      title: docTitle,
     };
   } catch {
     return null;
   }
-}
-
-export async function extractIconPalette(blobUrl: string) {
-  const palette = await Vibrant.from(blobUrl).getPalette();
-
-  return palette;
 }
 
 export const getContrastYIQ = (hexcolor: string) => {

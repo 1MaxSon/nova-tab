@@ -1,17 +1,16 @@
 import { type ClassValue, clsx } from "clsx";
 
-import { twMerge } from "tailwind-merge";
 import {
-  domainFromUrl,
-  extractIconPalette,
   generatePreviousId,
   getContrastYIQ,
-  parseFavicon,
+  parseFavicon
 } from "@/lib/helpers";
-import { loadData, saveIcon } from "@/lib/storage";
+import type { SavedIcon, WeatherProvider } from "@/lib/storage";
+import { saveIcon, storage } from "@/lib/storage";
 import type { ShortcutType } from "@/lib/types";
 import type { Coords } from "@/lib/types/open-meteo";
-import type { SavedIcon, WeatherProvider } from "@/lib/storage";
+import { extractIconPalette } from "@/lib/vibrant";
+import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -57,14 +56,19 @@ export async function getCityName(coords: Coords) {
   return cityName;
 }
 
-export type CreateShortcutInput = PickTyped<ShortcutType, "url"> &
-  Partial<OmitTyped<ShortcutType, "url">>;
+export type CreateShortcutInput = Pick<ShortcutType, "url"> &
+  Omit<ShortcutType, "url" | "id" | "type">;
 
 export async function fetchFaviconBlob(
   url: string,
   options: { faviconErrorMessage?: string } = {},
 ): Promise<
-  | { iconUrl: string | null; iconBlob?: Blob; iconFormat: SavedIcon["format"] }
+  | {
+      iconUrl: string | null;
+      iconBlob?: Blob;
+      iconFormat: SavedIcon["format"];
+      title: string;
+    }
   | undefined
 > {
   const faviconErrorMessage =
@@ -76,7 +80,7 @@ export async function fetchFaviconBlob(
     return;
   }
 
-  const { url: iconUrl, format: iconFormat } = result;
+  const { url: iconUrl, format: iconFormat, title } = result;
 
   if (import.meta.env.DEV) {
     console.log(`Fetched favicon url: ${iconUrl}`);
@@ -96,7 +100,7 @@ export async function fetchFaviconBlob(
     }
   }
 
-  return { iconUrl, iconBlob, iconFormat };
+  return { iconUrl, iconBlob, iconFormat, title };
 }
 
 export async function createShortcut(
@@ -108,13 +112,13 @@ export async function createShortcut(
 
   if (!result) return;
 
-  const { iconBlob, iconUrl, iconFormat } = result;
+  const { iconBlob, iconUrl, iconFormat, title } = result;
 
-  const { shortcuts } = await loadData();
+  const { shortcuts } = storage;
 
   const previousShortcutId = generatePreviousId(shortcuts);
 
-  const fallbackName = domainFromUrl(url);
+  const fallbackName = title;
   const resolvedName =
     name && name.trim() !== ""
       ? name

@@ -28,20 +28,19 @@ Nova Tab replaces the default new tab page with a focused dashboard: clock, date
 
 ## Tech Stack
 
-- React 19
+- Vue 3.5
 - TypeScript
 - Vite
 - CRXJS
 - Tailwind CSS
 - shadcn/ui-style components
-- Base UI / Vaul
 - dnd-kit
 - IndexedDB via `idb`
 
 ## Requirements
 
 - Node.js
-- npm/pnpm
+- pnpm
 - Chromium-based browser for extension testing
 
 ## Getting Started
@@ -49,71 +48,31 @@ Nova Tab replaces the default new tab page with a focused dashboard: clock, date
 Install dependencies:
 
 ```bash
-npm install
+pnpm install
 ```
 
 Start the Vite dev server:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 Build the extension:
 
 ```bash
-npm run build
+pnpm run build
 ```
 
 
 ## Loading in Chrome
 
-1. Run `npm run build`.
+1. Run `pnpm run build`.
 2. Open `chrome://extensions/`.
 3. Enable Developer mode.
 4. Click Load unpacked.
 5. Select the generated `dist` directory.
 6. Open a new tab.
 
-## Scripts
-
-```bash
-npm run dev      # Start development server
-npm run build    # Type-check and build the extension
-npm run preview  # Preview the production build
-npm run lint     # Run Biome lint
-```
-
-## Project Structure
-
-```text
-src/
-  assets/
-    global.css
-  components/
-    providers/
-      storage-provider.tsx
-    ui/
-  lib/
-    constants.ts
-    i18n.ts
-    storage.ts
-    utils.ts
-  newtab/
-    components/
-    index.html
-    main.tsx
-    nova-tab.tsx
-manifest.config.ts
-```
-
-Key files:
-
-- `manifest.config.ts` configures the Chrome extension manifest.
-- `src/newtab/nova-tab.tsx` renders the new tab page.
-- `src/newtab/components/settings-drawer.tsx` contains user-facing settings.
-- `src/lib/storage.ts` handles Chrome storage and IndexedDB helpers.
-- `src/lib/i18n.ts` contains translations.
-- `src/lib/constants.ts` contains themes and weather code labels.
 
 ## Notes
 
@@ -121,4 +80,3 @@ Key files:
 - Weather data is fetched from Open-Meteo.
 - Address search uses Nominatim.
 - Favicons are fetched from external site/icon sources, so unavailable sites may fail to provide an icon.
-- `npm run lint` may report issues in generated/shared UI components; check the output before treating it as a regression.
