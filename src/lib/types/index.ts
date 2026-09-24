@@ -20,3 +20,19 @@ export type ShortcutGroupType = {
 export type ShortcutData = ShortcutType | ShortcutGroupType;
 
 export type WeatherCity = { name: string; lat: Latitude; lon: Longitude };
+
+export type ThemeColors = Record<string, string>;
+
+export type GradientWallpaperData = {
+  from: string;
+  to: string;
+  angle: number;
+};
+
+export type UserTheme = {
+  id: string;
+  name: string;
+  wallpaperType: "photo" | "gradient";
+  wallpaperData: string | GradientWallpaperData;
+  colors: ThemeColors;
+};

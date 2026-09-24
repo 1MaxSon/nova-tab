@@ -8,26 +8,42 @@ import TooltipProvider from "@/components/ui/tooltip/TooltipProvider.vue";
 import { THEMES } from "@/lib/constants";
 import { currentLanguage, t } from "@/lib/i18n";
 import { storage } from "@/lib/storage";
-import {
-  computed,
-  defineAsyncComponent,
-  Suspense,
-  watch
-} from "vue";
+import type { GradientWallpaperData } from "@/lib/types";
+import { computed, defineAsyncComponent, Suspense, watch } from "vue";
 
 const SettingsDrawer = defineAsyncComponent(
   () => import("@/components/SettingsDrawer.vue"),
 );
 
-const selectedTheme = computed(
-  () =>
-    THEMES.find((theme) => theme.id === storage.settings.theme) ?? THEMES[0],
-);
+const selectedTheme = computed(() => {
+  return (
+    storage.settings.customThemes.find(
+      (theme) => theme.id === storage.settings.theme,
+    ) ??
+    THEMES.find((theme) => theme.id === storage.settings.theme) ??
+    THEMES[0]
+  );
+});
 
-const backgroundImage = computed(() => selectedTheme.value.wallpaper);
-// wallpaper.type === "custom" && customWallpaperUrl
-//   ? `${selectedTheme.customWallpaperOverlay}, url("${customWallpaperUrl}")`
-//   : selectedTheme.wallpaper;
+const backgroundImage = computed(() => {
+  const theme = selectedTheme.value;
+  if (!("wallpaperType" in theme)) return theme.wallpaper;
+
+  if (theme.wallpaperType === "photo") {
+    return `url("${theme.wallpaperData}")`;
+  }
+
+  const gradient = theme.wallpaperData as GradientWallpaperData;
+  return `linear-gradient(${gradient.angle}deg, ${gradient.from}, ${gradient.to})`;
+});
+const themeVariables = computed(() =>
+  Object.fromEntries(
+    Object.entries(selectedTheme.value.colors).map(([key, value]) => [
+      `--${key}`,
+      value,
+    ]),
+  ),
+);
 
 watch(
   currentLanguage,
@@ -44,6 +60,7 @@ watch(
       class="fixed inset-0 z-0 nova-gradient"
       :style="{
         backgroundImage,
+        ...themeVariables,
         backgroundPosition: 'center',
         backgroundSize: 'cover',
       }"

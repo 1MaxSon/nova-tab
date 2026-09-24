@@ -31,8 +31,6 @@ export const THEMES = [
     name: "Nova",
     wallpaper:
       "radial-gradient(ellipse 80% 60% at 20% 10%, rgba(40, 50, 80, 0.7) 0%, transparent 60%), radial-gradient(ellipse 60% 70% at 80% 80%, rgba(25, 35, 55, 0.8) 0%, transparent 55%), radial-gradient(ellipse 50% 40% at 50% 50%, rgba(30, 25, 45, 0.5) 0%, transparent 70%)",
-    customWallpaperOverlay:
-      "linear-gradient(rgba(6, 10, 18, 0.24), rgba(6, 10, 18, 0.32))",
     colors: {
       background: "oklch(13% 0.025 258)",
       foreground: "oklch(96% 0.01 280)",
@@ -59,8 +57,6 @@ export const THEMES = [
     name: "Aurora",
     wallpaper:
       "radial-gradient(ellipse 70% 55% at 18% 20%, rgba(37, 99, 235, 0.55) 0%, transparent 58%), radial-gradient(ellipse 65% 70% at 78% 72%, rgba(20, 184, 166, 0.42) 0%, transparent 60%), linear-gradient(135deg, #08111f 0%, #152033 54%, #10151c 100%)",
-    customWallpaperOverlay:
-      "linear-gradient(rgba(5, 13, 28, 0.3), rgba(5, 18, 25, 0.34))",
     colors: {
       background: "oklch(13% 0.035 245)",
       foreground: "oklch(96% 0.012 220)",
@@ -87,8 +83,6 @@ export const THEMES = [
     name: "Ember",
     wallpaper:
       "radial-gradient(ellipse 58% 52% at 25% 22%, rgba(244, 114, 36, 0.45) 0%, transparent 60%), radial-gradient(ellipse 62% 62% at 74% 74%, rgba(148, 55, 82, 0.36) 0%, transparent 58%), linear-gradient(145deg, #1a1115 0%, #27171d 52%, #101014 100%)",
-    customWallpaperOverlay:
-      "linear-gradient(rgba(24, 10, 12, 0.34), rgba(28, 13, 17, 0.42))",
     colors: {
       background: "oklch(13% 0.034 22)",
       foreground: "oklch(96% 0.012 55)",
@@ -115,8 +109,6 @@ export const THEMES = [
     name: "Forest",
     wallpaper:
       "radial-gradient(ellipse 64% 55% at 18% 24%, rgba(34, 197, 94, 0.3) 0%, transparent 62%), radial-gradient(ellipse 68% 64% at 82% 78%, rgba(132, 204, 22, 0.22) 0%, transparent 58%), linear-gradient(140deg, #07130f 0%, #13221a 55%, #10150f 100%)",
-    customWallpaperOverlay:
-      "linear-gradient(rgba(4, 17, 13, 0.32), rgba(8, 20, 11, 0.38))",
     colors: {
       background: "oklch(13% 0.03 155)",
       foreground: "oklch(95% 0.012 125)",

@@ -1,7 +1,13 @@
 import { getDefaultLanguage, getDefaultWeatherProvider } from "@/lib/helpers";
 import { Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
-import type { ShortcutData, WeatherCity } from "@/lib/types";
+import type {
+  GradientWallpaperData,
+  ShortcutData,
+  ThemeColors,
+  UserTheme,
+  WeatherCity,
+} from "@/lib/types";
 import { IDBPDatabase, openDB } from "idb";
 import { reactive, watch } from "vue";
 
@@ -12,6 +18,7 @@ export type SettingsData = {
   transparentAddShortcut: boolean;
   transparentChangeGeo: boolean;
   theme: string;
+  customThemes: UserTheme[];
   weatherProvider: WeatherProvider;
   weatherUnit: "celsius" | "fahrenheit";
   windSpeedUnit: "ms" | "kmh" | "mph";
@@ -33,6 +40,7 @@ export const DEFAULT_STORAGE_DATA: Omit<StorageData, "isLoaded"> = {
     transparentAddShortcut: false,
     transparentChangeGeo: false,
     theme: "nova",
+    customThemes: [],
     weatherProvider: getDefaultWeatherProvider(),
     weatherUnit: "celsius",
     windSpeedUnit: "ms",
@@ -120,12 +128,83 @@ export function normalizeSettingsData(input: unknown): SettingsData {
       ? raw.weatherProvider
       : getDefaultWeatherProvider(language);
 
+  const customThemes = Array.isArray(raw.customThemes)
+    ? raw.customThemes
+        .map(normalizeUserTheme)
+        .filter((theme): theme is UserTheme => theme !== null)
+    : [];
+
   return {
     ...DEFAULT_STORAGE_DATA.settings,
     ...raw,
+    customThemes,
     language,
     weatherProvider,
   };
+}
+
+function normalizeUserTheme(input: unknown): UserTheme | null {
+  if (!input || typeof input !== "object") return null;
+  const raw = input as Partial<UserTheme> & { wallpaper?: unknown };
+
+  if (
+    typeof raw.id !== "string" ||
+    typeof raw.name !== "string" ||
+    !isThemeColors(raw.colors)
+  ) {
+    return null;
+  }
+
+  if (raw.wallpaperType === "photo" && typeof raw.wallpaperData === "string") {
+    return { id: raw.id, name: raw.name, wallpaperType: "photo", wallpaperData: raw.wallpaperData, colors: raw.colors };
+  }
+  if (raw.wallpaperType === "gradient" && isGradientWallpaperData(raw.wallpaperData)) {
+    return { id: raw.id, name: raw.name, wallpaperType: "gradient", wallpaperData: raw.wallpaperData, colors: raw.colors };
+  }
+
+  return normalizeLegacyUserTheme(raw.id, raw.name, raw.wallpaper, raw.colors);
+}
+
+function isThemeColors(input: unknown): input is ThemeColors {
+  return Boolean(input) && typeof input === "object";
+}
+
+function isGradientWallpaperData(input: unknown): input is GradientWallpaperData {
+  if (!input || typeof input !== "object") return false;
+  const raw = input as Partial<GradientWallpaperData>;
+  return (
+    typeof raw.from === "string" &&
+    typeof raw.to === "string" &&
+    typeof raw.angle === "number"
+  );
+}
+
+function normalizeLegacyUserTheme(
+  id: string,
+  name: string,
+  wallpaper: unknown,
+  colors: ThemeColors,
+): UserTheme | null {
+  if (typeof wallpaper !== "string") return null;
+  const photo = wallpaper.match(/^url\(["']?(.*?)["']?\)$/);
+  if (photo?.[1]) {
+    return { id, name, wallpaperType: "photo", wallpaperData: photo[1], colors };
+  }
+
+  const gradient = wallpaper.match(
+    /^linear-gradient\((\d+)deg,\s*(#[\da-fA-F]{6}),\s*(#[\da-fA-F]{6})\)$/,
+  );
+  if (gradient) {
+    return {
+      id,
+      name,
+      wallpaperType: "gradient",
+      wallpaperData: { angle: Number(gradient[1]), from: gradient[2], to: gradient[3] },
+      colors,
+    };
+  }
+
+  return null;
 }
 
 export function normalizeShortcutData(input: unknown): ShortcutData[] {
