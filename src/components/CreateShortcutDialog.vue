@@ -31,9 +31,7 @@ const onFormSubmit = async () => {
   isPending.value = true;
   isDialogOpen.value = false;
 
-  const newShortcut = await createShortcut(formData.value, {
-    faviconErrorMessage: t("shortcut.faviconError"),
-  });
+  const newShortcut = await createShortcut(formData.value);
 
   if (!newShortcut) {
     return;

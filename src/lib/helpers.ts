@@ -41,7 +41,10 @@ export async function parseFavicon(url: string): Promise<FaviconResult | null> {
     const html = await response.text();
 
     const doc = new DOMParser().parseFromString(html, "text/html");
-    const docTitle = doc.title;
+    const docOgMetaTitle = doc.querySelector('meta[property="og:title"]') as
+      | HTMLMetaElement
+      | undefined;
+    const docTitle = docOgMetaTitle ? docOgMetaTitle.content : doc.title;
 
     const links = Array.from(
       doc.querySelectorAll<HTMLLinkElement>("link[rel]"),

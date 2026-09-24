@@ -3,7 +3,7 @@ import { type ClassValue, clsx } from "clsx";
 import {
   generatePreviousId,
   getContrastYIQ,
-  parseFavicon
+  parseFavicon,
 } from "@/lib/helpers";
 import type { SavedIcon, WeatherProvider } from "@/lib/storage";
 import { saveIcon, storage } from "@/lib/storage";
@@ -11,6 +11,7 @@ import type { ShortcutType } from "@/lib/types";
 import type { Coords } from "@/lib/types/open-meteo";
 import { extractIconPalette } from "@/lib/vibrant";
 import { twMerge } from "tailwind-merge";
+import { t } from "@/lib/i18n";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -59,10 +60,7 @@ export async function getCityName(coords: Coords) {
 export type CreateShortcutInput = Pick<ShortcutType, "url"> &
   Omit<ShortcutType, "url" | "id" | "type">;
 
-export async function fetchFaviconBlob(
-  url: string,
-  options: { faviconErrorMessage?: string } = {},
-): Promise<
+export async function fetchFaviconBlob(url: string): Promise<
   | {
       iconUrl: string | null;
       iconBlob?: Blob;
@@ -71,8 +69,7 @@ export async function fetchFaviconBlob(
     }
   | undefined
 > {
-  const faviconErrorMessage =
-    options.faviconErrorMessage ?? "Failed to fetch favicon";
+  const faviconErrorMessage = t("shortcut.faviconError");
 
   const result = await parseFavicon(url);
   if (!result) {
@@ -105,10 +102,9 @@ export async function fetchFaviconBlob(
 
 export async function createShortcut(
   data: CreateShortcutInput,
-  options: { faviconErrorMessage?: string } = {},
 ): Promise<ShortcutType | undefined> {
   const { url, name, accentColor, mutedColor } = data;
-  const result = await fetchFaviconBlob(url, options);
+  const result = await fetchFaviconBlob(url);
 
   if (!result) return;
 
