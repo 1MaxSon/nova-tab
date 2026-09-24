@@ -22,7 +22,7 @@ import Tooltip from "@/components/ui/tooltip/Tooltip.vue";
 import TooltipContent from "@/components/ui/tooltip/TooltipContent.vue";
 import TooltipTrigger from "@/components/ui/tooltip/TooltipTrigger.vue";
 import { WEATHER_CODES } from "@/lib/constants";
-import { currentLanguage, t } from "@/lib/i18n";
+import { currentLanguage, t, type TranslationKey } from "@/lib/i18n";
 import { storage } from "@/lib/storage";
 import { ForecastData } from "@/lib/types/open-meteo";
 import { NominatimData } from "@/lib/types/openstreetmap";
@@ -33,10 +33,7 @@ import { ref, watch, watchEffect } from "vue";
 
 type WeatherData = {
   icon: string;
-  desc: {
-    en: string;
-    ru: string;
-  };
+  desc: TranslationKey;
   temperature: number;
   temperatureUnit: ForecastData["current_weather_units"]["temperature"];
   windSpeed: ForecastData["current_weather"]["windspeed"];
@@ -156,7 +153,7 @@ async function fetchWeather() {
     const cw = data.current_weather;
     const [icon, desc] = WEATHER_CODES[cw.weathercode] || [
       "🌡️",
-      { en: "", ru: "" },
+      "weather.condition.unknown",
     ];
 
     weatherData.value = {
@@ -195,7 +192,7 @@ async function fetchWeather() {
           >
             <Spinner v-if="isWeatherFetching" />
             <span v-else-if="weatherData">
-              {{ `${weatherData.icon} ${weatherData.desc[currentLanguage]}` }}
+              {{ `${weatherData.icon} ${t(weatherData.desc)}` }}
             </span>
             <span v-else>{{ t("weather.fetchingFailed") }}</span>
 
@@ -304,7 +301,7 @@ async function fetchWeather() {
                 "
               >
                 <SelectTrigger class="whitespace-normal h-auto! w-full">
-                  <SelectValue placeholder="Select a city" />
+                  <SelectValue :placeholder="t('weather.selectCity')" />
                 </SelectTrigger>
 
                 <SelectContent class="w-(--reka-select-trigger-width)">
@@ -339,7 +336,7 @@ async function fetchWeather() {
                   }
                 "
               >
-                Выбрать
+                {{ t("common.select") }}
               </Button>
             </template>
 

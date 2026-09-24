@@ -1,5 +1,5 @@
 import { getDefaultLanguage, getDefaultWeatherProvider } from "@/lib/helpers";
-import { Language } from "@/lib/i18n";
+import type { Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
 import type {
   GradientWallpaperData,
@@ -120,7 +120,9 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 export function normalizeSettingsData(input: unknown): SettingsData {
   if (!input || typeof input !== "object") return DEFAULT_STORAGE_DATA.settings;
   const raw = input as Partial<SettingsData>;
-  const language = raw.language === "ru" ? "ru" : "en";
+  const language = (["en", "ru", "es", "de"] as const).includes(raw.language as Language)
+    ? (raw.language as Language)
+    : "en";
   const weatherProvider =
     raw.weatherProvider === "yandex" ||
     raw.weatherProvider === "google" ||

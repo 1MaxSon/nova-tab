@@ -162,7 +162,10 @@ const refreshIcon = async () => {
 
                     const file = files.pop();
 
-                    formData.newIcon = file;
+                    if (file) {
+                      formData.newIcon = file;
+                    }
+                    target.value = '';
                   }
                 "
               />

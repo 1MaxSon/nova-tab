@@ -1,189 +1,46 @@
+import en from "@/locales/en.json";
 import { storage } from "@/lib/storage";
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 
-export type Language = "en" | "ru";
+export const languages = ["en", "ru", "es", "de"] as const;
+export type Language = (typeof languages)[number];
+export type TranslationKey = keyof typeof en;
 
-const translations = {
-  en: {
-    "window.title": "New Tab",
-    "common.close": "Close",
-    "common.create": "Create",
-    "common.save": "Save",
-    "common.optional": "Optional",
-    "common.notFound": "Nothing found",
-    "settings.title": "Settings",
-    "settings.language": "Language",
-    "settings.languageDescription": "Choose the interface language",
-    "settings.theme": "Theme",
-    "settings.uploadWallpaper": "Upload wallpaper",
-    "settings.createTheme": "Create theme",
-    "settings.editTheme": "Edit theme",
-    "settings.deleteTheme": "Delete theme",
-    "settings.themeName": "Theme name",
-    "settings.themeColors": "Theme colors",
-    "settings.backgroundColor": "Background",
-    "settings.foregroundColor": "Text",
-    "settings.primaryColor": "Primary",
-    "settings.secondaryColor": "Secondary",
-    "settings.accentColor": "Accent",
-    "settings.wallpaper": "Wallpaper",
-    "settings.wallpaperType": "Background type",
-    "settings.chooseWallpaper": "Choose image",
-    "settings.removeWallpaper": "Use gradient",
-    "settings.gradient": "Gradient",
-    "settings.imageWallpaper": "Image",
-    "settings.gradientStart": "Start color",
-    "settings.gradientEnd": "End color",
-    "settings.gradientAngle": "Direction",
-    "settings.saveTheme": "Save theme",
-    "settings.cancelTheme": "Cancel",
-    "settings.transparentAddShortcut":
-      "Make the add shortcut button transparent",
-    "settings.transparentChangeGeo": "Make the change geo button transparent",
-    "settings.transparentDescription": "It will become visible on hover",
-    "settings.backupExport": "Export",
-    "settings.backupImport": "Import",
-    "settings.backupDescription":
-      "Backup includes settings, shortcuts, and weather city",
-    "settings.backupError": "Failed to complete the operation",
-    "settings.backupInvalidFile": "Invalid backup file",
-    "settings.units.title": "Units of measurement",
-    "settings.units.temp": "Temperature",
-    "settings.units.wind": "Wind",
-    "settings.units.ms": "M/s",
-    "settings.units.kmh": "Km/h",
-    "settings.units.mph": "Mili/h",
-    "search.placeholder": "Search...",
-    "search.defaultEngine": "Default",
-    "search.allowIncognito":
-      "To open a query in the default search engine in incognito mode, allow use in incognito mode. Or use another search engine from the list, except for the default search engine",
-    "search.engineDefault": "Default",
-    "search.engineYandex": "Yandex",
-    "weather.selectCity": "Select city",
-    "weather.changeAddress": "Change address",
-    "weather.addressPlaceholder": "Enter an address",
-    "weather.fetchingFailed": "🌈",
-    "weather.provider": "Weather site",
-    "weather.providerDescription": "Choose where the weather widget opens",
-    "weather.provider.googleQuery": "weather in",
-    "weather.provider.yandex": "Yandex Weather",
-    "weather.provider.google": "Google Weather",
-    "weather.provider.wttr": "Wttr",
-    "weather.windSpeed": "Wind speed",
-    "shortcut.createTitle": "Create a shortcut",
-    "shortcut.editTitle": "Edit shortcut",
-    "shortcut.url": "Url",
-    "shortcut.name": "Name",
-    "shortcut.bgColor": "Bg color",
-    "shortcut.mutedColor": "Muted color",
-    "shortcut.newIcon": "New icon",
-    "shortcut.refreshIcon": "Fetch favicon again",
-    "shortcut.nameDescription":
-      "If it is empty, the site title will be used. For example Example.com",
-    "shortcut.colorDescription":
-      "If it is empty, a color based on the icon will be used.",
-    "shortcut.iconDescription": "The colors will not be changed",
-    "shortcut.faviconError": "Failed to fetch favicon",
-    "shortcut.group": "Group",
-    "shortcut.createGroup": "Create a group",
-    "shortcut.addToGroup": "Add to the group",
-  },
-  ru: {
-    "window.title": "Новая вкладка",
-    "common.close": "Закрыть",
-    "common.create": "Создать",
-    "common.save": "Сохранить",
-    "common.optional": "Необязательно",
-    "common.notFound": "Ничего не найдено",
-    "settings.title": "Настройки",
-    "settings.language": "Язык",
-    "settings.languageDescription": "Выберите язык интерфейса",
-    "settings.theme": "Тема",
-    "settings.uploadWallpaper": "Загрузить обои",
-    "settings.createTheme": "Создать тему",
-    "settings.editTheme": "Редактировать тему",
-    "settings.deleteTheme": "Удалить тему",
-    "settings.themeName": "Название темы",
-    "settings.themeColors": "Цвета темы",
-    "settings.backgroundColor": "Фон",
-    "settings.foregroundColor": "Текст",
-    "settings.primaryColor": "Основной",
-    "settings.secondaryColor": "Вторичный",
-    "settings.accentColor": "Акцент",
-    "settings.wallpaper": "Обои",
-    "settings.wallpaperType": "Тип фона",
-    "settings.chooseWallpaper": "Выбрать изображение",
-    "settings.removeWallpaper": "Использовать градиент",
-    "settings.gradient": "Градиент",
-    "settings.imageWallpaper": "Изображение",
-    "settings.gradientStart": "Начальный цвет",
-    "settings.gradientEnd": "Конечный цвет",
-    "settings.gradientAngle": "Направление",
-    "settings.saveTheme": "Сохранить тему",
-    "settings.cancelTheme": "Отмена",
-    "settings.transparentAddShortcut":
-      "Сделать кнопку добавления ярлыка прозрачной",
-    "settings.transparentChangeGeo":
-      "Сделать кнопку смены геолокации прозрачной",
-    "settings.transparentDescription": "Она появится при наведении",
-    "settings.backupExport": "Экспортировать",
-    "settings.backupImport": "Импортировать",
-    "settings.backupDescription":
-      "Резервная копия включает настройки, ярлыки и город погоды",
-    "settings.backupError": "Не удалось выполнить операцию",
-    "settings.backupInvalidFile": "Некорректный файл резервной копии",
-    "settings.units.title": "Единицы измерений",
-    "settings.units.temp": "Температура",
-    "settings.units.wind": "Ветер",
-    "settings.units.ms": "М/c",
-    "settings.units.kmh": "Км/ч",
-    "settings.units.mph": "Мили/ч",
-    "search.placeholder": "Поиск...",
-    "search.defaultEngine": "По умолчанию",
-    "search.allowIncognito":
-      "Чтобы открыть запрос в поисковике по умолчанию в режиме инкогнито, разрешите использование в режиме инкогнито. Или используйте другуй поисковик из списка, кроме поисковика по умолчанию",
-    "search.engineDefault": "По умолчанию",
-    "search.engineYandex": "Яндекс",
-    "weather.selectCity": "Выберите город",
-    "weather.changeAddress": "Изменить адрес",
-    "weather.addressPlaceholder": "Введите адрес",
-    "weather.fetchingFailed": "🌈",
-    "weather.provider": "Сайт погоды",
-    "weather.providerDescription": "Выберите, где открывается виджет погоды",
-    "weather.provider.googleQuery": "Погода",
-    "weather.provider.yandex": "Яндекс Погода",
-    "weather.provider.google": "Google Погода",
-    "weather.provider.wttr": "Wttr",
-    "weather.windSpeed": "Скорость ветра",
-    "shortcut.createTitle": "Создать ярлык",
-    "shortcut.editTitle": "Редактировать ярлык",
-    "shortcut.url": "Url",
-    "shortcut.name": "Название",
-    "shortcut.bgColor": "Цвет фона",
-    "shortcut.mutedColor": "Приглушенный цвет",
-    "shortcut.newIcon": "Новая иконка",
-    "shortcut.refreshIcon": "Получить фавикон заново",
-    "shortcut.nameDescription":
-      "Если оставить пустым, будет использован заголовок сайта. Например, Example Domain",
-    "shortcut.colorDescription":
-      "Если оставить пустым, цвет будет подобран по иконке.",
-    "shortcut.iconDescription": "Цвета не изменятся",
-    "shortcut.faviconError": "Не удалось загрузить фавикон",
-    "shortcut.group": "Группа",
-    "shortcut.createGroup": "Создать группу",
-    "shortcut.addToGroup": "Добавить в группу",
-  },
-} as const satisfies Record<Language, Record<string, string>>;
+type TranslationDictionary = Partial<Record<TranslationKey, string>>;
 
-export type TranslationKey = keyof (typeof translations)["en"];
+const localeLoaders: Record<Exclude<Language, "en">, () => Promise<{ default: TranslationDictionary }>> = {
+  ru: () => import("@/locales/ru.json"),
+  es: () => import("@/locales/es.json"),
+  de: () => import("@/locales/de.json"),
+};
 
 export const languageOptions: Record<Language, string> = {
   en: "English",
   ru: "Русский",
+  es: "Español",
+  de: "Deutsch",
 };
 
 export const currentLanguage = computed(() => storage.settings.language);
+const selectedTranslations = ref<TranslationDictionary>(en);
 
-export const t = (key: TranslationKey) => {
-  return translations[currentLanguage.value]?.[key] ?? key;
-};
+watch(
+  currentLanguage,
+  async (language) => {
+    selectedTranslations.value = en;
+    if (language === "en") return;
+
+    try {
+      const locale = await localeLoaders[language]();
+      if (currentLanguage.value === language) {
+        selectedTranslations.value = locale.default;
+      }
+    } catch (error) {
+      console.error(`Failed to load the ${language} locale`, error);
+    }
+  },
+  { immediate: true },
+);
+
+export const t = (key: TranslationKey): string =>
+  selectedTranslations.value[key] ?? en[key] ?? key;

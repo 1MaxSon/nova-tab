@@ -108,7 +108,9 @@ const weatherProviderOptions = [
                 class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
               >
                 <SelectTrigger class="w-full">
-                  <SelectValue></SelectValue>
+                  {{
+                    t(`weather.provider.${storage.settings.weatherProvider}`)
+                  }}
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem

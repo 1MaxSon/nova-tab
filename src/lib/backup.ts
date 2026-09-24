@@ -1,4 +1,3 @@
-import { EXT_TO_MIME } from "@/lib/constants";
 import {
   getIcons,
   normalizeSettingsData,
@@ -121,9 +120,7 @@ const restoreIcons = async (zip: JSZip) => {
 
     restoreTasks.push(
       iconFile.async("arraybuffer").then((buffer) => {
-        const resolvedBlob = new Blob([buffer], {
-          type: EXT_TO_MIME[format] ?? "image/x-icon",
-        });
+        const resolvedBlob = new Blob([buffer]);
 
         return saveIcon({ id, blob: resolvedBlob, format });
       }),

@@ -5,7 +5,14 @@ import type { ShortcutData } from "@/lib/types";
 
 export const getDefaultLanguage = (): Language => {
   if (typeof navigator === "undefined") return "en";
-  return navigator.language.toLowerCase().startsWith("ru") ? "ru" : "en";
+  const browserLanguage = navigator.language.toLowerCase();
+  return browserLanguage.startsWith("ru")
+    ? "ru"
+    : browserLanguage.startsWith("es")
+      ? "es"
+      : browserLanguage.startsWith("de")
+        ? "de"
+        : "en";
 };
 
 export const getDefaultWeatherProvider = (
