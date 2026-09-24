@@ -17,7 +17,7 @@ const isLoading = ref(false);
 const backupError = ref<string | null>(null);
 const fileInputRef = useTemplateRef("fileInputRef");
 
-const runBackupAction = async (action: () => Promise<void>) => {
+const runBackupAction = async (action: () => Promise<void>) => {  
   isLoading.value = true;
   backupError.value = null;
 
@@ -62,7 +62,7 @@ const handleImport = (event: Event) => {
           type="button"
           variant="secondary"
           :disabled="isLoading"
-          @cick="handleExport"
+          @click="handleExport"
         >
           <Spinner v-if="isLoading" />
           <DownloadIcon v-else />
