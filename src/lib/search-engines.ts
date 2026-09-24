@@ -7,6 +7,7 @@ import YahooIcon from "@/components/icons/YahooIcon.vue";
 import YandexIcon from "@/components/icons/YandexIcon.vue";
 import BingIcon from "@/components/icons/BingIcon.vue";
 import { Component } from "vue";
+import { t } from "@/lib/i18n";
 
 export type SearchEngine =
   | "google"
@@ -43,7 +44,7 @@ export const searchEngineIcons: Record<
   SearchEngineIcon
 > = {
   default: {
-    label: "Default",
+    label: t('search.engineDefault'),
     icon: ChromeIcon,
   },
   google: {
@@ -71,7 +72,7 @@ export const searchEngineIcons: Record<
     icon: YahooIcon,
   },
   yandex: {
-    label: "Yandex",
+    label: t('search.engineYandex'),
     icon: YandexIcon,
   },
 };

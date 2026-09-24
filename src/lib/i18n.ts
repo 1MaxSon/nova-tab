@@ -57,6 +57,8 @@ const translations = {
     "search.defaultEngine": "Default",
     "search.allowIncognito":
       "To open a query in the default search engine in incognito mode, allow use in incognito mode. Or use another search engine from the list, except for the default search engine",
+    "search.engineDefault": "Default",
+    "search.engineYandex": "Yandex",
     "weather.selectCity": "Select city",
     "weather.changeAddress": "Change address",
     "weather.addressPlaceholder": "Enter an address",
@@ -140,6 +142,8 @@ const translations = {
     "search.defaultEngine": "По умолчанию",
     "search.allowIncognito":
       "Чтобы открыть запрос в поисковике по умолчанию в режиме инкогнито, разрешите использование в режиме инкогнито. Или используйте другуй поисковик из списка, кроме поисковика по умолчанию",
+    "search.engineDefault": "По умолчанию",
+    "search.engineYandex": "Яндекс",
     "weather.selectCity": "Выберите город",
     "weather.changeAddress": "Изменить адрес",
     "weather.addressPlaceholder": "Введите адрес",

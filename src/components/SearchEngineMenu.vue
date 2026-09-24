@@ -26,7 +26,7 @@ const TriggerIcon = computed(() => {
       >
         <div class="flex items-center gap-2">
           <component :is="item.icon" class="size-4" />
-          <span class="capitalize">{{ item.label }}</span>
+          <span>{{ item.label }}</span>
         </div>
       </SelectItem>
     </SelectContent>
