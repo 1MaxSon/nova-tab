@@ -5,7 +5,7 @@ import { isDev } from "./src/lib/helpers";
 
 export default defineManifest({
   manifest_version: 3,
-  name: `Nova Tab Vue${isDev ? " DEV" : ""}`,
+  name: `Nova Tab${isDev ? " DEV" : ""}`,
   description:
     "Nova Tab replaces the default new tab page with a focused dashboard: clock, date, weather, search, draggable shortcuts, themes",
   version: pkg.version,
