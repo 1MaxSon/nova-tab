@@ -91,9 +91,7 @@ const refreshIcon = async () => {
   if (!formData.value.url) return;
 
   isIconRefreshing.value = true;
-  const result = await fetchFaviconBlob(formData.value.url, {
-    faviconErrorMessage: t("shortcut.faviconError"),
-  });
+  const result = await fetchFaviconBlob(formData.value.url);
 
   if (!result) {
     alert(t("shortcut.faviconError"));
