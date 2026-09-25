@@ -1,6 +1,8 @@
 import en from "@/locales/en.json";
 import { storage } from "@/lib/storage";
 import { computed, ref, watch } from "vue";
+import { isDev } from "@/lib/helpers";
+import { error } from "console";
 
 export const languages = ["en", "ru", "es", "de"] as const;
 export type Language = (typeof languages)[number];
@@ -8,7 +10,10 @@ export type TranslationKey = keyof typeof en;
 
 type TranslationDictionary = Partial<Record<TranslationKey, string>>;
 
-const localeLoaders: Record<Exclude<Language, "en">, () => Promise<{ default: TranslationDictionary }>> = {
+const localeLoaders: Record<
+  Exclude<Language, "en">,
+  () => Promise<{ default: TranslationDictionary }>
+> = {
   ru: () => import("@/locales/ru.json"),
   es: () => import("@/locales/es.json"),
   de: () => import("@/locales/de.json"),
@@ -42,5 +47,13 @@ watch(
   { immediate: true },
 );
 
-export const t = (key: TranslationKey): string =>
-  selectedTranslations.value[key] ?? en[key] ?? key;
+export const t = (key: TranslationKey): string => {
+  const translation = selectedTranslations.value[key];
+  if (!translation) {
+    if (isDev) error("Missing translation for key: ", key);
+
+    return en[key] ?? key;
+  }
+
+  return translation;
+};

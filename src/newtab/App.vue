@@ -6,13 +6,13 @@ import Shortcuts from "@/components/Shortcuts.vue";
 import Spinner from "@/components/ui/spinner/Spinner.vue";
 import TooltipProvider from "@/components/ui/tooltip/TooltipProvider.vue";
 import { THEMES } from "@/lib/constants";
+import { layersToCss } from "@/lib/gradient";
 import { currentLanguage, t } from "@/lib/i18n";
 import { storage } from "@/lib/storage";
-import type { GradientWallpaperData } from "@/lib/types";
 import { computed, defineAsyncComponent, Suspense, watch } from "vue";
 
-const SettingsDrawer = defineAsyncComponent(
-  () => import("@/components/SettingsDrawer.vue"),
+const SettingsDialog = defineAsyncComponent(
+  () => import("@/components/SettingsDialog.vue"),
 );
 
 const selectedTheme = computed(() => {
@@ -33,8 +33,7 @@ const backgroundImage = computed(() => {
     return `url("${theme.wallpaperData}")`;
   }
 
-  const gradient = theme.wallpaperData as GradientWallpaperData;
-  return `linear-gradient(${gradient.angle}deg, ${gradient.from}, ${gradient.to})`;
+  return layersToCss(theme.wallpaperData);
 });
 const themeVariables = computed(() =>
   Object.fromEntries(
@@ -85,7 +84,7 @@ watch(
           <template #fallback>
             <Spinner class="absolute top-4 right-4" />
           </template>
-          <SettingsDrawer />
+          <SettingsDialog />
         </Suspense>
       </main>
     </div>

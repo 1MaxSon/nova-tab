@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import GradientBuilder from "@/components/GradientBuilder.vue";
 import Button from "@/components/ui/button/Button.vue";
 import Field from "@/components/ui/field/Field.vue";
 import FieldContent from "@/components/ui/field/FieldContent.vue";
@@ -8,15 +9,11 @@ import SelectContent from "@/components/ui/select/SelectContent.vue";
 import SelectItem from "@/components/ui/select/SelectItem.vue";
 import SelectTrigger from "@/components/ui/select/SelectTrigger.vue";
 import SelectValue from "@/components/ui/select/SelectValue.vue";
-import Slider from "@/components/ui/slider/Slider.vue";
 import { THEMES } from "@/lib/constants";
+import { GradientLayer, layersToCss } from "@/lib/gradient";
 import { t } from "@/lib/i18n";
 import { storage } from "@/lib/storage";
-import type {
-  GradientWallpaperData,
-  ThemeColors,
-  UserTheme,
-} from "@/lib/types";
+import type { ThemeColors, UserTheme } from "@/lib/types";
 import {
   CheckIcon,
   PaletteIcon,
@@ -25,13 +22,13 @@ import {
   Trash2Icon,
   UploadIcon,
 } from "@lucide/vue";
-import { computed, ref } from "vue";
+import { computed, ref, useTemplateRef } from "vue";
 
 type ThemeDraft = {
   name: string;
-  wallpaperType: "photo" | "gradient";
+  wallpaperType: UserTheme["wallpaperType"];
   photoData: string;
-  gradientData: GradientWallpaperData;
+  gradientData: GradientLayer[];
   colors: ThemeColors;
 };
 
@@ -42,15 +39,9 @@ const defaultColors: ThemeColors = {
   secondary: "#d9bd7b",
   accent: "#d9bd7b",
 };
-const defaultGradient: GradientWallpaperData = {
-  from: "#18233d",
-  to: "#090b12",
-  angle: 135,
-};
-
 const isThemeEditorOpen = ref(false);
 const editingThemeId = ref<string | null>(null);
-const wallpaperInput = ref<HTMLInputElement | null>(null);
+const wallpaperInputRef = useTemplateRef("wallpaperInputRef");
 const themeDraft = ref<ThemeDraft>(createDefaultDraft());
 
 const editingTheme = computed(() =>
@@ -64,15 +55,14 @@ function createDefaultDraft(): ThemeDraft {
     name: "",
     wallpaperType: "gradient",
     photoData: "",
-    gradientData: { ...defaultGradient },
+    gradientData: [],
     colors: { ...defaultColors },
   };
 }
 
 const getWallpaperStyle = (theme: UserTheme) => {
   if (theme.wallpaperType === "photo") return `url("${theme.wallpaperData}")`;
-  const gradient = theme.wallpaperData as GradientWallpaperData;
-  return `linear-gradient(${gradient.angle}deg, ${gradient.from}, ${gradient.to})`;
+  return layersToCss(theme.wallpaperData);
 };
 
 const resetThemeDraft = () => {
@@ -91,9 +81,7 @@ const openThemeEditor = (theme?: UserTheme) => {
       photoData:
         theme.wallpaperType === "photo" ? (theme.wallpaperData as string) : "",
       gradientData:
-        theme.wallpaperType === "gradient"
-          ? { ...(theme.wallpaperData as GradientWallpaperData) }
-          : { ...defaultGradient },
+        theme.wallpaperType === "gradient" ? theme.wallpaperData : [],
       colors: { ...defaultColors, ...theme.colors },
     };
   }
@@ -115,17 +103,22 @@ const saveTheme = () => {
   }
 
   const id = editingThemeId.value ?? `custom-${crypto.randomUUID()}`;
-  const wallpaperData =
+  const theme: UserTheme =
     themeDraft.value.wallpaperType === "photo"
-      ? themeDraft.value.photoData
-      : { ...themeDraft.value.gradientData };
-  const theme: UserTheme = {
-    id,
-    name,
-    wallpaperType: themeDraft.value.wallpaperType,
-    wallpaperData,
-    colors: { ...themeDraft.value.colors },
-  };
+      ? {
+          id,
+          name,
+          wallpaperType: "photo",
+          wallpaperData: themeDraft.value.photoData,
+          colors: { ...themeDraft.value.colors },
+        }
+      : {
+          id,
+          name,
+          wallpaperType: "gradient",
+          wallpaperData: themeDraft.value.gradientData,
+          colors: { ...themeDraft.value.colors },
+        };
   const themes = [...storage.settings.customThemes];
   const index = themes.findIndex((item) => item.id === id);
 
@@ -252,9 +245,9 @@ const handleWallpaperChange = (event: Event) => {
 
   <Field v-if="isThemeEditorOpen" class="border border-border p-3">
     <FieldContent>
-      <FieldLabel for="custom-theme-name">{{
-        editingTheme ? t("settings.editTheme") : t("settings.createTheme")
-      }}</FieldLabel>
+      <FieldLabel for="custom-theme-name">
+        {{ editingTheme ? t("settings.editTheme") : t("settings.createTheme") }}
+      </FieldLabel>
       <input
         id="custom-theme-name"
         v-model="themeDraft.name"
@@ -291,53 +284,17 @@ const handleWallpaperChange = (event: Event) => {
       >
         <SelectTrigger class="w-full"><SelectValue /></SelectTrigger>
         <SelectContent>
-          <SelectItem value="photo">{{
-            t("settings.imageWallpaper")
-          }}</SelectItem>
+          <SelectItem value="photo">
+            {{ t("settings.imageWallpaper") }}
+          </SelectItem>
           <SelectItem value="gradient">{{ t("settings.gradient") }}</SelectItem>
         </SelectContent>
       </Select>
-      <div
-        v-if="themeDraft.wallpaperType === 'gradient'"
-        class="grid gap-2 rounded-md border border-border p-2"
-      >
-        <div class="grid grid-cols-2 gap-2">
-          <label
-            class="flex items-center justify-between gap-2 text-xs text-muted-foreground"
-            >{{ t("settings.gradientStart")
-            }}<input
-              v-model="themeDraft.gradientData.from"
-              type="color"
-              class="size-8 cursor-pointer rounded border-0 bg-transparent p-0"
-          /></label>
-          <label
-            class="flex items-center justify-between gap-2 text-xs text-muted-foreground"
-            >{{ t("settings.gradientEnd")
-            }}<input
-              v-model="themeDraft.gradientData.to"
-              type="color"
-              class="size-8 cursor-pointer rounded border-0 bg-transparent p-0"
-          /></label>
-        </div>
-        <label class="grid gap-1 text-xs text-muted-foreground">
-          {{ t("settings.gradientAngle") }}:
-          {{ themeDraft.gradientData.angle }}°
-          <Slider
-            :default-value="[themeDraft.gradientData.angle]"
-            @update:model-value="
-              (newValue) => {
-                if (!newValue) return;
-                themeDraft.gradientData.angle = newValue[0];
-              }
-            "
-            :min="0"
-            :max="360"
-            class="mt-2"
-          />
-        </label>
+      <div v-if="themeDraft.wallpaperType === 'gradient'">
+        <GradientBuilder v-model="themeDraft.gradientData" />
       </div>
       <input
-        ref="wallpaperInput"
+        ref="wallpaperInputRef"
         type="file"
         accept="image/*"
         class="hidden"
@@ -348,7 +305,7 @@ const handleWallpaperChange = (event: Event) => {
         type="button"
         variant="secondary"
         class="w-full"
-        @click="wallpaperInput?.click()"
+        @click="wallpaperInputRef?.click()"
         ><UploadIcon />{{ t("settings.chooseWallpaper") }}</Button
       >
       <div class="flex gap-2">

@@ -1,15 +1,16 @@
 <script setup lang="ts">
 import pkg from "@/../package.json";
 import BackupSection from "@/components/BackupSection.vue";
+import ThemeSettings from "@/components/ThemeSettings.vue";
 import Button from "@/components/ui/button/Button.vue";
-import Drawer from "@/components/ui/drawer/Drawer.vue";
-import DrawerClose from "@/components/ui/drawer/DrawerClose.vue";
-import DrawerContent from "@/components/ui/drawer/DrawerContent.vue";
-import DrawerDescription from "@/components/ui/drawer/DrawerDescription.vue";
-import DrawerFooter from "@/components/ui/drawer/DrawerFooter.vue";
-import DrawerHeader from "@/components/ui/drawer/DrawerHeader.vue";
-import DrawerTitle from "@/components/ui/drawer/DrawerTitle.vue";
-import DrawerTrigger from "@/components/ui/drawer/DrawerTrigger.vue";
+import Dialog from "@/components/ui/dialog/Dialog.vue";
+import DialogClose from "@/components/ui/dialog/DialogClose.vue";
+import DialogContent from "@/components/ui/dialog/DialogContent.vue";
+import DialogDescription from "@/components/ui/dialog/DialogDescription.vue";
+import DialogFooter from "@/components/ui/dialog/DialogFooter.vue";
+import DialogHeader from "@/components/ui/dialog/DialogHeader.vue";
+import DialogTitle from "@/components/ui/dialog/DialogTitle.vue";
+import DialogTrigger from "@/components/ui/dialog/DialogTrigger.vue";
 import Field from "@/components/ui/field/Field.vue";
 import FieldContent from "@/components/ui/field/FieldContent.vue";
 import FieldDescription from "@/components/ui/field/FieldDescription.vue";
@@ -27,7 +28,6 @@ import ToggleGroup from "@/components/ui/toggle-group/ToggleGroup.vue";
 import ToggleGroupItem from "@/components/ui/toggle-group/ToggleGroupItem.vue";
 import { languageOptions, t } from "@/lib/i18n";
 import { storage, WeatherProvider } from "@/lib/storage";
-import ThemeSettings from "@/components/ThemeSettings.vue";
 import {
   CloudSunIcon,
   LanguagesIcon,
@@ -41,11 +41,15 @@ const weatherProviderOptions = [
   "google",
   "wttr",
 ] as const satisfies WeatherProvider[];
+
+const reloadPage = () => {
+  window.location.reload();
+};
 </script>
 
 <template>
-  <Drawer swipeDirection="right">
-    <DrawerTrigger asChild>
+  <Dialog>
+    <DialogTrigger asChild>
       <Button
         variant="ghost"
         size="icon"
@@ -53,18 +57,19 @@ const weatherProviderOptions = [
       >
         <SettingsIcon />
       </Button>
-    </DrawerTrigger>
-    <DrawerContent>
-      <DrawerHeader>
-        <DrawerTitle class="flex items-center justify-between">
+    </DialogTrigger>
+    <DialogContent class="max-w-[98vw] md:max-w-[80vw] lg:max-w-[60vw]">
+      <DialogHeader>
+        <DialogTitle>
           {{ t("settings.title") }}
+        </DialogTitle>
+        <DialogDescription>
           <span class="text-muted-foreground text-sm">
             v{{ pkg.version }}
           </span>
-        </DrawerTitle>
-        <DrawerDescription></DrawerDescription>
-      </DrawerHeader>
-      <div class="overflow-y-auto px-4">
+        </DialogDescription>
+      </DialogHeader>
+      <div class="max-h-[75vh] pr-2 overflow-y-auto">
         <FieldGroup>
           <Field>
             <FieldContent>
@@ -76,6 +81,7 @@ const weatherProviderOptions = [
                 id="language"
                 name="language"
                 v-model="storage.settings.language"
+                @update:modelValue="reloadPage"
                 class="h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground outline-none transition focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50"
               >
                 <SelectTrigger class="w-full">
@@ -211,11 +217,11 @@ const weatherProviderOptions = [
           <BackupSection />
         </FieldGroup>
       </div>
-      <DrawerFooter>
-        <DrawerClose asChild>
+      <DialogFooter>
+        <DialogClose asChild>
           <Button>{{ t("common.close") }}</Button>
-        </DrawerClose>
-      </DrawerFooter>
-    </DrawerContent>
-  </Drawer>
+        </DialogClose>
+      </DialogFooter>
+    </DialogContent>
+  </Dialog>
 </template>

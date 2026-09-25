@@ -120,7 +120,9 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
 export function normalizeSettingsData(input: unknown): SettingsData {
   if (!input || typeof input !== "object") return DEFAULT_STORAGE_DATA.settings;
   const raw = input as Partial<SettingsData>;
-  const language = (["en", "ru", "es", "de"] as const).includes(raw.language as Language)
+  const language = (["en", "ru", "es", "de"] as const).includes(
+    raw.language as Language,
+  )
     ? (raw.language as Language)
     : "en";
   const weatherProvider =
@@ -158,55 +160,38 @@ function normalizeUserTheme(input: unknown): UserTheme | null {
   }
 
   if (raw.wallpaperType === "photo" && typeof raw.wallpaperData === "string") {
-    return { id: raw.id, name: raw.name, wallpaperType: "photo", wallpaperData: raw.wallpaperData, colors: raw.colors };
+    return {
+      id: raw.id,
+      name: raw.name,
+      wallpaperType: "photo",
+      wallpaperData: raw.wallpaperData,
+      colors: raw.colors,
+    };
   }
-  if (raw.wallpaperType === "gradient" && isGradientWallpaperData(raw.wallpaperData)) {
-    return { id: raw.id, name: raw.name, wallpaperType: "gradient", wallpaperData: raw.wallpaperData, colors: raw.colors };
+  if (
+    raw.wallpaperType === "gradient" &&
+    isGradientWallpaperData(raw.wallpaperData)
+  ) {
+    return {
+      id: raw.id,
+      name: raw.name,
+      wallpaperType: "gradient",
+      wallpaperData: raw.wallpaperData,
+      colors: raw.colors,
+    };
   }
 
-  return normalizeLegacyUserTheme(raw.id, raw.name, raw.wallpaper, raw.colors);
+  return null;
 }
 
 function isThemeColors(input: unknown): input is ThemeColors {
   return Boolean(input) && typeof input === "object";
 }
 
-function isGradientWallpaperData(input: unknown): input is GradientWallpaperData {
-  if (!input || typeof input !== "object") return false;
-  const raw = input as Partial<GradientWallpaperData>;
-  return (
-    typeof raw.from === "string" &&
-    typeof raw.to === "string" &&
-    typeof raw.angle === "number"
-  );
-}
-
-function normalizeLegacyUserTheme(
-  id: string,
-  name: string,
-  wallpaper: unknown,
-  colors: ThemeColors,
-): UserTheme | null {
-  if (typeof wallpaper !== "string") return null;
-  const photo = wallpaper.match(/^url\(["']?(.*?)["']?\)$/);
-  if (photo?.[1]) {
-    return { id, name, wallpaperType: "photo", wallpaperData: photo[1], colors };
-  }
-
-  const gradient = wallpaper.match(
-    /^linear-gradient\((\d+)deg,\s*(#[\da-fA-F]{6}),\s*(#[\da-fA-F]{6})\)$/,
-  );
-  if (gradient) {
-    return {
-      id,
-      name,
-      wallpaperType: "gradient",
-      wallpaperData: { angle: Number(gradient[1]), from: gradient[2], to: gradient[3] },
-      colors,
-    };
-  }
-
-  return null;
+function isGradientWallpaperData(
+  input: unknown,
+): input is GradientWallpaperData {
+  return Array.isArray(input);
 }
 
 export function normalizeShortcutData(input: unknown): ShortcutData[] {
@@ -225,7 +210,9 @@ export function normalizeShortcutData(input: unknown): ShortcutData[] {
     .filter(Boolean) as ShortcutData[];
 }
 
-export function normalizeWeatherCity(input: unknown): StorageData["weatherCity"] {
+export function normalizeWeatherCity(
+  input: unknown,
+): StorageData["weatherCity"] {
   return isWeatherCity(input) ? input : DEFAULT_STORAGE_DATA.weatherCity;
 }
 
