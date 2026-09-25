@@ -18,7 +18,7 @@ const { isDropTarget } = useDroppable({
       ref="droppableRef"
       :class="[
         'fixed inset-0 z-20 transition-colors',
-        { 'bg-accent/20': isDropTarget },
+        { 'bg-accent/60': isDropTarget },
       ]"
     ></div>
   </Teleport>

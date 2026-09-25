@@ -4,21 +4,22 @@ import ShortcutGroup from "@/components/ShortcutGroup.vue";
 import ShortcutItem from "@/components/ShortcutItem.vue";
 import ShortcutsGrid from "@/components/ShortcutsGrid.vue";
 import { generatePreviousId } from "@/lib/helpers";
-import { t} from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 import { shortcutSensor } from "@/lib/sensors";
 import { storage } from "@/lib/storage";
 import { ShortcutGroupType, ShortcutType } from "@/lib/types";
 import { move } from "@dnd-kit/helpers";
 import { DragDropProvider } from "@dnd-kit/vue";
+import { ref } from "vue";
 
-
+const shortcutsStructureVersion = ref(0);
 </script>
 
 <template>
   <section>
     <DragDropProvider
       @dragEnd="
-        (event) => {
+        async (event) => {
           const shortcutItems = storage.shortcuts;
           const { targetId } = (event.operation.target?.data ?? {}) as {
             targetId?: number;
@@ -103,6 +104,7 @@ import { DragDropProvider } from "@dnd-kit/vue";
             });
 
             storage.shortcuts = changedShortcuts;
+            shortcutsStructureVersion++;
             return;
           }
 
@@ -111,7 +113,7 @@ import { DragDropProvider } from "@dnd-kit/vue";
       "
       :sensors="[shortcutSensor]"
     >
-      <ShortcutsGrid>
+      <ShortcutsGrid :key="shortcutsStructureVersion">
         <template
           v-for="(shortcut, idx) in storage.shortcuts"
           :key="shortcut.id"

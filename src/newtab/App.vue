@@ -56,7 +56,7 @@ watch(
 <template>
   <TooltipProvider>
     <div
-      class="fixed inset-0 z-0 nova-gradient"
+      class="fixed inset-0 z-0 nova-gradient overflow-auto no-scrollbar"
       :style="{
         backgroundImage,
         ...themeVariables,
