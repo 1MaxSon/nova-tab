@@ -2,7 +2,6 @@ import en from "@/locales/en.json";
 import { storage } from "@/lib/storage";
 import { computed, ref, watch } from "vue";
 import { isDev } from "@/lib/helpers";
-import { error } from "console";
 
 export const languages = ["en", "ru", "es", "de"] as const;
 export type Language = (typeof languages)[number];
@@ -50,7 +49,7 @@ watch(
 export const t = (key: TranslationKey): string => {
   const translation = selectedTranslations.value[key];
   if (!translation) {
-    if (isDev) error("Missing translation for key: ", key);
+    if (isDev) console.error("Missing translation for key: ", key);
 
     return en[key] ?? key;
   }
