@@ -3,16 +3,15 @@ import DeleteShortcutButton from "@/components/DeleteShortcutButton.vue";
 import EditShortcutDialog from "@/components/EditShortcutDialog.vue";
 import Button from "@/components/ui/button/Button.vue";
 import { GROUP_DROP_PREFIX, shortcutItemClassName } from "@/lib/constants";
-import { t} from "@/lib/i18n";
+import { t } from "@/lib/i18n";
 import { getIconById } from "@/lib/storage";
 import { ShortcutType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { pointerIntersection } from "@dnd-kit/collision";
 import { useDroppable } from "@dnd-kit/vue";
 import { useSortable } from "@dnd-kit/vue/sortable";
-import { Edit2Icon } from "@lucide/vue";
+import { Edit2Icon, GroupIcon } from "@lucide/vue";
 import { computed, onUnmounted, ref, useTemplateRef, watch } from "vue";
-import { pointerIntersection } from "@dnd-kit/collision";
-import { GroupIcon } from "@lucide/vue";
 
 const props = withDefaults(
   defineProps<{
@@ -26,21 +25,39 @@ const props = withDefaults(
   },
 );
 
-
 const sortableRef = useTemplateRef("sortableRef");
 const handleRef = useTemplateRef("handleRef");
 const dropRef = useTemplateRef("dropRef");
 
-const iconBlob = ref<Blob | undefined>(undefined);
+const iconBlob = ref<Blob>();
+const iconBlobUrl = ref<string>();
 
-const iconBlobUrl = computed<string | undefined>((oldValue) => {
-  if (oldValue) URL.revokeObjectURL(oldValue);
+watch(
+  () => props.shortcut,
+  async (newShortcut) => {
+    if (!newShortcut?.id) return;
 
-  if (iconBlob.value) {
-    return URL.createObjectURL(iconBlob.value);
+    const icon = await getIconById(newShortcut.id);
+
+    if (!icon) {
+      iconBlob.value = undefined;
+      return;
+    }
+
+    iconBlob.value = icon.blob;
+  },
+  { immediate: true },
+);
+
+watch(iconBlob, (blob) => {
+  if (iconBlobUrl.value) {
+    URL.revokeObjectURL(iconBlobUrl.value);
+    iconBlobUrl.value = undefined;
   }
 
-  return undefined;
+  if (blob) {
+    iconBlobUrl.value = URL.createObjectURL(blob);
+  }
 });
 
 watch(
@@ -58,7 +75,6 @@ onUnmounted(() => {
 });
 
 // DnD logic
-
 const { sortable } = useSortable({
   id: props.shortcut.id,
   index: props.index,
@@ -125,7 +141,18 @@ const { isDropTarget } = useDroppable({
 
     <EditShortcutDialog
       :shortcut="shortcut"
-      @iconChange="async () => {}"
+      @icon-change="
+        async () => {
+          const icon = await getIconById(shortcut.id);
+
+          if (!icon) {
+            iconBlob = undefined;
+            return;
+          }
+
+          iconBlob = icon.blob;
+        }
+      "
       as-child
     >
       <Button

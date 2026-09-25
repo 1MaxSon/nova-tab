@@ -14,15 +14,22 @@ type BackupFile = StorageData & {
   exportedAt: string;
 };
 
+type IconManifest = {
+  id: number;
+  type: string;
+};
+
 type BackupPayload = {
   shortcuts: unknown;
   wallpaper: unknown;
   weatherCity: unknown;
   settings: unknown;
+  icons: IconManifest[];
 };
 
 const BACKUP_FILE_NAME = "nova-backup.zip";
 const DATA_FILE_NAME = "data.json";
+const ICONS_FILE_NAME = "icons.json";
 const ICONS_DIR_NAME = "icons";
 const INVALID_BACKUP_FILE_ERROR = "INVALID_BACKUP_FILE";
 
@@ -59,7 +66,7 @@ const downloadBlob = (blob: Blob, fileName: string) => {
   URL.revokeObjectURL(url);
 };
 
-const parseBackupPayload = (text: string): BackupPayload => {
+const parseDataBackupPayload = (text: string): Omit<BackupPayload, "icons"> => {
   try {
     const parsed: unknown = JSON.parse(text);
 
@@ -78,15 +85,35 @@ const parseBackupPayload = (text: string): BackupPayload => {
   }
 };
 
-const readBackupData = async (zip: JSZip): Promise<BackupPayload> => {
+const parseIconsBackupPayload = (
+  text: string,
+): Pick<BackupPayload, "icons"> => {
+  try {
+    const parsed = JSON.parse(text) as IconManifest[];
+
+    return {
+      icons: parsed,
+    };
+  } catch {
+    throw new Error(INVALID_BACKUP_FILE_ERROR);
+  }
+};
+
+const readBackupData = async (
+  zip: JSZip,
+): Promise<Omit<BackupPayload, "icons">> => {
   const dataFile = zip.file(DATA_FILE_NAME);
 
   if (!dataFile) {
     throw new Error(INVALID_BACKUP_FILE_ERROR);
   }
 
-  const text = await dataFile.async("text");
-  return parseBackupPayload(text);
+  const dataText = await dataFile.async("text");
+  const backupData = parseDataBackupPayload(dataText);
+
+  return {
+    ...backupData,
+  };
 };
 
 const getIconId = (path: string): number | null => {
@@ -103,7 +130,16 @@ const getIconId = (path: string): number | null => {
 };
 
 const restoreIcons = async (zip: JSZip) => {
+  const iconsFile = zip.file(ICONS_FILE_NAME);
+
+  if (!iconsFile) {
+    throw new Error(INVALID_BACKUP_FILE_ERROR);
+  }
+
+  const iconsText = await iconsFile.async("text");
   const iconsFolder = zip.folder(ICONS_DIR_NAME);
+
+  const iconsData = parseIconsBackupPayload(iconsText);
 
   if (!iconsFolder) return;
 
@@ -116,13 +152,14 @@ const restoreIcons = async (zip: JSZip) => {
 
     if (id === null) return;
 
-    const format = iconFile.name.split(".").pop() ?? "png";
-
     restoreTasks.push(
       iconFile.async("arraybuffer").then((buffer) => {
-        const resolvedBlob = new Blob([buffer]);
+        const iconData = iconsData.icons.filter((p) => p.id === id).pop();
+        if (!iconData) return;
 
-        return saveIcon({ id, blob: resolvedBlob, format });
+        const resolvedBlob = new Blob([buffer], { type: iconData.type });
+
+        return saveIcon({ id, blob: resolvedBlob });
       }),
     );
   });
@@ -144,9 +181,18 @@ async function exportData(): Promise<void> {
   const iconsFolder = zip.folder(ICONS_DIR_NAME);
   const icons = await getIcons();
 
+  const iconManifest: IconManifest[] = [];
+
   for (const icon of icons) {
-    iconsFolder?.file(`${icon.id}.${icon.format}`, icon.blob);
+    iconsFolder?.file(`${icon.id}`, icon.blob);
+
+    iconManifest.push({
+      id: icon.id,
+      type: icon.blob.type,
+    });
   }
+
+  zip.file(ICONS_FILE_NAME, JSON.stringify(iconManifest, null, 2));
 
   const blob = await zip.generateAsync({
     type: "blob",

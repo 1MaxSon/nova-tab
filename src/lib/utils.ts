@@ -1,17 +1,18 @@
 import { type ClassValue, clsx } from "clsx";
 
 import {
+  domainFromUrl,
   generatePreviousId,
   getContrastYIQ,
   parseFavicon,
 } from "@/lib/helpers";
-import type { SavedIcon, WeatherProvider } from "@/lib/storage";
+import { t } from "@/lib/i18n";
+import type { WeatherProvider } from "@/lib/storage";
 import { saveIcon, storage } from "@/lib/storage";
 import type { ShortcutType } from "@/lib/types";
 import type { Coords } from "@/lib/types/open-meteo";
 import { extractIconPalette } from "@/lib/vibrant";
 import { twMerge } from "tailwind-merge";
-import { t } from "@/lib/i18n";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -64,7 +65,6 @@ export async function fetchFaviconBlob(url: string): Promise<
   | {
       iconUrl: string | null;
       iconBlob?: Blob;
-      iconFormat: SavedIcon["format"];
       title: string;
     }
   | undefined
@@ -72,12 +72,13 @@ export async function fetchFaviconBlob(url: string): Promise<
   const faviconErrorMessage = t("shortcut.faviconError");
 
   const result = await parseFavicon(url);
+
   if (!result) {
     alert(faviconErrorMessage);
     return;
   }
 
-  const { url: iconUrl, format: iconFormat, title } = result;
+  const { url: iconUrl, title } = result;
 
   if (import.meta.env.DEV) {
     console.log(`Fetched favicon url: ${iconUrl}`);
@@ -88,16 +89,28 @@ export async function fetchFaviconBlob(url: string): Promise<
   if (!iconUrl) alert(faviconErrorMessage);
   else {
     try {
-      const res = await fetch(iconUrl);
+      let res = await fetch(iconUrl);
 
-      if (res.status !== 200) alert(faviconErrorMessage);
+      if (res.status !== 200) {
+        const fallbackRes = await fetch(
+          `https://icons.duckduckgo.com/ip3/${domainFromUrl(url)}.ico`,
+        );
+
+        if (fallbackRes.status !== 200) {
+          alert(faviconErrorMessage);
+          return;
+        }
+
+        res = fallbackRes;
+      }
+
       iconBlob = await res.blob();
     } catch {
       alert(faviconErrorMessage);
     }
   }
 
-  return { iconUrl, iconBlob, iconFormat, title };
+  return { iconUrl, iconBlob, title };
 }
 
 export async function createShortcut(
@@ -108,7 +121,7 @@ export async function createShortcut(
 
   if (!result) return;
 
-  const { iconBlob, iconUrl, iconFormat, title } = result;
+  const { iconBlob, iconUrl, title } = result;
 
   const { shortcuts } = storage;
 
@@ -121,7 +134,7 @@ export async function createShortcut(
       : fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
 
   if (iconBlob) {
-    saveIcon({ id: previousShortcutId, blob: iconBlob, format: iconFormat });
+    saveIcon({ id: previousShortcutId, blob: iconBlob });
   }
 
   const iconPalette = iconUrl ? await extractIconPalette(iconUrl) : undefined;

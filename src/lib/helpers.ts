@@ -1,5 +1,4 @@
 import { Language } from "@/lib/i18n";
-import { SavedIcon } from "@/lib/storage";
 import { WeatherProvider } from "@/lib/storage";
 import type { ShortcutData } from "@/lib/types";
 
@@ -33,7 +32,6 @@ export function domainFromUrl(url: string) {
 
 export type FaviconResult = {
   url: string;
-  format: SavedIcon["format"];
   title: string;
 };
 
@@ -100,7 +98,7 @@ export async function parseFavicon(url: string): Promise<FaviconResult | null> {
     if (svgIcon?.href) {
       const faviconUrl = new URL(svgIcon.href, url).href;
 
-      return { url: faviconUrl, format: "svg", title: docTitle };
+      return { url: faviconUrl, title: docTitle };
     }
 
     const bestIcon = filteredIcons
@@ -119,14 +117,12 @@ export async function parseFavicon(url: string): Promise<FaviconResult | null> {
 
       return {
         url: resolvedUrl,
-        format: resolvedUrl.split(".").pop() ?? "png",
         title: docTitle,
       };
     }
 
     return {
       url: `https://icons.duckduckgo.com/ip3/${domainFromUrl(url)}.ico`,
-      format: "ico",
       title: docTitle,
     };
   } catch {

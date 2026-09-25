@@ -235,7 +235,6 @@ const ICONS_STORE_NAME = "icons";
 export type SavedIcon = {
   id: number;
   blob: Blob;
-  format: string; // png, svg
 };
 
 let dbPromise: Promise<IDBPDatabase> | null = null;
@@ -262,17 +261,16 @@ export const getIcons = async () => {
       "id" in p &&
       typeof p.id === "number" &&
       "blob" in p &&
-      p.blob instanceof Blob &&
-      "format" in p &&
-      typeof p.format === "string"
+      p.blob instanceof Blob
     );
   });
 };
 
 export const saveIcon = async (data: SavedIcon) => {
-  const { id, blob, format } = data;
+  const { id, blob } = data;
+
   const db = await getDB();
-  await db.put(ICONS_STORE_NAME, { id, blob, format }, id);
+  await db.put(ICONS_STORE_NAME, { id, blob, type: blob.type }, id);
 };
 
 export const deleteIcon = async (id: number) => {

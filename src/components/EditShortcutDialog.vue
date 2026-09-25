@@ -11,6 +11,7 @@ import Field from "@/components/ui/field/Field.vue";
 import FieldDescription from "@/components/ui/field/FieldDescription.vue";
 import FieldLabel from "@/components/ui/field/FieldLabel.vue";
 import Input from "@/components/ui/input/Input.vue";
+import { isDev } from "@/lib/helpers";
 import { t } from "@/lib/i18n";
 import { saveIcon, storage } from "@/lib/storage";
 import { ShortcutGroupType, ShortcutType } from "@/lib/types";
@@ -20,6 +21,10 @@ import { ref } from "vue";
 
 const props = defineProps<{
   shortcut: ShortcutType;
+}>();
+
+const emit = defineEmits<{
+  "icon-change": [];
 }>();
 
 const isDialogOpen = ref(false);
@@ -51,12 +56,15 @@ const onFormSubmit = async () => {
     return s;
   });
 
-  if (formData.value.newIcon) {
+  if (
+    formData.value.newIcon &&
+    Object.keys(formData.value.newIcon).length > 0
+  ) {
     await saveIcon({
       id: props.shortcut.id,
       blob: formData.value.newIcon,
-      format: formData.value.newIcon.name.split(".").pop() ?? "image/x-icon",
     });
+    emit("icon-change");
   }
 
   if (shortcutGroup) {
@@ -92,14 +100,15 @@ const refreshIcon = async () => {
     return;
   }
 
-  const { iconFormat, iconBlob } = result;
+  const { iconBlob } = result;
 
   if (iconBlob) {
     await saveIcon({
       id: props.shortcut.id,
       blob: iconBlob,
-      format: iconFormat,
     });
+
+    emit("icon-change");
   }
 
   isIconRefreshing.value = false;
@@ -123,7 +132,9 @@ const refreshIcon = async () => {
         <DialogTitle>
           {{ t("shortcut.editTitle") }}
         </DialogTitle>
-        <DialogDescription></DialogDescription>
+        <DialogDescription>
+          {{ isDev ? `#${shortcut.id}` : "" }}
+        </DialogDescription>
       </DialogHeader>
       <form
         @submit="
@@ -136,7 +147,7 @@ const refreshIcon = async () => {
         <div class="grid grid-cols-1 gap-4">
           <Field>
             <FieldLabel for="newIcon">
-              {{ t("shortcut.newIcon") }} {{ t("common.optional") }}
+              {{ t("shortcut.newIcon") }} ({{ t("common.optional") }})
             </FieldLabel>
             <div class="flex gap-2">
               <Input
