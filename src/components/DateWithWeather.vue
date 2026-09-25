@@ -28,7 +28,7 @@ import { ForecastData } from "@/lib/types/open-meteo";
 import { NominatimData } from "@/lib/types/openstreetmap";
 import { buildWeatherProviderUrl, cn } from "@/lib/utils";
 import { ArrowUp, MapPinIcon, MoveRightIcon, SearchIcon } from "@lucide/vue";
-import { useDebounceFn, useIntervalFn } from "@vueuse/core";
+import { useDebounceFn, useIntervalFn, useLocalStorage } from "@vueuse/core";
 import { ref, watch, watchEffect } from "vue";
 
 type WeatherData = {
@@ -38,7 +38,10 @@ type WeatherData = {
   temperatureUnit: ForecastData["current_weather_units"]["temperature"];
   windSpeed: ForecastData["current_weather"]["windspeed"];
   windDirection: ForecastData["current_weather"]["winddirection"];
+  fetchedAt: Date | string;
 };
+
+const TEN_MINUTES_IN_MS = 10 * 60 * 1000;
 
 const props = defineProps<{
   class: string;
@@ -47,7 +50,18 @@ const props = defineProps<{
 const isDialogOpen = ref(false);
 
 const date = ref(getDate(currentLanguage.value));
-const weatherData = ref<WeatherData | null>(null);
+const cachedWeatherData = useLocalStorage<WeatherData | null>(
+  "weatherData",
+  null,
+  {
+    serializer: {
+      read: (v: any) => (v ? JSON.parse(v) : null),
+      write: (v: any) => JSON.stringify(v),
+    },
+  },
+);
+const weatherData = ref<WeatherData | null>(cachedWeatherData.value);
+
 const isWeatherFetching = ref(false);
 const weatherLink = ref("");
 
@@ -65,7 +79,7 @@ useIntervalFn(() => {
 
 const { pause: pauseWeatherFetch, resume: resumeWeatherFetch } = useIntervalFn(
   fetchWeather,
-  5 * 60 * 10000,
+  TEN_MINUTES_IN_MS,
   { immediateCallback: true },
 );
 
@@ -84,11 +98,14 @@ watch(
   () => `${storage.settings.weatherUnit}_${storage.settings.windSpeedUnit}`,
   (newValue, oldValue) => {
     if (newValue !== oldValue) {
-      console.log("HERE");
-      fetchWeather();
+      fetchWeather(true);
     }
   },
 );
+
+watch(weatherData, (newValue) => {
+  cachedWeatherData.value = newValue;
+});
 
 watchEffect(() => {
   const { weatherCity, settings } = storage;
@@ -120,7 +137,7 @@ async function fetchCities() {
     return;
   }
 
-  suggestionItems.value = nominatimData.filter((p) => p.type === "city");
+  suggestionItems.value = nominatimData;
   isCitiesFetching.value = false;
 }
 
@@ -133,8 +150,17 @@ function getDate(locale: string) {
   }).format(now);
 }
 
-async function fetchWeather() {
+async function fetchWeather(force: boolean = false) {
   if (!storage.weatherCity) return;
+  const now = new Date();
+
+  if (!force && cachedWeatherData.value) {
+    const whenCachedFetched = new Date(
+      cachedWeatherData.value.fetchedAt,
+    ).getTime();
+
+    if (now.getTime() - whenCachedFetched < TEN_MINUTES_IN_MS) return;
+  }
 
   try {
     isWeatherFetching.value = true;
@@ -146,6 +172,7 @@ async function fetchWeather() {
         signal: AbortSignal.timeout(10000),
       },
     );
+
     if (res.status !== 200) return;
 
     const data = (await res.json()) as ForecastData;
@@ -163,6 +190,7 @@ async function fetchWeather() {
       temperatureUnit: data.current_weather_units.temperature,
       windSpeed: data.current_weather.windspeed,
       windDirection: data.current_weather.winddirection,
+      fetchedAt: new Date(),
     };
   } catch {
   } finally {
@@ -310,7 +338,9 @@ async function fetchWeather() {
                     :key="item.osm_id"
                     :value="item"
                   >
-                    <span class="block">{{ item.display_name }}</span>
+                    <span class="block"
+                      >{{ item.display_name }} ({{ item.addresstype }})</span
+                    >
                   </SelectItem>
                 </SelectContent>
               </Select>
@@ -333,6 +363,7 @@ async function fetchWeather() {
                     selectedCity = null;
                     addressQuery = '';
                     isDialogOpen = false;
+                    fetchWeather(true);
                   }
                 "
               >

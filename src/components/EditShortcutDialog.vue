@@ -22,10 +22,6 @@ const props = defineProps<{
   shortcut: ShortcutType;
 }>();
 
-const emit = defineEmits<{
-  iconChange: [];
-}>();
-
 const isDialogOpen = ref(false);
 const isIconRefreshing = ref(false);
 
@@ -61,7 +57,6 @@ const onFormSubmit = async () => {
       blob: formData.value.newIcon,
       format: formData.value.newIcon.name.split(".").pop() ?? "image/x-icon",
     });
-    emit("iconChange");
   }
 
   if (shortcutGroup) {
@@ -84,7 +79,6 @@ const onFormSubmit = async () => {
     });
   }
   isDialogOpen.value = false;
-  console.log(isDialogOpen.value);
 };
 
 const refreshIcon = async () => {
@@ -107,8 +101,6 @@ const refreshIcon = async () => {
       format: iconFormat,
     });
   }
-
-  emit("iconChange");
 
   isIconRefreshing.value = false;
 };
