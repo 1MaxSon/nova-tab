@@ -19,10 +19,7 @@ Nova Tab replaces the default new tab page with a focused dashboard: clock, date
 - Shortcut groups with drag-and-drop organization
 - Automatic favicon fetching with manual refresh
 - Custom shortcut icons and colors
-- Theme selector with matching wallpaper and shadcn/ui color variables
-- Custom wallpaper upload
-- English and Russian interface localization
-- Browser-language default for the initial language
+- Custom theme
 - Settings stored locally with `chrome.storage.local`
 - Icon and custom wallpaper cache stored in IndexedDB
 
