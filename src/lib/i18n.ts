@@ -39,6 +39,8 @@ watch(
       if (currentLanguage.value === language) {
         selectedTranslations.value = locale.default;
       }
+
+      document.title = t("window.title");
     } catch (error) {
       console.error(`Failed to load the ${language} locale`, error);
     }
