@@ -1,7 +1,7 @@
-import en from "@/locales/en.json";
-import { storage } from "@/lib/storage";
-import { computed, ref, watch } from "vue";
 import { isDev } from "@/lib/helpers";
+import { storage } from "@/lib/storage";
+import en from "@/locales/en.json";
+import { computed, ref, watch } from "vue";
 
 export const languages = ["en", "ru", "es", "de"] as const;
 export type Language = (typeof languages)[number];
@@ -32,23 +32,26 @@ watch(
   currentLanguage,
   async (language) => {
     selectedTranslations.value = en;
-    if (language === "en") return;
 
     try {
+      if (language === "en") return;
+
       const locale = await localeLoaders[language]();
       if (currentLanguage.value === language) {
         selectedTranslations.value = locale.default;
       }
-
-      document.title = t("window.title");
     } catch (error) {
       console.error(`Failed to load the ${language} locale`, error);
+    } finally {
+      document.title = t("window.title");
     }
   },
   { immediate: true },
 );
 
-export const t = (key: TranslationKey): string => {
+
+
+export function t(key: TranslationKey): string {
   const translation = selectedTranslations.value[key];
   if (!translation) {
     if (isDev) console.error("Missing translation for key: ", key);
@@ -57,4 +60,4 @@ export const t = (key: TranslationKey): string => {
   }
 
   return translation;
-};
+}
