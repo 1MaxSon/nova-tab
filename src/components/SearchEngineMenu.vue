@@ -8,7 +8,7 @@ import { storage } from "@/lib/storage";
 import { computed } from "vue";
 
 const TriggerIcon = computed(() => {
-  return searchEngineIcons[storage.settings.searchEngine].icon;
+  return searchEngineIcons.value[storage.settings.searchEngine].icon;
 });
 </script>
 

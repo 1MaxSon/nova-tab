@@ -6,17 +6,11 @@ import GoogleIcon from "@/components/icons/GoogleIcon.vue";
 import YahooIcon from "@/components/icons/YahooIcon.vue";
 import YandexIcon from "@/components/icons/YandexIcon.vue";
 import BingIcon from "@/components/icons/BingIcon.vue";
-import { Component } from "vue";
+import { Component, computed } from "vue";
 import { t } from "@/lib/i18n";
 
 export type SearchEngine =
-  | "google"
-  | "bing"
-  | "duckduckgo"
-  | "yahoo"
-  | "yandex"
-  | "brave"
-  | "ecosia";
+  "google" | "bing" | "duckduckgo" | "yahoo" | "yandex" | "brave" | "ecosia";
 
 const searchEngines: Record<SearchEngine, (query: string) => string> = {
   google: (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}`,
@@ -39,12 +33,11 @@ type SearchEngineIcon = {
   icon: Component;
 };
 
-export const searchEngineIcons: Record<
-  SearchEngine | "default",
-  SearchEngineIcon
-> = {
+export const searchEngineIcons = computed<
+  Record<SearchEngine | "default", SearchEngineIcon>
+>(() => ({
   default: {
-    label: t('search.engineDefault'),
+    label: t("search.engineDefault"),
     icon: ChromeIcon,
   },
   google: {
@@ -72,7 +65,7 @@ export const searchEngineIcons: Record<
     icon: YahooIcon,
   },
   yandex: {
-    label: t('search.engineYandex'),
+    label: t("search.engineYandex"),
     icon: YandexIcon,
   },
-};
+}));
