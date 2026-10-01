@@ -2,7 +2,7 @@
 
 A customizable Chrome new tab extension built with Vue, TypeScript, Vite, and CRXJS.
 
-Nova Tab replaces the default new tab page with a focused dashboard: clock, date, weather, search, draggable shortcuts, themes, custom wallpapers, and English/Russian localization.
+Nova Tab replaces the default new tab page with a focused dashboard: clock, date, weather, search, draggable shortcuts, themes, custom wallpapers, and multiple localization.
 
 <table>
   <tr>
