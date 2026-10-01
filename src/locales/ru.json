@@ -52,6 +52,7 @@
   "search.allowIncognito": "Чтобы открыть запрос в поисковике по умолчанию в режиме инкогнито, разрешите использование в режиме инкогнито. Или используйте другой поисковик из списка, кроме поисковика по умолчанию",
   "search.engineDefault": "По умолчанию",
   "search.engineYandex": "Яндекс",
+  "search.ctrlToIncognito": "чтобы открыть в инкогнито",
   "weather.selectCity": "Выберите город",
   "weather.changeAddress": "Изменить адрес",
   "weather.addressPlaceholder": "Введите адрес",

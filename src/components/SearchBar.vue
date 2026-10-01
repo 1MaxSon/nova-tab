@@ -6,7 +6,7 @@ import { getSearchUrl } from "@/lib/search-engines";
 import { storage } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 import { useDebounceFn } from "@vueuse/core";
-import { computed, ref, useId } from "vue";
+import { computed, nextTick, onMounted, ref, useId, useTemplateRef } from "vue";
 
 type DuckDuckGoSuggestions = [string, string[]];
 
@@ -14,53 +14,7 @@ const props = defineProps<{
   class: string;
 }>();
 
-const search = (query: string) => {
-  if (!query.trim()) return;
-  if (typeof chrome !== "undefined" && chrome.search?.query)
-    chrome.search.query({ text: query, disposition: "CURRENT_TAB" });
-  else
-    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
-};
-
-const searchInIncognito = async (query: string) => {
-  const trimmedQuery = query.trim();
-  if (!trimmedQuery) return;
-
-  if (typeof chrome !== "undefined" && chrome.search?.query && chrome.windows) {
-    const allowed = await chrome.extension.isAllowedIncognitoAccess();
-    if (!allowed) {
-      alert(t("search.allowIncognito"));
-      return;
-    }
-
-    try {
-      const incognitoWindow = await chrome.windows.create({
-        incognito: true,
-        focused: true,
-        state: "maximized",
-        setSelfAsOpener: true,
-      });
-
-      const incognitoTabId = incognitoWindow?.tabs?.[0]?.id;
-
-      if (!incognitoTabId) throw new Error();
-
-      chrome.search.query({
-        text: trimmedQuery,
-        tabId: incognitoTabId,
-      });
-      window.close();
-    } catch (error) {
-      window.open(
-        `https://www.google.com/search?q=${encodeURIComponent(trimmedQuery)}`,
-        "_blank",
-      );
-    }
-  } else {
-    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(trimmedQuery)}`;
-  }
-};
-
+const searchInput = useTemplateRef('searchInput');
 
 const listId = useId();
 const latestRequestRef = ref(0);
@@ -114,6 +68,59 @@ const loadSuggestions = useDebounceFn(async (searchValue: string) => {
     }
   }
 }, 400);
+
+onMounted(async () => {
+  await nextTick();
+  searchInput.value?.input?.focus();
+})
+
+
+const search = (query: string) => {
+  if (!query.trim()) return;
+  if (typeof chrome !== "undefined" && chrome.search?.query)
+    chrome.search.query({ text: query, disposition: "CURRENT_TAB" });
+  else
+    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+};
+
+const searchInIncognito = async (query: string) => {
+  const trimmedQuery = query.trim();
+  if (!trimmedQuery) return;
+
+  if (typeof chrome !== "undefined" && chrome.search?.query && chrome.windows) {
+    const allowed = await chrome.extension.isAllowedIncognitoAccess();
+    if (!allowed) {
+      alert(t("search.allowIncognito"));
+      return;
+    }
+
+    try {
+      const incognitoWindow = await chrome.windows.create({
+        incognito: true,
+        focused: true,
+        state: "maximized",
+        setSelfAsOpener: true,
+      });
+
+      const incognitoTabId = incognitoWindow?.tabs?.[0]?.id;
+
+      if (!incognitoTabId) throw new Error();
+
+      chrome.search.query({
+        text: trimmedQuery,
+        tabId: incognitoTabId,
+      });
+      window.close();
+    } catch (error) {
+      window.open(
+        `https://www.google.com/search?q=${encodeURIComponent(trimmedQuery)}`,
+        "_blank",
+      );
+    }
+  } else {
+    window.location.href = `https://www.google.com/search?q=${encodeURIComponent(trimmedQuery)}`;
+  }
+};
 
 const searchCurrentQuery = () => {
   const query = searchQuery.value.trim();
@@ -246,7 +253,7 @@ const handleBlur = () => {
         role="combobox"
         spellCheck="false"
         :value="searchQuery"
-        id="searchInput"
+        ref="searchInput"
       />
       <div
         v-if="shouldShowSuggestions"
@@ -278,28 +285,27 @@ const handleBlur = () => {
             "
             :id="listId"
             role="listbox"
-            class="grid grid-cols-1 p-1"
+            class="grid grid-cols-1 p-1 bg-background/80 border-none"
           >
             <button
               v-for="(suggestion, index) in suggestions"
               :aria-selected="activeSuggestionIndex === index"
               :class="
                 cn(
-                  'flex h-9 cursor-pointer items-center rounded-sm px-2 text-left text-sm text-white transition-colors',
+                  'flex h-9 cursor-pointer items-center rounded-sm px-2 text-left text-sm text-foreground transition-colors',
                   activeSuggestionIndex === index
-                    ? 'bg-white/15'
-                    : 'hover:bg-white/10',
+                    ? 'bg-accent/15'
+                    : 'hover:bg-accent/10',
                 )
               "
               :id="`${listId}-${index}`"
               :key="`${suggestion}-${index}`"
               @mousedown="(e) => e.preventDefault()"
               @mouseenter="() => (activeSuggestionIndex = index)"
-              @click="
-                () => {
+              @click="(e) => {
                   searchQuery = suggestion;
                   isSuggestionsOpen = false;
-                  search(suggestion);
+                  (e.ctrlKey || e.metaKey) ? searchCurrentQueryInIncognito() : searchCurrentQuery();
                 }
               "
               role="option"
@@ -308,6 +314,10 @@ const handleBlur = () => {
             >
               {{ suggestion }}
             </button>
+            <div class="px-2 flex flex-col md:flex-row items-center justify-between mt-2 gap-2">
+                <span><kbd>Ctrl</kbd> + <kbd>Click/Enter</kbd> {{ t('search.ctrlToIncognito') }}</span>
+                <span>Powered By DuckDuckGo</span>
+            </div>
           </div>
         </div>
       </div>

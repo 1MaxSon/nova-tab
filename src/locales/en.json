@@ -52,6 +52,7 @@
   "search.allowIncognito": "To open a query in the default search engine in incognito mode, allow use in incognito mode. Or use another search engine from the list, except for the default search engine",
   "search.engineDefault": "Default",
   "search.engineYandex": "Yandex",
+  "search.ctrlToIncognito": "to open in incognito",
   "weather.selectCity": "Select city",
   "weather.changeAddress": "Change address",
   "weather.addressPlaceholder": "Enter an address",

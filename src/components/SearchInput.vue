@@ -4,6 +4,7 @@ import InputGroup from "@/components/ui/input-group/InputGroup.vue";
 import InputGroupAddon from "@/components/ui/input-group/InputGroupAddon.vue";
 import { cn } from "@/lib/utils";
 import { ChevronRightIcon } from "@lucide/vue";
+import { useTemplateRef } from "vue";
 
 const props = defineProps<{
   class?: string;
@@ -12,6 +13,12 @@ const props = defineProps<{
 const emit = defineEmits<{
   incognitoRequest: [];
 }>();
+
+const input = useTemplateRef<HTMLInputElement>('input');
+
+defineExpose({
+  input,
+});
 </script>
 
 <template>
@@ -26,6 +33,7 @@ const emit = defineEmits<{
         :class="
           cn('ml-2 w-full bg-transparent text-sm outline-hidden', props.class)
         "
+        ref="input"
         v-bind="$attrs"
       />
       <InputGroupAddon align="inline-end">

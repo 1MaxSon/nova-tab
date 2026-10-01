@@ -52,6 +52,7 @@
   "search.allowIncognito": "Um eine Anfrage in der Standard-Suchmaschine im Inkognito-Modus zu öffnen, erlaube die Verwendung im Inkognito-Modus. Oder nutze eine andere Suchmaschine aus der Liste.",
   "search.engineDefault": "Standard",
   "search.engineYandex": "Yandex",
+  "search.ctrlToIncognito": "um inkognito zu öffnen",
   "weather.selectCity": "Stadt auswählen",
   "weather.changeAddress": "Adresse ändern",
   "weather.addressPlaceholder": "Adresse eingeben",

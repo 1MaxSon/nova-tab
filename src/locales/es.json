@@ -52,6 +52,7 @@
   "search.allowIncognito": "Para abrir una consulta en el motor de búsqueda predeterminado en modo incógnito, permite su uso en incógnito. También puedes usar otro motor de la lista.",
   "search.engineDefault": "Predeterminado",
   "search.engineYandex": "Yandex",
+  "search.ctrlToIncognito": "para abrir en incógnito",
   "weather.selectCity": "Seleccionar ciudad",
   "weather.changeAddress": "Cambiar dirección",
   "weather.addressPlaceholder": "Introduce una dirección",
