@@ -84,6 +84,8 @@
   "weather.condition.thunderstorm": "Tormenta eléctrica",
   "weather.condition.thunderstormWithHail": "Tormenta eléctrica con granizo",
   "weather.condition.unknown": "Tiempo desconocido",
+  "weather.asOf": "A partir de",
+  "weather.feelsLike": "Se siente como",
   "shortcut.createTitle": "Crear un acceso directo",
   "shortcut.editTitle": "Editar acceso directo",
   "shortcut.url": "URL",

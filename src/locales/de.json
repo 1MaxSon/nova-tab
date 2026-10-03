@@ -84,6 +84,8 @@
   "weather.condition.thunderstorm": "Gewitter",
   "weather.condition.thunderstormWithHail": "Gewitter mit Hagel",
   "weather.condition.unknown": "Unbekanntes Wetter",
+  "Wetter.asOf": "Ab",
+  "Wetter.feelsLike": "Fühlt sich an wie",
   "shortcut.createTitle": "Verknüpfung erstellen",
   "shortcut.editTitle": "Verknüpfung bearbeiten",
   "shortcut.url": "URL",

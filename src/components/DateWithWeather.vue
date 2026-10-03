@@ -35,9 +35,11 @@ type WeatherData = {
   icon: string;
   desc: TranslationKey;
   temperature: number;
-  temperatureUnit: ForecastData["current_weather_units"]["temperature"];
-  windSpeed: ForecastData["current_weather"]["windspeed"];
-  windDirection: ForecastData["current_weather"]["winddirection"];
+  temperatureUnit: ForecastData["current_units"]["temperature_2m"];
+  apparentTemperature: number;
+  apparentTemperatureUnit: ForecastData["current_units"]["apparent_temperature"];
+  windSpeed: ForecastData["current"]["wind_speed_10m"];
+  windDirection: ForecastData["current"]["wind_direction_10m"];
   fetchedAt: Date | string;
 };
 
@@ -167,7 +169,8 @@ async function fetchWeather(force: boolean = false) {
 
     const res = await fetch(
       `https://api.open-meteo.com/v1/forecast?latitude=${storage.weatherCity.lat}&longitude=${storage.weatherCity.lon}` +
-        `&current_weather=true&temperature_unit=${storage.settings.weatherUnit}&timezone=auto&wind_speed_unit=${storage.settings.windSpeedUnit}`,
+        `&current=temperature_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m&` +
+        `temperature_unit=${storage.settings.weatherUnit}&timezone=auto&wind_speed_unit=${storage.settings.windSpeedUnit}`,
       {
         signal: AbortSignal.timeout(10000),
       },
@@ -177,8 +180,8 @@ async function fetchWeather(force: boolean = false) {
 
     const data = (await res.json()) as ForecastData;
 
-    const cw = data.current_weather;
-    const [icon, desc] = WEATHER_CODES[cw.weathercode] || [
+    const currentWeather = data.current;
+    const [icon, desc] = WEATHER_CODES[currentWeather.weather_code] || [
       "🌡️",
       "weather.condition.unknown",
     ];
@@ -186,10 +189,12 @@ async function fetchWeather(force: boolean = false) {
     weatherData.value = {
       icon,
       desc,
-      temperature: Math.floor(cw.temperature),
-      temperatureUnit: data.current_weather_units.temperature,
-      windSpeed: data.current_weather.windspeed,
-      windDirection: data.current_weather.winddirection,
+      temperature: Math.floor(currentWeather.temperature_2m),
+      temperatureUnit: data.current_units.temperature_2m,
+      apparentTemperature: Math.floor(currentWeather.apparent_temperature),
+      apparentTemperatureUnit: data.current_units.apparent_temperature,
+      windSpeed: data.current.wind_speed_10m,
+      windDirection: data.current.wind_direction_10m,
       fetchedAt: new Date(),
     };
   } catch {
@@ -224,10 +229,9 @@ async function fetchWeather(force: boolean = false) {
             </span>
             <span v-else>{{ t("weather.fetchingFailed") }}</span>
 
-            <span class="text-muted-foreground">
+            <span v-if="weatherData" class="text-muted-foreground">
               {{
-                weatherData &&
-                `${weatherData.temperature} ${weatherData.temperatureUnit}`
+                `${weatherData.temperature} (${weatherData.apparentTemperature}) ${weatherData.temperatureUnit}`
               }}
             </span>
           </a>
@@ -239,14 +243,33 @@ async function fetchWeather(force: boolean = false) {
                 `${storage.weatherCity.name}, ${storage.weatherCity.lat} / ${storage.weatherCity.lon}`
               }}
             </span>
-            <div v-if="weatherData" class="flex items-center">
-              {{
-                `${t("weather.windSpeed")}: ${weatherData.windSpeed} ${t(`settings.units.${storage.settings.windSpeedUnit}`).toLowerCase()}`
-              }}
-              <ArrowUp
-                class="size-4 ml-1"
-                :style="{ rotate: `${weatherData.windDirection}deg` }"
-              />
+            <div v-if="weatherData" class="flex flex-col mt-1">
+              <p class='text-muted-foreground'>
+                {{ t('weather.asOf') }}
+                <time :datetime="weatherData.fetchedAt.toString()">
+                  {{
+                    new Date(weatherData.fetchedAt).toLocaleTimeString(
+                      undefined,
+                      {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      },
+                    )
+                  }}:
+                </time>
+              </p>
+              <p>
+                  {{ t('weather.feelsLike') }}: {{ weatherData.apparentTemperature }} {{ weatherData.apparentTemperatureUnit }}
+              </p>
+              <p class="flex items-center">
+                {{
+                  `${t("weather.windSpeed")}: ${weatherData.windSpeed} ${t(`settings.units.${storage.settings.windSpeedUnit}`)}`
+                }}
+                <ArrowUp
+                  class="size-4 ml-1"
+                  :style="{ rotate: `${weatherData.windDirection}deg` }"
+                />
+              </p>
             </div>
           </div>
         </TooltipContent>
@@ -338,9 +361,9 @@ async function fetchWeather(force: boolean = false) {
                     :key="item.osm_id"
                     :value="item"
                   >
-                    <span class="block"
-                      >{{ item.display_name }} ({{ item.addresstype }})</span
-                    >
+                    <span class="block">
+                      {{ item.display_name }} ({{ item.addresstype }})
+                    </span>
                   </SelectItem>
                 </SelectContent>
               </Select>

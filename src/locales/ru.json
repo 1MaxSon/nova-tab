@@ -84,6 +84,8 @@
   "weather.condition.thunderstorm": "Гроза",
   "weather.condition.thunderstormWithHail": "Гроза с градом",
   "weather.condition.unknown": "Неизвестная погода",
+  "weather.asOf": "По состоянию на",
+  "weather.feelsLike": "Ощущается как",
   "shortcut.createTitle": "Создать ярлык",
   "shortcut.editTitle": "Редактировать ярлык",
   "shortcut.url": "URL",

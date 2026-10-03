@@ -9,23 +9,23 @@ export type Coords = {
 };
 
 export type ForecastData = {
-	current_weather: {
+	current: {
 		interval: number;
-		is_day: 0 | 1 | "";
-		temperature: number;
-		time: Date;
-		weathercode: keyof typeof WEATHER_CODES;
-		winddirection: number;
-		windspeed: number;
-	};
-	current_weather_units: {
-		interval: string;
-		is_day: 0 | 1 | "";
-		temperature: "°C" | "°F";
+    temperature_2m: number;
+    apparent_temperature: number;
 		time: string;
-		weathercode: string;
-		winddirection: string;
-		windspeed: string;
+		weather_code: keyof typeof WEATHER_CODES;
+		wind_direction_10m: number;
+		wind_speed_10m: number;
+	};
+	current_units: {
+		interval: string;
+    temperature_2m: "°C" | "°F";
+    apparent_temperature: "°C" | "°F";
+		time: string;
+		weather_code: string;
+		wind_direction_10m: string;
+		wind_speed_10m: string;
 	};
 	elevation: number;
 	generationtime_ms: number;
