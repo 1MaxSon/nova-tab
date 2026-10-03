@@ -59,7 +59,7 @@
   "weather.fetchingFailed": "🌈",
   "weather.provider": "Weather site",
   "weather.providerDescription": "Choose where the weather widget opens",
-  "weather.provider.googleQuery": "weather in",
+  "weather.provider.searchQuery": "Weather in",
   "weather.provider.yandex": "Yandex Weather",
   "weather.provider.google": "Google Weather",
   "weather.provider.wttr": "Wttr",

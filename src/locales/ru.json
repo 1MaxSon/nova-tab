@@ -59,7 +59,7 @@
   "weather.fetchingFailed": "🌈",
   "weather.provider": "Сайт погоды",
   "weather.providerDescription": "Выберите, где открывается виджет погоды",
-  "weather.provider.googleQuery": "Погода",
+  "weather.provider.searchQuery": "Погода",
   "weather.provider.yandex": "Яндекс Погода",
   "weather.provider.google": "Google Погода",
   "weather.provider.wttr": "Wttr",
