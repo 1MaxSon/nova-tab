@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getTime } from "@/lib/helpers";
 import { cn } from "@/lib/utils";
 import { useIntervalFn } from "@vueuse/core";
 import { ref } from "vue";
@@ -13,13 +14,15 @@ const seconds = ref("");
 const updateTime = () => {
   const now = new Date();
 
-  hm.value = `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+  const time = getTime(now);
+
+  hm.value = time;
   seconds.value = String(now.getSeconds()).padStart(2, "0");
 };
 
-updateTime()
+updateTime();
 
-useIntervalFn(updateTime, 1000)
+useIntervalFn(updateTime, 1000);
 </script>
 
 <template>

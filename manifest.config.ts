@@ -1,7 +1,6 @@
 import { defineManifest } from "@crxjs/vite-plugin";
-import pkg from "./package.json";
-import { isDev } from "./src/lib/helpers";
-
+import pkg from "./package.json" with { type: "json" };
+import { isDev } from "./src/lib/helpers.ts";
 
 export default defineManifest({
   manifest_version: 3,
@@ -18,9 +17,7 @@ export default defineManifest({
     },
   },
   permissions: ["storage", "search", "tabs"],
-  host_permissions: [
-    "<all_urls>",
-  ],
+  host_permissions: ["<all_urls>"],
   chrome_url_overrides: {
     newtab: "src/newtab/index.html",
   },

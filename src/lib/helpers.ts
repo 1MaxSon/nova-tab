@@ -1,5 +1,4 @@
 import { Language } from "@/lib/i18n";
-import { WeatherProvider } from "@/lib/storage";
 import type { ShortcutData } from "@/lib/types";
 
 export const getDefaultLanguage = (): Language => {
@@ -14,12 +13,6 @@ export const getDefaultLanguage = (): Language => {
         : "en";
 };
 
-export const getDefaultWeatherProvider = (
-  language = getDefaultLanguage(),
-): WeatherProvider => {
-  return language === "ru" ? "yandex" : "google";
-};
-
 export const isDev = process.env.NODE_ENV === "development";
 
 export function domainFromUrl(url: string) {
@@ -27,106 +20,6 @@ export function domainFromUrl(url: string) {
     return new URL(url).hostname.replace("www.", "");
   } catch {
     return url;
-  }
-}
-
-export type FaviconResult = {
-  url: string;
-  title: string;
-};
-
-export async function parseFavicon(url: string): Promise<FaviconResult | null> {
-  try {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const html = await response.text();
-
-    const doc = new DOMParser().parseFromString(html, "text/html");
-    const docOgMetaTitle = doc.querySelector('meta[property="og:title"]') as
-      | HTMLMetaElement
-      | undefined;
-    const docTitle = docOgMetaTitle ? docOgMetaTitle.content : doc.title;
-
-    const links = Array.from(
-      doc.querySelectorAll<HTMLLinkElement>("link[rel]"),
-    );
-
-    const icons = links
-      .map((link) => ({
-        rel: link.rel.toLowerCase(),
-        href: link.getAttribute("href"),
-        type: link.getAttribute("type")?.toLowerCase() ?? "",
-        sizes: link.getAttribute("sizes") ?? "",
-      }))
-      .filter((icon) => {
-        if (!icon.href) {
-          return false;
-        }
-
-        return (
-          icon.rel.includes("icon") || icon.rel.includes("apple-touch-icon")
-        );
-      });
-
-    if (icons.length === 0) {
-      return null;
-    }
-
-    const filteredIcons = icons.filter((icon) => {
-      const href = icon.href?.toLowerCase() ?? "";
-
-      return (
-        !href.includes("safari-pinned-tab") && !icon.rel.includes("mask-icon")
-      );
-    });
-
-    const svgIcon = filteredIcons.find((icon) => {
-      const href = icon.href?.toLowerCase() ?? "";
-
-      return (
-        icon.type.includes("svg") ||
-        (href.endsWith(".svg") &&
-          !href.includes("apple") &&
-          !href.includes("mask"))
-      );
-    });
-
-    if (svgIcon?.href) {
-      const faviconUrl = new URL(svgIcon.href, url).href;
-
-      return { url: faviconUrl, title: docTitle };
-    }
-
-    const bestIcon = filteredIcons
-      .map((icon) => {
-        const match = icon.sizes.match(/^(\d+)x(\d+)$/i);
-
-        return {
-          ...icon,
-          size: match ? Number(match[1]) : 0,
-        };
-      })
-      .sort((a, b) => b.size - a.size)[0];
-
-    if (bestIcon?.href) {
-      const resolvedUrl = new URL(bestIcon.href, url).href;
-
-      return {
-        url: resolvedUrl,
-        title: docTitle,
-      };
-    }
-
-    return {
-      url: `https://icons.duckduckgo.com/ip3/${domainFromUrl(url)}.ico`,
-      title: docTitle,
-    };
-  } catch {
-    return null;
   }
 }
 
@@ -150,4 +43,11 @@ export function generatePreviousId(shortcuts: ShortcutData[]) {
   });
 
   return Math.max(0, ...ids) + 1;
+}
+
+export function getTime(date: Date) {
+  return date.toLocaleTimeString(undefined, {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }

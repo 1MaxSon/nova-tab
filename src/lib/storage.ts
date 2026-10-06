@@ -1,4 +1,4 @@
-import { getDefaultLanguage, getDefaultWeatherProvider } from "@/lib/helpers";
+import { getDefaultLanguage } from "@/lib/helpers";
 import type { Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
 import type {
@@ -8,6 +8,7 @@ import type {
   UserTheme,
   WeatherCity,
 } from "@/lib/types";
+import { getDefaultWeatherProvider } from "@/lib/utils/weather";
 import { IDBPDatabase, openDB } from "idb";
 import { reactive, watch } from "vue";
 

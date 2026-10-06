@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import pkg from "@/../package.json";
+import pkg from "@/../package.json" with { type: "json" };
 import BackupSection from "@/components/BackupSection.vue";
 import ThemeSettings from "@/components/ThemeSettings.vue";
 import Button from "@/components/ui/button/Button.vue";

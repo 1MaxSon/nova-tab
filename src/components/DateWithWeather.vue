@@ -22,11 +22,14 @@ import Tooltip from "@/components/ui/tooltip/Tooltip.vue";
 import TooltipContent from "@/components/ui/tooltip/TooltipContent.vue";
 import TooltipTrigger from "@/components/ui/tooltip/TooltipTrigger.vue";
 import { WEATHER_CODES } from "@/lib/constants";
+import { getTime } from "@/lib/helpers";
 import { currentLanguage, t, type TranslationKey } from "@/lib/i18n";
 import { storage } from "@/lib/storage";
 import { ForecastData } from "@/lib/types/open-meteo";
 import { NominatimData } from "@/lib/types/openstreetmap";
-import { buildWeatherProviderUrl, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { fetchCities } from "@/lib/utils/nominatim";
+import { buildWeatherProviderUrl } from "@/lib/utils/weather";
 import { ArrowUp, MapPinIcon, MoveRightIcon, SearchIcon } from "@lucide/vue";
 import { useDebounceFn, useIntervalFn, useLocalStorage } from "@vueuse/core";
 import { ref, watch, watchEffect } from "vue";
@@ -73,7 +76,7 @@ const addressQuery = ref("");
 const isCitiesFetching = ref(false);
 const suggestionItems = ref<NominatimData[]>([]);
 const isSuggestionsPending = ref(false);
-const fetchCitiesDebounce = useDebounceFn(fetchCities, 800);
+const fetchCitiesDebounce = useDebounceFn(loadCities, 800);
 
 useIntervalFn(() => {
   date.value = getDate(currentLanguage.value);
@@ -124,22 +127,18 @@ watchEffect(() => {
     fetchCitiesDebounce.isPending.value || isCitiesFetching.value;
 });
 
-async function fetchCities() {
+async function loadCities() {
   isCitiesFetching.value = true;
-  const res = await fetch(
-    `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addressQuery.value)}&format=json&type=city`,
-    { headers: { "Accept-Language": currentLanguage.value } },
-  );
 
-  const nominatimData = (await res.json()) as NominatimData[];
+  const cities = await fetchCities(addressQuery.value);
 
-  if (!nominatimData || nominatimData.length === 0) {
+  if (!cities || cities.length === 0) {
     suggestionItems.value = [];
     isCitiesFetching.value = false;
     return;
   }
 
-  suggestionItems.value = nominatimData;
+  suggestionItems.value = cities;
   isCitiesFetching.value = false;
 }
 
@@ -244,22 +243,16 @@ async function fetchWeather(force: boolean = false) {
               }}
             </span>
             <div v-if="weatherData" class="flex flex-col mt-1">
-              <p class='text-muted-foreground'>
-                {{ t('weather.asOf') }}
+              <p class="text-muted-foreground">
+                {{ t("weather.asOf") }}
                 <time :datetime="weatherData.fetchedAt.toString()">
-                  {{
-                    new Date(weatherData.fetchedAt).toLocaleTimeString(
-                      undefined,
-                      {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      },
-                    )
-                  }}:
+                  {{ getTime(new Date(weatherData.fetchedAt)) }}:
                 </time>
               </p>
               <p>
-                  {{ t('weather.feelsLike') }}: {{ weatherData.apparentTemperature }} {{ weatherData.apparentTemperatureUnit }}
+                {{ t("weather.feelsLike") }}:
+                {{ weatherData.apparentTemperature }}
+                {{ weatherData.apparentTemperatureUnit }}
               </p>
               <p class="flex items-center">
                 {{

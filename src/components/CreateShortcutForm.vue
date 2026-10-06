@@ -4,8 +4,7 @@ import FieldDescription from "@/components/ui/field/FieldDescription.vue";
 import FieldLabel from "@/components/ui/field/FieldLabel.vue";
 import Input from "@/components/ui/input/Input.vue";
 import { t } from "@/lib/i18n";
-import { CreateShortcutInput } from "@/lib/utils";
-
+import { CreateShortcutInput } from "@/lib/types";
 
 const formData = defineModel<CreateShortcutInput>({
   default: () => ({

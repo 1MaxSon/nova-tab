@@ -12,7 +12,9 @@ import Spinner from "@/components/ui/spinner/Spinner.vue";
 import { shortcutItemClassName } from "@/lib/constants";
 import { t } from "@/lib/i18n";
 import { storage } from "@/lib/storage";
-import { cn, createShortcut, CreateShortcutInput } from "@/lib/utils";
+import { CreateShortcutInput } from "@/lib/types";
+import { cn } from "@/lib/utils";
+import { createShortcut } from "@/lib/utils/shortcut";
 import { PlusIcon } from "@lucide/vue";
 import { ref } from "vue";
 

@@ -20,6 +20,9 @@ export type ShortcutGroupType = {
 
 export type ShortcutData = ShortcutType | ShortcutGroupType;
 
+export type CreateShortcutInput = Pick<ShortcutType, "url"> &
+  Omit<ShortcutType, "url" | "id" | "type">;
+
 export type WeatherCity = { name: string; lat: Latitude; lon: Longitude };
 
 export type ThemeColors = Record<string, string>;
