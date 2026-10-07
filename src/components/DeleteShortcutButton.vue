@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import Button from "@/components/ui/button/Button.vue";
-import { deleteIcon, storage } from "@/lib/storage";
+import { storage } from "@/lib/storage";
 import { ShortcutGroupType, ShortcutType } from "@/lib/types";
+import { deleteImage } from "@/lib/utils/img-idb";
 import { TrashIcon } from "@lucide/vue";
 
 const props = defineProps<{
@@ -46,7 +47,7 @@ const props = defineProps<{
           );
         }
 
-        await deleteIcon(shortcut.id);
+        await deleteImage(shortcut.id);
       }
     "
   >

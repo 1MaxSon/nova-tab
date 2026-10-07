@@ -101,8 +101,8 @@
   "shortcut.group": "Группа",
   "shortcut.createGroup": "Создать группу",
   "shortcut.addToGroup": "Добавить в группу",
-  "gradientBuilder.addRadialLayer": "Radial слой",
-  "gradientBuilder.addLinearLayer": "Linear слой",
+  "gradientBuilder.addRadialLayer": "Добавить radial слой",
+  "gradientBuilder.addLinearLayer": "Добавить linear слой",
   "gradientBuilder.generateGradient": "Случайный градиент",
   "gradientBuilder.radialLayer": "Radial слой",
   "gradientBuilder.linearLayer": "Linear слой",
@@ -121,5 +121,6 @@
   "gradientBuilder.opacity": "Прозрачность цвета",
   "gradientBuilder.transparent": "прозрачный",
   "gradientBuilder.addColorStop": "Добавить стоп цвета",
-  "gradientBuilder.emptyState": "Добавьте слой градиента кнопкой выше."
+  "gradientBuilder.emptyState": "Добавьте слой градиента кнопкой выше",
+  "themeEditor.blurLabel": "Размытие"
 }

@@ -203,6 +203,8 @@ const handleBlur = () => {
         :aria-controls="listId"
         :aria-expanded="shouldShowSuggestions"
         autocomplete="off"
+        id="search-input"
+
         @blur="handleBlur"
         @input="
           (e: InputEvent) => {

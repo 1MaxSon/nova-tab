@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { getIconById } from "@/lib/storage";
 import { ShortcutType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { getImageById } from "@/lib/utils/img-idb";
 import { computed, ref, watch } from "vue";
 
 const props = defineProps<{
@@ -25,7 +25,7 @@ watch(
   () => props.shortcut,
   async (newShortcut) => {
     if (!newShortcut?.id) return;
-    const icon = await getIconById(newShortcut.id);
+    const icon = await getImageById(newShortcut.id);
     if (icon) iconBlob.value = icon.blob;
   },
   { immediate: true },

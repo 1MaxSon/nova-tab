@@ -101,8 +101,8 @@
   "shortcut.group": "Gruppe",
   "shortcut.createGroup": "Gruppe erstellen",
   "shortcut.addToGroup": "Zur Gruppe hinzufügen",
-  "gradientBuilder.addRadialLayer": "Radiale Ebene",
-  "gradientBuilder.addLinearLayer": "Lineare Ebene",
+  "gradientBuilder.addRadialLayer": "Radiale Ebene hinzufügen",
+  "gradientBuilder.addLinearLayer": "Lineare Ebene hinzufügen",
   "gradientBuilder.generateGradient": "Zufälliger Verlauf",
   "gradientBuilder.radialLayer": "Radiale Ebene",
   "gradientBuilder.linearLayer": "Lineare Ebene",
@@ -121,5 +121,6 @@
   "gradientBuilder.opacity": "Farbdeckkraft",
   "gradientBuilder.transparent": "durchsichtig",
   "gradientBuilder.addColorStop": "Farbstopp hinzufügen",
-  "gradientBuilder.emptyState": "Füge eine Verlaufsebene mit der Schaltfläche oben hinzu"
+  "gradientBuilder.emptyState": "Füge eine Verlaufsebene mit der Schaltfläche oben hinzu",
+  "themeEditor.blurLabel": "Verschwimmen"
 }

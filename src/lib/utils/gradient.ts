@@ -1,3 +1,4 @@
+
 export type GradientType = "radial" | "linear";
 
 export interface ColorStop {

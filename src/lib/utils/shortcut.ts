@@ -1,7 +1,7 @@
-import { generatePreviousId, getContrastYIQ } from "@/lib/helpers";
-import { saveIcon, storage } from "@/lib/storage";
+import { getContrastYIQ } from "@/lib/helpers";
 import type { CreateShortcutInput, ShortcutType } from "@/lib/types";
 import { fetchFaviconBlob } from "@/lib/utils/favicon";
+import { saveImage } from "@/lib/utils/img-idb";
 import { extractIconPalette } from "@/lib/vibrant";
 
 export async function createShortcut(
@@ -14,9 +14,8 @@ export async function createShortcut(
 
   const { iconBlob, iconUrl, title } = result;
 
-  const { shortcuts } = storage;
-
-  const previousShortcutId = generatePreviousId(shortcuts);
+  const id = crypto.randomUUID();
+  const iconId = crypto.randomUUID();
 
   const fallbackName = title;
   const resolvedName =
@@ -25,7 +24,7 @@ export async function createShortcut(
       : fallbackName.charAt(0).toUpperCase() + fallbackName.slice(1);
 
   if (iconBlob) {
-    saveIcon({ id: previousShortcutId, blob: iconBlob });
+    saveImage({ id: iconId, blob: iconBlob });
   }
 
   const iconPalette = iconUrl ? await extractIconPalette(iconUrl) : undefined;
@@ -39,11 +38,12 @@ export async function createShortcut(
     : (iconPalette?.LightVibrant?.hex ?? getContrastYIQ(resolvedAccent));
 
   return {
-    id: previousShortcutId,
+    id: id,
     type: "shortcut",
     name: resolvedName,
     accentColor: resolvedAccent,
     mutedColor: resolvedText,
     url: url,
+    iconId: iconId,
   };
 }

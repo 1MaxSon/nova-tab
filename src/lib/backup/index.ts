@@ -10,11 +10,14 @@ import {
   CURRENT_BACKUP_VERSION,
   INVALID_BACKUP_FILE_ERROR,
 } from "./types";
-import { backupV1 } from "./versions/version-1";
+
 import { t } from "@/lib/i18n";
+import { backupV1 } from "@/lib/backup/versions/version-1";
+import { backupV2 } from "@/lib/backup/versions/version-2";
 
 const backupServices: Record<BackupVersion, BackupService<BackupVersion>> = {
   1: backupV1,
+  2: backupV2,
 };
 
 export async function exportBackup(): Promise<void> {

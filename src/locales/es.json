@@ -101,8 +101,8 @@
   "shortcut.group": "Grupo",
   "shortcut.createGroup": "Crear un grupo",
   "shortcut.addToGroup": "Añadir al grupo",
-  "gradientBuilder.addRadialLayer": "Capa radial",
-  "gradientBuilder.addLinearLayer": "Capa lineal",
+  "gradientBuilder.addRadialLayer": "Añadir capa radial",
+  "gradientBuilder.addLinearLayer": "Añadir capa lineal",
   "gradientBuilder.generateGradient": "Gradiente aleatorio",
   "gradientBuilder.radialLayer": "Capa radial",
   "gradientBuilder.linearLayer": "Capa lineal",
@@ -121,5 +121,6 @@
   "gradientBuilder.opacidad": "Opacidad del color",
   "gradientBuilder.transparent": "transparente",
   "gradientBuilder.addColorStop": "Añadir parada de color",
-  "gradientBuilder.emptyState": "Agrega una capa de degradado usando el botón de arriba"
+  "gradientBuilder.emptyState": "Agrega una capa de degradado usando el botón de arriba",
+  "themeEditor.blurLabel": "Desenfoque"
 }

@@ -2,15 +2,15 @@ import { getDefaultLanguage } from "@/lib/helpers";
 import type { Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
 import type {
-  GradientWallpaperData,
   ShortcutData,
-  ThemeColors,
-  UserTheme,
+
   WeatherCity,
 } from "@/lib/types";
 import { getDefaultWeatherProvider } from "@/lib/utils/weather";
-import { IDBPDatabase, openDB } from "idb";
 import { reactive, watch } from "vue";
+import { isEqual } from "lodash-es";
+import { toRaw } from "vue";
+import { GradientWallpaperData, ThemeColors, UserTheme } from "@/lib/types/theme";
 
 export type WeatherProvider = "yandex" | "google" | "wttr";
 
@@ -104,13 +104,16 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   isSelfUpdating = true;
 
   if (changes.shortcuts) {
-    storage.shortcuts = normalizeShortcutData(changes.shortcuts.newValue);
+    const next = normalizeShortcutData(changes.shortcuts.newValue);
+    if (!isEqual(next, toRaw(storage.shortcuts))) storage.shortcuts = next;
   }
   if (changes.settings) {
-    storage.settings = normalizeSettingsData(changes.settings.newValue);
+    const next = normalizeSettingsData(changes.settings.newValue);
+    if (!isEqual(next, toRaw(storage.settings))) storage.settings = next;
   }
   if (changes.weatherCity) {
-    storage.weatherCity = normalizeWeatherCity(changes.weatherCity.newValue);
+    const next = normalizeWeatherCity(changes.weatherCity.newValue);
+    if (!isEqual(next, toRaw(storage.weatherCity))) storage.weatherCity = next;
   }
 
   setTimeout(() => {
@@ -160,24 +163,24 @@ function normalizeUserTheme(input: unknown): UserTheme | null {
     return null;
   }
 
-  if (raw.wallpaperType === "photo" && typeof raw.wallpaperData === "string") {
+  if (raw.wallpaperType === "photo" && typeof raw.wallpaper?.id === "string") {
     return {
       id: raw.id,
       name: raw.name,
       wallpaperType: "photo",
-      wallpaperData: raw.wallpaperData,
+      wallpaper: { id: raw.wallpaper.id, blurValue: raw.wallpaper.blurValue },
       colors: raw.colors,
     };
   }
   if (
     raw.wallpaperType === "gradient" &&
-    isGradientWallpaperData(raw.wallpaperData)
+    isGradientWallpaperData(raw.gradientLayers)
   ) {
     return {
       id: raw.id,
       name: raw.name,
       wallpaperType: "gradient",
-      wallpaperData: raw.wallpaperData,
+      gradientLayers: raw.gradientLayers,
       colors: raw.colors,
     };
   }
@@ -229,58 +232,3 @@ function isWeatherCity(obj: any): obj is WeatherCity {
     typeof obj.lon === "number"
   );
 }
-
-const ICONS_DB_NAME = "IconCacheDB";
-const ICONS_STORE_NAME = "icons";
-
-export type SavedIcon = {
-  id: number;
-  blob: Blob;
-};
-
-let dbPromise: Promise<IDBPDatabase> | null = null;
-
-const getDB = () => {
-  if (!dbPromise) {
-    dbPromise = openDB(ICONS_DB_NAME, 2, {
-      upgrade(db) {
-        if (!db.objectStoreNames.contains(ICONS_STORE_NAME)) {
-          db.createObjectStore(ICONS_STORE_NAME);
-        }
-      },
-    });
-  }
-  return dbPromise;
-};
-
-export const getIcons = async () => {
-  const db = await getDB();
-  const icons = await db.getAll(ICONS_STORE_NAME);
-
-  return icons.filter((p): p is SavedIcon => {
-    return (
-      "id" in p &&
-      typeof p.id === "number" &&
-      "blob" in p &&
-      p.blob instanceof Blob
-    );
-  });
-};
-
-export const saveIcon = async (data: SavedIcon) => {
-  const { id, blob } = data;
-
-  const db = await getDB();
-  await db.put(ICONS_STORE_NAME, { id, blob, type: blob.type }, id);
-};
-
-export const deleteIcon = async (id: number) => {
-  const db = await getDB();
-
-  db.delete(ICONS_STORE_NAME, id);
-};
-
-export const getIconById = async (id: number): Promise<SavedIcon | null> => {
-  const db = await getDB();
-  return await db.get(ICONS_STORE_NAME, id);
-};

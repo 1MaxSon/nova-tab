@@ -13,13 +13,14 @@ import FieldLabel from "@/components/ui/field/FieldLabel.vue";
 import Input from "@/components/ui/input/Input.vue";
 import { isDev } from "@/lib/helpers";
 import { t } from "@/lib/i18n";
-import { saveIcon, storage } from "@/lib/storage";
+import { storage } from "@/lib/storage";
 import {
   CreateShortcutInput,
   ShortcutGroupType,
   ShortcutType,
 } from "@/lib/types";
 import { fetchFaviconBlob } from "@/lib/utils/favicon";
+import { saveImage } from "@/lib/utils/img-idb";
 import { RefreshCwIcon } from "@lucide/vue";
 import { ref } from "vue";
 
@@ -64,7 +65,7 @@ const onFormSubmit = async () => {
     formData.value.newIcon &&
     Object.keys(formData.value.newIcon).length > 0
   ) {
-    await saveIcon({
+    await saveImage({
       id: props.shortcut.id,
       blob: formData.value.newIcon,
     });
@@ -107,7 +108,7 @@ const refreshIcon = async () => {
   const { iconBlob } = result;
 
   if (iconBlob) {
-    await saveIcon({
+    await saveImage({
       id: props.shortcut.id,
       blob: iconBlob,
     });

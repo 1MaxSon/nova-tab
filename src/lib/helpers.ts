@@ -1,5 +1,4 @@
 import { Language } from "@/lib/i18n";
-import type { ShortcutData } from "@/lib/types";
 
 export const getDefaultLanguage = (): Language => {
   if (typeof navigator === "undefined") return "en";
@@ -30,20 +29,6 @@ export const getContrastYIQ = (hexcolor: string) => {
   const yiq = (r * 299 + g * 587 + b * 114) / 1000;
   return yiq >= 128 ? "#000000" : "#ffffff";
 };
-
-export function generatePreviousId(shortcuts: ShortcutData[]) {
-  const ids: number[] = [];
-
-  shortcuts.forEach((s) => {
-    ids.push(s.id);
-
-    if (s.type === "group") {
-      ids.push(...s.items.map((item) => item.id));
-    }
-  });
-
-  return Math.max(0, ...ids) + 1;
-}
 
 export function getTime(date: Date) {
   return date.toLocaleTimeString(undefined, {

@@ -3,7 +3,6 @@ import CreateShortcutDialog from "@/components/CreateShortcutDialog.vue";
 import ShortcutGroup from "@/components/ShortcutGroup.vue";
 import ShortcutItem from "@/components/ShortcutItem.vue";
 import ShortcutsGrid from "@/components/ShortcutsGrid.vue";
-import { generatePreviousId } from "@/lib/helpers";
 import { t } from "@/lib/i18n";
 import { shortcutSensor } from "@/lib/sensors";
 import { storage } from "@/lib/storage";
@@ -13,6 +12,8 @@ import { DragDropProvider } from "@dnd-kit/vue";
 import { ref } from "vue";
 
 const shortcutsStructureVersion = ref(0);
+
+const generateUUID = () => crypto.randomUUID();
 </script>
 
 <template>
@@ -22,11 +23,11 @@ const shortcutsStructureVersion = ref(0);
         async (event) => {
           const shortcutItems = storage.shortcuts;
           const { targetId } = (event.operation.target?.data ?? {}) as {
-            targetId?: number;
+            targetId?: string;
           };
 
           if (targetId) {
-            const sourceId = event.operation.source?.id as number | undefined;
+            const sourceId = event.operation.source?.id as string | undefined;
             if (!sourceId) return;
 
             if (targetId === sourceId) return;
@@ -46,13 +47,13 @@ const shortcutsStructureVersion = ref(0);
             if (!targetShortcut || !sourceShortcut || targetIndex === -1)
               return;
 
-            const previousId = generatePreviousId(shortcutItems);
+            const newGroupId = generateUUID();
 
             const newGroup: ShortcutGroupType = {
-              id: previousId,
+              id: newGroupId,
               items: [
-                { ...targetShortcut, groupId: previousId },
-                { ...sourceShortcut, groupId: previousId },
+                { ...targetShortcut, groupId: newGroupId },
+                { ...sourceShortcut, groupId: newGroupId },
               ],
               name: t('shortcut.group'),
               type: 'group',
@@ -75,7 +76,7 @@ const shortcutsStructureVersion = ref(0);
           if (event.operation.target?.type === 'shortcut-group-drop') {
             const shortcutId = event.operation.source?.id;
             const shortcutGroupId = event.operation.target?.data
-              .groupId as number;
+              .groupId as string;
 
             if (!shortcutId || !shortcutGroupId) return;
 

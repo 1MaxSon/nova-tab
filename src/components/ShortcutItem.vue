@@ -4,13 +4,14 @@ import EditShortcutDialog from "@/components/EditShortcutDialog.vue";
 import Button from "@/components/ui/button/Button.vue";
 import { GROUP_DROP_PREFIX, shortcutItemClassName } from "@/lib/constants";
 import { t } from "@/lib/i18n";
-import { getIconById } from "@/lib/storage";
 import { ShortcutType } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { getImageById } from "@/lib/utils/img-idb";
 import { pointerIntersection } from "@dnd-kit/collision";
 import { useDroppable } from "@dnd-kit/vue";
 import { useSortable } from "@dnd-kit/vue/sortable";
 import { Edit2Icon, GroupIcon } from "@lucide/vue";
+import { useObjectUrl } from "@vueuse/core";
 import { computed, onUnmounted, ref, useTemplateRef, watch } from "vue";
 
 const props = withDefaults(
@@ -30,14 +31,14 @@ const handleRef = useTemplateRef("handleRef");
 const dropRef = useTemplateRef("dropRef");
 
 const iconBlob = ref<Blob>();
-const iconBlobUrl = ref<string>();
+const iconBlobUrl = useObjectUrl(iconBlob);
 
 watch(
   () => props.shortcut,
   async (newShortcut) => {
-    if (!newShortcut?.id) return;
+    if (!newShortcut?.iconId) return;
 
-    const icon = await getIconById(newShortcut.id);
+    const icon = await getImageById(newShortcut.iconId);
 
     if (!icon) {
       iconBlob.value = undefined;
@@ -49,22 +50,11 @@ watch(
   { immediate: true },
 );
 
-watch(iconBlob, (blob) => {
-  if (iconBlobUrl.value) {
-    URL.revokeObjectURL(iconBlobUrl.value);
-    iconBlobUrl.value = undefined;
-  }
-
-  if (blob) {
-    iconBlobUrl.value = URL.createObjectURL(blob);
-  }
-});
-
 watch(
   () => props.shortcut,
   async (newShortcut) => {
     if (!newShortcut?.id) return;
-    const icon = await getIconById(newShortcut.id);
+    const icon = await getImageById(newShortcut.id);
     if (icon) iconBlob.value = icon.blob;
   },
   { immediate: true },
@@ -143,7 +133,7 @@ const { isDropTarget } = useDroppable({
       :shortcut="shortcut"
       @icon-change="
         async () => {
-          const icon = await getIconById(shortcut.id);
+          const icon = await getImageById(shortcut.id);
 
           if (!icon) {
             iconBlob = undefined;

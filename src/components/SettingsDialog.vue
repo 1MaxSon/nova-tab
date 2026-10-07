@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import pkg from "@/../package.json" with { type: "json" };
 import BackupSection from "@/components/BackupSection.vue";
-import ThemeSettings from "@/components/ThemeSettings.vue";
+import ThemeSettings from "@/components/theme/ThemeSettings.vue";
 import Button from "@/components/ui/button/Button.vue";
 import Dialog from "@/components/ui/dialog/Dialog.vue";
 import DialogClose from "@/components/ui/dialog/DialogClose.vue";

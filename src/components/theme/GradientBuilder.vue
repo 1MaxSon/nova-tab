@@ -14,7 +14,7 @@ import {
   randomHex,
   type GradientLayer,
   type GradientType,
-} from "@/lib/gradient";
+} from "@/lib/utils/gradient";
 import { t } from "@/lib/i18n";
 import {
   ChevronDownIcon,
@@ -111,14 +111,8 @@ function randomize(): void {
 
 <template>
   <div
-    class="w-full max-w-3xl mx-auto p-5 rounded-2xl bg-neutral-900 text-neutral-100 font-sans h-full"
+    class="w-full rounded-2xl bg-neutral-900 text-neutral-100 font-sans h-full"
   >
-    <div
-      class="h-48 rounded-xl border border-neutral-700 bg-neutral-950 mb-4 sticky top-0 z-10"
-    >
-      <div class="absolute inset-0" :style="{ background: cssString }"></div>
-    </div>
-
     <div class="flex flex-wrap gap-2 mb-4">
       <Button @click="addLayer('radial')">
         <CircleGaugeIcon /> {{ t("gradientBuilder.addRadialLayer") }}
@@ -140,8 +134,11 @@ function randomize(): void {
         :class="{ 'opacity-50': !layer.enabled }"
       >
         <div class="flex items-center justify-between mb-2.5">
-          <Label class="flex items-center gap-2 text-sm cursor-pointer">
-            <Checkbox v-model="layer.enabled" />
+          <Label
+            class="flex items-center gap-2 text-sm cursor-pointer"
+            :for="layer.id.toString()"
+          >
+            <Checkbox v-model="layer.enabled" :id="layer.id.toString()" />
             <span>
               {{
                 layer.type === "radial"
@@ -187,7 +184,10 @@ function randomize(): void {
         <template v-if="layer.type === 'radial'">
           <div class="grid grid-cols-2 gap-3 mb-2.5">
             <div>
-              <Label class="block text-xs text-neutral-400 mb-1">
+              <Label
+                class="block text-xs text-neutral-400 mb-1"
+                :for="`${layer.id}-sizeX`"
+              >
                 {{ t("gradientBuilder.width") }}: {{ layer.sizeX }}%
               </Label>
               <Slider
@@ -196,10 +196,14 @@ function randomize(): void {
                 :min="5"
                 :max="150"
                 :step="1"
+                :id="`${layer.id}-sizeX`"
               />
             </div>
             <div>
-              <Label class="block text-xs text-neutral-400 mb-1">
+              <Label
+                class="block text-xs text-neutral-400 mb-1"
+                :for="`${layer.id}-sizeY`"
+              >
                 {{ t("gradientBuilder.height") }}: {{ layer.sizeY }}%
               </Label>
               <Slider
@@ -208,12 +212,16 @@ function randomize(): void {
                 :min="5"
                 :max="150"
                 :step="1"
+                :id="`${layer.id}-sizeY`"
               />
             </div>
           </div>
           <div class="grid grid-cols-2 gap-3 mb-2.5">
             <div>
-              <Label class="block text-xs text-neutral-400 mb-1">
+              <Label
+                class="block text-xs text-neutral-400 mb-1"
+                :for="`${layer.id}-posX`"
+              >
                 {{ t("gradientBuilder.positionX") }}: {{ layer.posX }}%
               </Label>
               <Slider
@@ -222,10 +230,14 @@ function randomize(): void {
                 :min="0"
                 :max="100"
                 :step="1"
+                :id="`${layer.id}-posX`"
               />
             </div>
             <div>
-              <Label class="block text-xs text-neutral-400 mb-1">
+              <Label
+                class="block text-xs text-neutral-400 mb-1"
+                :for="`${layer.id}-posY`"
+              >
                 {{ t("gradientBuilder.positionY") }}: {{ layer.posY }}%
               </Label>
               <Slider
@@ -234,6 +246,7 @@ function randomize(): void {
                 :min="0"
                 :max="100"
                 :step="1"
+                :id="`${layer.id}-posY`"
               />
             </div>
           </div>
@@ -241,7 +254,7 @@ function randomize(): void {
 
         <template v-else>
           <div class="mb-2.5">
-            <Label class="block text-xs text-neutral-400 mb-1">
+            <Label class="block text-xs text-neutral-400 mb-1" :for="`${layer.id}-deg`">
               {{ t("gradientBuilder.angle") }}: {{ layer.angle }}deg
             </Label>
             <Slider
@@ -250,12 +263,13 @@ function randomize(): void {
               :min="0"
               :max="360"
               :step="1"
+              :id="`${layer.id}-deg`"
             />
           </div>
         </template>
 
         <div
-          class="border-t border-dashed border-neutral-700 pt-2.5 mt-1.5 flex flex-col gap-2"
+          class="border-t border-dashed border-neutral-700 pt-2.5 mt-4 flex flex-col gap-2"
         >
           <div
             v-for="(stop, sIndex) in layer.stops"
@@ -267,6 +281,7 @@ function randomize(): void {
               v-model="stop.color"
               :disabled="stop.transparent"
               class="w-8.5 h-6.5 rounded-md bg-transparent border-0 p-0 cursor-pointer disabled:opacity-40"
+              :id="`${layer.id}-stop-color-${sIndex}`"
             />
             <Slider
               :model-value="[stop.alpha]"
@@ -277,20 +292,29 @@ function randomize(): void {
               :disabled="stop.transparent"
               :title="t('gradientBuilder.opacity')"
               class="disabled:opacity-40"
+              :id="`${layer.id}-stop-color-alpha-${sIndex}`"
             />
             <Label
               class="flex items-center gap-1 text-[11px] text-neutral-400 cursor-pointer"
+              for="`${layer.id}-stop-color-is-transparent-${sIndex}`"
             >
-              <Checkbox v-model="stop.transparent" />
+              <Checkbox
+                v-model="stop.transparent"
+                :id="`${layer.id}-stop-color-is-transparent-${sIndex}`"
+              />
               <span>{{ t("gradientBuilder.transparent") }}</span>
             </Label>
-            <Label class="flex items-center gap-1 text-xs text-neutral-400">
+            <Label
+              class="flex items-center gap-1 text-xs text-neutral-400"
+              for="`${layer.id}-stop-color-transparent-${sIndex}`"
+            >
               <Input
                 type="number"
                 min="0"
                 max="100"
                 v-model.number="stop.pos"
                 class="w-13.75 h-7 bg-neutral-900 border-neutral-700 px-1.5 py-0.5"
+                :id="`${layer.id}-stop-color-transparent-${sIndex}`"
               />%
             </Label>
             <Button

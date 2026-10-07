@@ -101,8 +101,8 @@
   "shortcut.group": "Group",
   "shortcut.createGroup": "Create a group",
   "shortcut.addToGroup": "Add to the group",
-  "gradientBuilder.addRadialLayer": "Radial layer",
-  "gradientBuilder.addLinearLayer": "Linear layer",
+  "gradientBuilder.addRadialLayer": "Add radial layer",
+  "gradientBuilder.addLinearLayer": "Add linear layer",
   "gradientBuilder.generateGradient": "Random gradient",
   "gradientBuilder.radialLayer": "Radial layer",
   "gradientBuilder.linearLayer": "Linear layer",
@@ -121,5 +121,6 @@
   "gradientBuilder.opacity": "Color opacity",
   "gradientBuilder.transparent": "transparent",
   "gradientBuilder.addColorStop": "Add color stop",
-  "gradientBuilder.emptyState": "Add a gradient layer using the button above"
+  "gradientBuilder.emptyState": "Add a gradient layer using the button above",
+  "themeEditor.blurLabel": "Blur"
 }
