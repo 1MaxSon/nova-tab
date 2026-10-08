@@ -4,94 +4,106 @@ import Field from "@/components/ui/field/Field.vue";
 import FieldContent from "@/components/ui/field/FieldContent.vue";
 import FieldDescription from "@/components/ui/field/FieldDescription.vue";
 import Spinner from "@/components/ui/spinner/Spinner.vue";
-import { INVALID_BACKUP_FILE_ERROR } from "@/lib/backup/types";
+import { exportBackup, importBackup } from "@/lib/backup";
+import { BACKUP_FILE_NAME, INVALID_BACKUP_FILE_ERROR } from "@/lib/backup/types";
+import { downloadBlob } from "@/lib/backup/utils";
 import { t } from "@/lib/i18n";
 import { DownloadIcon, UploadIcon } from "@lucide/vue";
 import { ref, useTemplateRef } from "vue";
-import { exportBackup, importBackup } from "@/lib/backup";
 
 const isLoading = ref(false);
 const backupError = ref<string | null>(null);
 const fileInputRef = useTemplateRef("fileInputRef");
 
+const downloadExportBackup = async () => {
+  const zip = await exportBackup();
+
+  const blob = await zip.generateAsync({
+    type: "blob",
+    mimeType: "application/zip",
+  });
+
+  downloadBlob(blob, BACKUP_FILE_NAME);
+};
+
 const runBackupAction = async (action: () => Promise<void>) => {
-    isLoading.value = true;
-    backupError.value = null;
+  isLoading.value = true;
+  backupError.value = null;
 
-    try {
-        await action();
-    } catch (caughtError) {
-        if (
-            caughtError instanceof Error &&
-            caughtError.message === INVALID_BACKUP_FILE_ERROR
-        ) {
-            backupError.value = t("settings.backupInvalidFile");
-            return;
-        }
-
-        backupError.value = t("settings.backupError");
-    } finally {
-        isLoading.value = false;
+  try {
+    await action();
+  } catch (caughtError) {
+    if (
+      caughtError instanceof Error &&
+      caughtError.message === INVALID_BACKUP_FILE_ERROR
+    ) {
+      backupError.value = t("settings.backupInvalidFile");
+      return;
     }
+
+    backupError.value = t("settings.backupError");
+  } finally {
+    isLoading.value = false;
+  }
 };
 
 const handleExport = () => {
-    void runBackupAction(exportBackup);
+  void runBackupAction(downloadExportBackup);
 };
 
 const handleImport = (event: Event) => {
-    const target = event.target as HTMLInputElement;
+  const target = event.target as HTMLInputElement;
 
-    const file = target.files?.[0];
-    target.value = "";
+  const file = target.files?.[0];
+  target.value = "";
 
-    if (!file) return;
+  if (!file) return;
 
-    void runBackupAction(() => importBackup(file));
+  void runBackupAction(() => importBackup(file));
 };
 </script>
 
 <template>
-    <Field>
-        <FieldContent>
-            <div class="grid grid-cols-2 gap-2">
-                <Button
-                    type="button"
-                    variant="secondary"
-                    :disabled="isLoading"
-                    @click="handleExport"
-                >
-                    <Spinner v-if="isLoading" />
-                    <DownloadIcon v-else />
-                    {{ t("settings.backupExport") }}
-                </Button>
-                <Button
-                    type="button"
-                    variant="secondary"
-                    :disabled="isLoading"
-                    @click="
-                        () => {
-                            fileInputRef?.click();
-                        }
-                    "
-                >
-                    <Spinner v-if="isLoading" />
-                    <UploadIcon v-else />
-                    {{ t("settings.backupImport") }}
-                </Button>
-            </div>
-            <input
-                ref="fileInputRef"
-                type="file"
-                accept=".zip"
-                class="hidden"
-                @change="handleImport"
-            />
-        </FieldContent>
-        <FieldDescription>
-            {{ backupError ?? t("settings.backupDescription") }}
-        </FieldDescription>
-    </Field>
+  <Field>
+    <FieldContent>
+      <div class="grid grid-cols-2 gap-2">
+        <Button
+          type="button"
+          variant="secondary"
+          :disabled="isLoading"
+          @click="handleExport"
+        >
+          <Spinner v-if="isLoading" />
+          <DownloadIcon v-else />
+          {{ t("settings.backupExport") }}
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          :disabled="isLoading"
+          @click="
+            () => {
+              fileInputRef?.click();
+            }
+          "
+        >
+          <Spinner v-if="isLoading" />
+          <UploadIcon v-else />
+          {{ t("settings.backupImport") }}
+        </Button>
+      </div>
+      <input
+        ref="fileInputRef"
+        type="file"
+        accept=".zip"
+        class="hidden"
+        @change="handleImport"
+      />
+    </FieldContent>
+    <FieldDescription>
+      {{ backupError ?? t("settings.backupDescription") }}
+    </FieldDescription>
+  </Field>
 </template>
 
 <!--

@@ -1,16 +1,21 @@
+import { exportBackup, importBackup } from "@/lib/backup";
+import {
+  BACKUP_FILE_NAME,
+  BackupVersion,
+  CURRENT_BACKUP_VERSION,
+} from "@/lib/backup/types";
 import { getDefaultLanguage } from "@/lib/helpers";
 import type { Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
-import type {
-  ShortcutData,
-
-  WeatherCity,
-} from "@/lib/types";
+import type { ShortcutData, WeatherCity } from "@/lib/types";
+import {
+  GradientWallpaperData,
+  ThemeColors,
+  UserTheme,
+} from "@/lib/types/theme";
 import { getDefaultWeatherProvider } from "@/lib/utils/weather";
-import { reactive, watch } from "vue";
 import { isEqual } from "lodash-es";
-import { toRaw } from "vue";
-import { GradientWallpaperData, ThemeColors, UserTheme } from "@/lib/types/theme";
+import { reactive, toRaw, watch } from "vue";
 
 export type WeatherProvider = "yandex" | "google" | "wttr";
 
@@ -30,6 +35,7 @@ export type StorageData = {
   shortcuts: ShortcutData[];
   weatherCity: WeatherCity | null;
   settings: SettingsData;
+  backupVersion: BackupVersion;
   isLoaded: boolean;
 };
 
@@ -47,6 +53,7 @@ export const DEFAULT_STORAGE_DATA: Omit<StorageData, "isLoaded"> = {
     windSpeedUnit: "ms",
     searchEngine: "default",
   },
+  backupVersion: CURRENT_BACKUP_VERSION,
 };
 
 export const storage = reactive<StorageData>({
@@ -61,6 +68,21 @@ async function loadData() {
     const data = await chrome.storage.local.get(
       Object.keys(DEFAULT_STORAGE_DATA),
     );
+
+    const backupVersion = normaliseBackupVersion(data.backupVersion);
+
+    if (backupVersion !== CURRENT_BACKUP_VERSION) {
+      const backup = await exportBackup(backupVersion);
+
+      const backupBlob = await backup.generateAsync({ type: "blob" });
+
+      const backupFile = new File([backupBlob], BACKUP_FILE_NAME);
+
+
+      importBackup(backupFile);
+    }
+
+    storage.backupVersion = backupVersion;
 
     if ("settings" in data) {
       storage.settings = normalizeSettingsData(data.settings);
@@ -186,6 +208,15 @@ function normalizeUserTheme(input: unknown): UserTheme | null {
   }
 
   return null;
+}
+
+/**
+ * return first backup version if not exist
+ */
+function normaliseBackupVersion(input: unknown): BackupVersion | 1 {
+  if (!input || typeof input !== "number") return 1;
+
+  return input as BackupVersion;
 }
 
 function isThemeColors(input: unknown): input is ThemeColors {

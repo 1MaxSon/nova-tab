@@ -131,8 +131,10 @@ export const backupV2: BackupService<2> = {
     return zip;
   },
   async importBackup(zip) {
-    console.log(zip);
     const payload = await readBackupData(zip);
+
+    console.log(payload);
+    
 
     const shortcuts = normalizeShortcutData(payload.shortcuts);
     const weatherCity = normalizeWeatherCity(payload.weatherCity);
@@ -210,6 +212,7 @@ async function readBackupData(zip: JSZip): Promise<StorageDataV2> {
   }
 
   const dataText = await dataFile.async("text");
+
   const backupData = parseDataBackupPayload(dataText);
 
   return {

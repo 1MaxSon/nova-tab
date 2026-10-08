@@ -1,8 +1,6 @@
 import JSZip from "jszip";
 
-import { downloadBlob } from "./utils";
 import {
-  BACKUP_FILE_NAME,
   BACKUP_MANIFEST_FILE_NAME,
   BackupManifest,
   BackupService,
@@ -11,9 +9,9 @@ import {
   INVALID_BACKUP_FILE_ERROR,
 } from "./types";
 
-import { t } from "@/lib/i18n";
 import { backupV1 } from "@/lib/backup/versions/version-1";
 import { backupV2 } from "@/lib/backup/versions/version-2";
+import { t } from "@/lib/i18n";
 
 const backupServices: Record<BackupVersion, BackupService<BackupVersion>> = {
   1: backupV1,
@@ -22,24 +20,19 @@ const backupServices: Record<BackupVersion, BackupService<BackupVersion>> = {
 
 const currentBackupService = backupServices[CURRENT_BACKUP_VERSION];
 
-export async function exportBackup(): Promise<void> {
+export async function exportBackup(
+  version: BackupVersion = CURRENT_BACKUP_VERSION,
+): Promise<JSZip> {
   const zip = new JSZip();
 
   const manifest: BackupManifest = {
-    version: CURRENT_BACKUP_VERSION,
+    version: version,
     exportedAt: new Date().toISOString(),
   };
 
   zip.file(BACKUP_MANIFEST_FILE_NAME, JSON.stringify(manifest));
 
-  await currentBackupService.exportBackup(zip);
-
-  const blob = await zip.generateAsync({
-    type: "blob",
-    mimeType: "application/zip",
-  });
-
-  downloadBlob(blob, BACKUP_FILE_NAME);
+  return await currentBackupService.exportBackup(zip);
 }
 
 export async function importBackup(file: File): Promise<void> {
@@ -51,12 +44,14 @@ export async function importBackup(file: File): Promise<void> {
     throw new Error(INVALID_BACKUP_FILE_ERROR);
 
   let importingBackup = zip;
-
+  
+  
+  
   try {
     if (version !== CURRENT_BACKUP_VERSION) {
       importingBackup = await migrateBackup(zip, version);
     }
-
+    
     await currentBackupService.importBackup(importingBackup);
     // window.location.reload();
   } catch {
