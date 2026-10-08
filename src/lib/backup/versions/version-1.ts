@@ -1,36 +1,109 @@
-/**
- * @deprecated
- */
+import { BackupService } from "@/lib/backup/types";
+import type { Latitude, Longitude } from "@/lib/types/open-meteo";
 
-// import JSZip from "jszip";
+export const DATA_FILE_NAME_V1 = "data.json";
+export const ICONS_FILE_NAME_V1 = "icons.json";
+export const ICONS_DIR_NAME_V1 = "icons";
 
-// import {
-//   normalizeSettingsData,
-//   normalizeShortcutData,
-//   storage,
-// } from "@/lib/storage";
-import { BackupService } from "../types";
-// import { isRecord } from "../utils";
-// import { getAllImages, saveImage } from "@/lib/utils/img-idb";
-// import type { Latitude, Longitude } from "@/lib/types/open-meteo";
+export type IconManifestV1 = {
+  id: number;
+  type: string;
+};
 
-// const DATA_FILE_NAME = "data.json";
-// const ICONS_FILE_NAME = "icons.json";
-// const ICONS_DIR_NAME = "icons";
+export type WeatherCityV1 = { name: string; lat: Latitude; lon: Longitude };
 
-// type IconManifestV1 = {
-//   id: number;
-//   type: string;
-// };
+export type SearchEngineV1 =
+  | "google"
+  | "bing"
+  | "duckduckgo"
+  | "yahoo"
+  | "yandex"
+  | "brave"
+  | "ecosia";
 
-// type WeatherCityV1 = { name: string; lat: Latitude; lon: Longitude };
+interface ColorStopV1 {
+  id: number;
+  color: string; // hex, e.g. "#1e293b"
+  alpha: number; // 0..1
+  pos: number; // 0..100 (%)
+  transparent: boolean;
+}
 
-// type BackupDataV1 = {
-//   shortcuts: unknown;
-//   weatherCity: unknown;
-//   settings: unknown;
-//   icons: IconManifestV1[];
-// };
+interface BaseLayerV1 {
+  id: number;
+  enabled: boolean;
+  stops: ColorStopV1[];
+}
+
+interface RadialLayerV1 extends BaseLayerV1 {
+  type: "radial";
+  sizeX: number;
+  sizeY: number;
+  posX: number;
+  posY: number;
+}
+
+interface LinearLayerV1 extends BaseLayerV1 {
+  type: "linear";
+  angle: number;
+}
+
+export type GradientLayerV1 = RadialLayerV1 | LinearLayerV1;
+
+export type GradientWallpaperDataV1 = GradientLayerV1[];
+
+export type UserThemePhotoV1 = {
+  wallpaperType: "photo";
+  wallpaperData: string;
+};
+
+export type UserThemeGradientV1 = {
+  wallpaperType: "gradient";
+  wallpaperData: GradientWallpaperDataV1;
+};
+
+export type UserThemeV1 = {
+  id: string;
+  name: string;
+  colors: Record<string, string>;
+} & (UserThemePhotoV1 | UserThemeGradientV1);
+
+export type SettingsDataV1 = {
+  language: "en" | "ru" | "es" | "de";
+  transparentAddShortcut: boolean;
+  transparentChangeGeo: boolean;
+  theme: string;
+  customThemes: UserThemeV1[];
+  weatherProvider: "yandex" | "google" | "wttr";
+  weatherUnit: "celsius" | "fahrenheit";
+  windSpeedUnit: "ms" | "kmh" | "mph";
+  searchEngine: SearchEngineV1 | "default";
+};
+
+export type ShortcutTypeV1 = {
+  id: number;
+  type: "shortcut";
+  name: string;
+  url: string;
+  accentColor: string;
+  mutedColor: string;
+  groupId?: number;
+};
+
+export type ShortcutGroupTypeV1 = {
+  id: number;
+  type: "group";
+  name: string;
+  items: Required<ShortcutTypeV1>[];
+};
+
+export type ShortcutDataV1 = ShortcutTypeV1 | ShortcutGroupTypeV1;
+
+export type StorageDataV1 = {
+  shortcuts: ShortcutDataV1[];
+  weatherCity: unknown;
+  settings: SettingsDataV1;
+};
 
 export const backupV1: BackupService<1> = {
   version: 1,
@@ -41,118 +114,19 @@ export const backupV1: BackupService<1> = {
   async importBackup(zip) {
     return;
   },
+  async migrate(zip) {
+    return zip;
+  },
 };
 
-// function normalizeWeatherCity(input: unknown): WeatherCityV1 | null {
-//   if (input === null || input === undefined) return null;
-//   if (!isRecord(input)) return null;
+export function getIconIdV1(path: string): Number | null {
+  const pathParts = path.split("/");
+  const fileName = pathParts[pathParts.length - 1];
+  if (!fileName) return null;
 
-//   const { name, lat, lon } = input;
-//   if (
-//     typeof name !== "string" ||
-//     typeof lat !== "number" ||
-//     typeof lon !== "number"
-//   ) {
-//     return null;
-//   }
+  const extensionIndex = fileName.lastIndexOf(".");
+  const idText =
+    extensionIndex === -1 ? fileName : fileName.slice(0, extensionIndex);
 
-//   return { name, lat, lon };
-// }
-
-// function parseDataBackupPayload(text: string): Omit<BackupDataV1, "icons"> {
-//   try {
-//     const parsed: unknown = JSON.parse(text);
-
-//     if (!isRecord(parsed)) {
-//       throw new Error(INVALID_BACKUP_FILE_ERROR);
-//     }
-
-//     return {
-//       shortcuts: parsed.shortcuts,
-//       weatherCity: parsed.weatherCity,
-//       settings: parsed.settings,
-//     };
-//   } catch {
-//     throw new Error(INVALID_BACKUP_FILE_ERROR);
-//   }
-// }
-
-// function parseIconsBackupPayload(text: string): Pick<BackupDataV1, "icons"> {
-//   try {
-//     const parsed = JSON.parse(text) as IconManifestV1[];
-
-//     return {
-//       icons: parsed,
-//     };
-//   } catch {
-//     throw new Error(INVALID_BACKUP_FILE_ERROR);
-//   }
-// }
-
-// async function readBackupData(
-//   zip: JSZip,
-// ): Promise<Omit<BackupDataV1, "icons">> {
-//   const dataFile = zip.file(DATA_FILE_NAME);
-
-//   if (!dataFile) {
-//     throw new Error(INVALID_BACKUP_FILE_ERROR);
-//   }
-
-//   const dataText = await dataFile.async("text");
-//   const backupData = parseDataBackupPayload(dataText);
-
-//   return {
-//     ...backupData,
-//   };
-// }
-
-// function getIconId(path: string): number | null {
-//   const pathParts = path.split("/");
-//   const fileName = pathParts[pathParts.length - 1];
-//   if (!fileName) return null;
-
-//   const extensionIndex = fileName.lastIndexOf(".");
-//   const idText =
-//     extensionIndex === -1 ? fileName : fileName.slice(0, extensionIndex);
-//   const id = Number(idText);
-
-//   return Number.isInteger(id) ? id : null;
-// }
-
-// async function restoreIcons(zip: JSZip) {
-//   const iconsFile = zip.file(ICONS_FILE_NAME);
-
-//   if (!iconsFile) {
-//     throw new Error(INVALID_BACKUP_FILE_ERROR);
-//   }
-
-//   const iconsText = await iconsFile.async("text");
-//   const iconsFolder = zip.folder(ICONS_DIR_NAME);
-
-//   const iconsData = parseIconsBackupPayload(iconsText);
-
-//   if (!iconsFolder) return;
-
-//   const restoreTasks: Promise<void>[] = [];
-
-//   iconsFolder.forEach((relativePath, iconFile) => {
-//     if (iconFile.dir) return;
-
-//     const id = getIconId(relativePath);
-
-//     if (id === null) return;
-
-//     restoreTasks.push(
-//       iconFile.async("arraybuffer").then((buffer) => {
-//         const iconData = iconsData.icons.filter((p) => p.id === id).pop();
-//         if (!iconData) return;
-
-//         const resolvedBlob = new Blob([buffer], { type: iconData.type });
-
-//         return saveImage({ id, blob: resolvedBlob });
-//       }),
-//     );
-//   });
-
-//   await Promise.all(restoreTasks);
-// }
+  return Number(idText);
+}

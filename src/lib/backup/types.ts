@@ -1,7 +1,7 @@
 import JSZip from "jszip";
 
 export const BACKUP_FILE_NAME = "nova-tab-backup.zip";
-export const BACKUP_MANIFEST_NAME = "manifest.json";
+export const BACKUP_MANIFEST_FILE_NAME = "manifest.json";
 export const INVALID_BACKUP_FILE_ERROR = "INVALID_BACKUP_FILE";
 
 // 1 | 2 | 3
@@ -19,5 +19,5 @@ export type BackupService<Version extends BackupVersion> = {
 
   exportBackup: (zip: JSZip) => Promise<JSZip>;
   importBackup: (zip: JSZip) => Promise<void>;
-  migrate?: (zip: JSZip) => Promise<JSZip>;
+  migrate: (zip: JSZip) => Promise<JSZip>;
 };

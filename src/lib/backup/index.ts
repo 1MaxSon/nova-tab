@@ -3,7 +3,7 @@ import JSZip from "jszip";
 import { downloadBlob } from "./utils";
 import {
   BACKUP_FILE_NAME,
-  BACKUP_MANIFEST_NAME,
+  BACKUP_MANIFEST_FILE_NAME,
   BackupManifest,
   BackupService,
   BackupVersion,
@@ -20,6 +20,8 @@ const backupServices: Record<BackupVersion, BackupService<BackupVersion>> = {
   2: backupV2,
 };
 
+const currentBackupService = backupServices[CURRENT_BACKUP_VERSION];
+
 export async function exportBackup(): Promise<void> {
   const zip = new JSZip();
 
@@ -28,9 +30,7 @@ export async function exportBackup(): Promise<void> {
     exportedAt: new Date().toISOString(),
   };
 
-  zip.file(BACKUP_MANIFEST_NAME, JSON.stringify(manifest));
-
-  const currentBackupService = backupServices[CURRENT_BACKUP_VERSION];
+  zip.file(BACKUP_MANIFEST_FILE_NAME, JSON.stringify(manifest));
 
   await currentBackupService.exportBackup(zip);
 
@@ -50,18 +50,22 @@ export async function importBackup(file: File): Promise<void> {
   if (!version || !isBackupVersion(version))
     throw new Error(INVALID_BACKUP_FILE_ERROR);
 
-  const currentBackupService = backupServices[version];
+  let importingBackup = zip;
 
   try {
-    await currentBackupService.importBackup(zip);
-    window.location.reload();
+    if (version !== CURRENT_BACKUP_VERSION) {
+      importingBackup = await migrateBackup(zip, version);
+    }
+
+    await currentBackupService.importBackup(importingBackup);
+    // window.location.reload();
   } catch {
     alert(t("settings.backupError"));
   }
 }
 
 async function getBackupVersion(zip: JSZip): Promise<number | undefined> {
-  const dataFile = zip.file(BACKUP_MANIFEST_NAME);
+  const dataFile = zip.file(BACKUP_MANIFEST_FILE_NAME);
 
   if (!dataFile) throw new Error(INVALID_BACKUP_FILE_ERROR);
 
@@ -89,4 +93,20 @@ function isBackupManifest(obj: unknown): obj is BackupManifest {
 
 function isBackupVersion(value: number): value is BackupVersion {
   return value in backupServices;
+}
+
+async function migrateBackup(zip: JSZip, backupVersion: BackupVersion) {
+  let migratedBackupVersion = backupVersion;
+  let migratedBackup: JSZip = zip;
+
+  while (migratedBackupVersion !== CURRENT_BACKUP_VERSION) {
+    const nextVersionBackupService =
+      backupServices[(migratedBackupVersion + 1) as BackupVersion];
+
+    migratedBackup = await nextVersionBackupService.migrate(migratedBackup);
+
+    migratedBackupVersion++;
+  }
+
+  return migratedBackup;
 }

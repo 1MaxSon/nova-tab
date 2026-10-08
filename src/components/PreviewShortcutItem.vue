@@ -2,34 +2,19 @@
 import { ShortcutType } from "@/lib/types";
 import { cn } from "@/lib/utils";
 import { getImageById } from "@/lib/utils/img-idb";
-import { computed, ref, watch } from "vue";
+import { computedAsync, useObjectUrl } from "@vueuse/core";
 
 const props = defineProps<{
   class?: string;
   shortcut: ShortcutType;
 }>();
 
-const iconBlob = ref<Blob | undefined>(undefined);
+const iconBlob = computedAsync(async () => {
+  const icon = await getImageById(props.shortcut.iconId);
 
-const iconBlobUrl = computed<string | undefined>((oldValue) => {
-  if (oldValue) URL.revokeObjectURL(oldValue);
-
-  if (iconBlob.value) {
-    return URL.createObjectURL(iconBlob.value);
-  }
-
-  return undefined;
+  if (icon) return icon.blob;
 });
-
-watch(
-  () => props.shortcut,
-  async (newShortcut) => {
-    if (!newShortcut?.id) return;
-    const icon = await getImageById(newShortcut.id);
-    if (icon) iconBlob.value = icon.blob;
-  },
-  { immediate: true },
-);
+const iconBlobUrl = useObjectUrl(iconBlob);
 </script>
 
 <template>
