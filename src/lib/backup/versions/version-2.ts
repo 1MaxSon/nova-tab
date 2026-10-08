@@ -347,9 +347,6 @@ async function migrateStorage(zip: JSZip) {
     if (oldShortcut.type === "shortcut") {
       const migratedShortcut = migrateShortcut(oldShortcut);
 
-      console.log(migratedShortcut);
-      
-
       if (migratedShortcut) shortcutsV2.push(migratedShortcut);
     }
 
