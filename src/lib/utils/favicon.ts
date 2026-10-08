@@ -51,10 +51,6 @@ export async function parseFavicon(
         );
       });
 
-    if (icons.length === 0) {
-      return null;
-    }
-
     const filteredIcons = icons.filter((icon) => {
       const href = icon.href?.toLowerCase() ?? "";
 
@@ -105,7 +101,10 @@ export async function parseFavicon(
       title: docTitle,
     };
   } catch {
-    return null;
+    return {
+      url: `https://icons.duckduckgo.com/ip3/${domainFromUrl(url)}.ico`,
+      title: domainFromUrl(url),
+    };
   }
 }
 
@@ -144,7 +143,7 @@ export async function fetchFaviconBlob(
 
     const fallbackRes = await fetch(iconUrl);
 
-    if (fallbackRes.status !== 200) {
+    if (!fallbackRes.ok) {
       alert(faviconErrorMessage);
       return;
     }
