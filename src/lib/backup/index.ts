@@ -11,7 +11,6 @@ import {
 
 import { backupV1 } from "@/lib/backup/versions/version-1";
 import { backupV2 } from "@/lib/backup/versions/version-2";
-import { t } from "@/lib/i18n";
 
 const backupServices: Record<BackupVersion, BackupService<BackupVersion>> = {
   1: backupV1,
@@ -38,6 +37,16 @@ export async function exportBackup(
   return await backupService.exportBackup(zip, customData);
 }
 
+export async function migrateStoredData(
+  version: BackupVersion,
+  data: unknown,
+): Promise<void> {
+  const backup = await exportBackup(version, data);
+  const migratedBackup = await migrateBackup(backup, version);
+
+  await currentBackupService.importBackup(migratedBackup);
+}
+
 export async function importBackup(file: File): Promise<void> {
   const zip = await JSZip.loadAsync(file);
 
@@ -55,8 +64,9 @@ export async function importBackup(file: File): Promise<void> {
 
     await currentBackupService.importBackup(importingBackup);
     // window.location.reload();
-  } catch (e) {
-    alert(t("settings.backupError"));
+  } catch (error) {
+    console.error("Failed to import backup", error);
+    throw error;
   }
 }
 
@@ -99,8 +109,13 @@ async function migrateBackup(zip: JSZip, backupVersion: BackupVersion) {
     const nextVersionBackupService =
       backupServices[(migratedBackupVersion + 1) as BackupVersion];
 
-    migratedBackup = await nextVersionBackupService.migrate(migratedBackup);
+    if (!nextVersionBackupService) {
+      throw new Error(
+        `No backup migration available from version ${migratedBackupVersion}`,
+      );
+    }
 
+    migratedBackup = await nextVersionBackupService.migrate(migratedBackup);
     migratedBackupVersion++;
   }
 

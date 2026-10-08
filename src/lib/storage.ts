@@ -1,10 +1,5 @@
-import { exportBackup, importBackup } from "@/lib/backup";
-import {
-  BACKUP_FILE_NAME,
-  BackupVersion,
-  CURRENT_BACKUP_VERSION,
-} from "@/lib/backup/types";
-import { downloadBlob } from "@/lib/backup/utils";
+import { migrateStoredData } from "@/lib/backup";
+import { BackupVersion, CURRENT_BACKUP_VERSION } from "@/lib/backup/types";
 import { getDefaultLanguage } from "@/lib/helpers";
 import { type Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
@@ -69,39 +64,35 @@ async function loadData() {
     Object.keys(DEFAULT_STORAGE_DATA),
   );
 
-  const backupVersion = normalizeBackupVersion(data.backupVersion);
+  const storedVersion = normalizeBackupVersion(data.backupVersion);
+  const hasStoredData = ["shortcuts", "settings", "weatherCity"].some(
+    (key) => key in data,
+  );
+  const backupVersion = hasStoredData
+    ? (storedVersion ?? 1)
+    : CURRENT_BACKUP_VERSION;
 
-  if (!backupVersion) {
-    await chrome.storage.local.set({
-      backupVersion: 1,
-    });
-  } else {
-    storage.backupVersion = backupVersion;
-    await chrome.storage.local.set({
-      backupVersion: CURRENT_BACKUP_VERSION,
-    });
+  if (backupVersion > CURRENT_BACKUP_VERSION) {
+    throw new Error(
+      `Storage version ${backupVersion} is newer than supported version ${CURRENT_BACKUP_VERSION}`,
+    );
   }
 
-  if (backupVersion !== CURRENT_BACKUP_VERSION) {
-    const backup = await exportBackup(backupVersion ?? 1, data);
-
-    const backupBlob = await backup.generateAsync({
-      type: "blob",
-      mimeType: "application/zip",
-    });
-
-    const backupFile = new File([backupBlob], BACKUP_FILE_NAME);
-
-    downloadBlob(backupFile, "old_" + BACKUP_FILE_NAME);
-
-    await importBackup(backupFile);
-
-    await chrome.storage.local.set({
-      backupVersion: CURRENT_BACKUP_VERSION,
-    });
+  if (backupVersion < CURRENT_BACKUP_VERSION) {
+    await migrateStoredData(backupVersion, data);
     storage.backupVersion = CURRENT_BACKUP_VERSION;
 
+    await chrome.storage.local.set({
+      shortcuts: JSON.parse(JSON.stringify(storage.shortcuts)),
+      settings: JSON.parse(JSON.stringify(storage.settings)),
+      weatherCity: JSON.parse(JSON.stringify(storage.weatherCity)),
+      backupVersion: CURRENT_BACKUP_VERSION,
+    });
+
+    storage.isLoaded = true;
     return;
+  } else {
+    storage.backupVersion = backupVersion;
   }
 
   try {
@@ -160,9 +151,9 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
     if (!isEqual(next, toRaw(storage.weatherCity))) storage.weatherCity = next;
   }
   if (changes.backupVersion) {
-    const next = normalizeBackupVersion(changes.backupVersion) ?? 1;
+    const next = normalizeBackupVersion(changes.backupVersion.newValue) ?? 1;
     if (!isEqual(next, toRaw(storage.backupVersion)))
-      changes.backupVersion = next as any;
+      storage.backupVersion = next;
   }
 
   setTimeout(() => {
@@ -238,7 +229,13 @@ function normalizeUserTheme(input: unknown): UserTheme | null {
 }
 
 function normalizeBackupVersion(input: unknown): BackupVersion | undefined {
-  if (!input || typeof input !== "number") return;
+  if (
+    typeof input !== "number" ||
+    !Number.isInteger(input) ||
+    input < 1
+  ) {
+    return;
+  }
 
   return input as BackupVersion;
 }

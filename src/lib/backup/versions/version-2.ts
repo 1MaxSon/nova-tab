@@ -10,6 +10,7 @@ import { getFileOrError, isRecord } from "@/lib/backup/utils";
 import {
   getIconIdV1,
   GradientLayerV1,
+  ICONS_DIR_NAME_V1,
   IconManifestV1,
   ICONS_FILE_NAME_V1,
   SettingsDataV1,
@@ -17,7 +18,7 @@ import {
   StorageDataV1,
   WeatherCityV1,
 } from "@/lib/backup/versions/version-1";
-import { t, type Language } from "@/lib/i18n";
+import { type Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
 import {
   normalizeSettingsData,
@@ -148,18 +149,7 @@ export const backupV2: BackupService<2> = {
   },
 
   async migrate(zip) {
-    try {
-      const migratedZip = await migrateStorage(zip);
-      if (!migratedZip) throw new Error();
-
-      return migratedZip;
-    } catch (e) {
-      console.error(e);
-
-      alert(t("settings.backupError"));
-    }
-
-    return zip;
+    return await migrateStorage(zip);
   },
 };
 
@@ -303,7 +293,7 @@ async function migrateStorage(zip: JSZip) {
         const blob = await res.blob();
         const wallpaperId = crypto.randomUUID();
 
-        saveImage({
+        await saveImage({
           id: wallpaperId,
           blob,
         });
@@ -387,9 +377,9 @@ async function migrateStorage(zip: JSZip) {
 
   storageDataV2.shortcuts = shortcutsV2;
 
-  const iconsFolder = zip.folder(ICONS_FILE_NAME_V1);
+  const iconsFolder = zip.folder(ICONS_DIR_NAME_V1);
 
-  if (!iconsFolder) return;
+  if (!iconsFolder) throw new Error(INVALID_BACKUP_FILE_ERROR);
 
   const migrateTasks: Promise<void>[] = [];
   // newImageId, Blob
@@ -403,6 +393,7 @@ async function migrateStorage(zip: JSZip) {
     if (oldIconId === null) return;
 
     const newIconId = changedIcons[oldIconId.valueOf()];
+    if (!newIconId) return;
 
     migrateTasks.push(
       iconFile.async("arraybuffer").then((buffer) => {
@@ -467,7 +458,7 @@ function isStorageDataV1(obj: unknown): obj is StorageDataV1 {
     !!obj &&
     typeof obj === "object" &&
     "weatherCity" in obj &&
-    typeof obj.weatherCity === "object" &&
+    (obj.weatherCity === null || typeof obj.weatherCity === "object") &&
     "shortcuts" in obj &&
     Array.isArray(obj.shortcuts) &&
     "settings" in obj &&
