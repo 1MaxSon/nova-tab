@@ -133,9 +133,6 @@ export const backupV2: BackupService<2> = {
   async importBackup(zip) {
     const payload = await readBackupData(zip);
 
-    console.log(payload);
-    
-
     const shortcuts = normalizeShortcutData(payload.shortcuts);
     const weatherCity = normalizeWeatherCity(payload.weatherCity);
     const settings = normalizeSettingsData(payload.settings);
@@ -152,7 +149,9 @@ export const backupV2: BackupService<2> = {
       if (!migratedZip) throw new Error();
 
       return migratedZip;
-    } catch {
+    } catch (e) {
+      console.error(e);
+
       alert(t("settings.backupError"));
     }
 

@@ -122,5 +122,6 @@
   "gradientBuilder.transparent": "transparente",
   "gradientBuilder.addColorStop": "Añadir parada de color",
   "gradientBuilder.emptyState": "Agrega una capa de degradado usando el botón de arriba",
-  "themeEditor.blurLabel": "Desenfoque"
+  "themeEditor.blurLabel": "Desenfoque",
+  "backup.outdated": "Su versión de configuración está desactualizada, importe el archivo exportado en la configuración para la migración"
 }

@@ -54,7 +54,11 @@ export async function importBackup(file: File): Promise<void> {
     
     await currentBackupService.importBackup(importingBackup);
     // window.location.reload();
-  } catch {
+  } catch (e) {
+    console.log("HERe");
+    
+    console.error(e);
+    
     alert(t("settings.backupError"));
   }
 }

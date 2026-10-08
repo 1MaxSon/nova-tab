@@ -122,5 +122,6 @@
   "gradientBuilder.transparent": "transparent",
   "gradientBuilder.addColorStop": "Add color stop",
   "gradientBuilder.emptyState": "Add a gradient layer using the button above",
-  "themeEditor.blurLabel": "Blur"
+  "themeEditor.blurLabel": "Blur",
+  "backup.outdated": "Your version of the settings is outdated, import the exported archive in the settings for migration"
 }

@@ -122,5 +122,6 @@
   "gradientBuilder.transparent": "прозрачный",
   "gradientBuilder.addColorStop": "Добавить стоп цвета",
   "gradientBuilder.emptyState": "Добавьте слой градиента кнопкой выше",
-  "themeEditor.blurLabel": "Размытие"
+  "themeEditor.blurLabel": "Размытие",
+  "backup.outdated": "Ваша версия настроек устарела, импортируйте экспортированный архив в настройках для миграции"
 }

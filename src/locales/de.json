@@ -122,5 +122,6 @@
   "gradientBuilder.transparent": "durchsichtig",
   "gradientBuilder.addColorStop": "Farbstopp hinzufügen",
   "gradientBuilder.emptyState": "Füge eine Verlaufsebene mit der Schaltfläche oben hinzu",
-  "themeEditor.blurLabel": "Verschwimmen"
+  "themeEditor.blurLabel": "Verschwimmen",
+  "backup.outdated": "Ihre Version der Einstellungen ist veraltet, importieren Sie das exportierte Archiv in den Einstellungen für die Migration"
 }

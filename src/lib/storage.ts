@@ -1,11 +1,12 @@
-import { exportBackup, importBackup } from "@/lib/backup";
+import { exportBackup } from "@/lib/backup";
 import {
   BACKUP_FILE_NAME,
   BackupVersion,
   CURRENT_BACKUP_VERSION,
 } from "@/lib/backup/types";
+import { downloadBlob } from "@/lib/backup/utils";
 import { getDefaultLanguage } from "@/lib/helpers";
-import type { Language } from "@/lib/i18n";
+import { t, type Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
 import type { ShortcutData, WeatherCity } from "@/lib/types";
 import {
@@ -69,20 +70,29 @@ async function loadData() {
       Object.keys(DEFAULT_STORAGE_DATA),
     );
 
-    const backupVersion = normaliseBackupVersion(data.backupVersion);
+    const backupVersion = normalizeBackupVersion(data.backupVersion);
+
+    if (!backupVersion) {
+      await chrome.storage.local.set({
+        backupVersion: 1,
+      });
+    } else {
+      storage.backupVersion = backupVersion;
+      await chrome.storage.local.set({
+        backupVersion: CURRENT_BACKUP_VERSION,
+      });
+    }
 
     if (backupVersion !== CURRENT_BACKUP_VERSION) {
       const backup = await exportBackup(backupVersion);
 
-      const backupBlob = await backup.generateAsync({ type: "blob" });
-
-      const backupFile = new File([backupBlob], BACKUP_FILE_NAME);
-
-
-      importBackup(backupFile);
+      const backupBlob = await backup.generateAsync({
+        type: "blob",
+        mimeType: "application/zip",
+      });
+      downloadBlob(backupBlob, BACKUP_FILE_NAME);
+      alert(t("backup.outdated"));
     }
-
-    storage.backupVersion = backupVersion;
 
     if ("settings" in data) {
       storage.settings = normalizeSettingsData(data.settings);
@@ -112,6 +122,7 @@ watch(
         shortcuts: JSON.parse(JSON.stringify(newState.shortcuts)),
         settings: JSON.parse(JSON.stringify(newState.settings)),
         weatherCity: JSON.parse(JSON.stringify(newState.weatherCity)),
+        backupVersion: newState.backupVersion,
       });
     } catch (e) {
       console.error("Error saving to chrome.storage:", e);
@@ -136,6 +147,11 @@ chrome.storage.onChanged.addListener((changes, areaName) => {
   if (changes.weatherCity) {
     const next = normalizeWeatherCity(changes.weatherCity.newValue);
     if (!isEqual(next, toRaw(storage.weatherCity))) storage.weatherCity = next;
+  }
+  if (changes.backupVersion) {
+    const next = normalizeBackupVersion(changes.backupVersion) ?? 1;
+    if (!isEqual(next, toRaw(storage.backupVersion)))
+      changes.backupVersion = next as any;
   }
 
   setTimeout(() => {
@@ -210,11 +226,8 @@ function normalizeUserTheme(input: unknown): UserTheme | null {
   return null;
 }
 
-/**
- * return first backup version if not exist
- */
-function normaliseBackupVersion(input: unknown): BackupVersion | 1 {
-  if (!input || typeof input !== "number") return 1;
+function normalizeBackupVersion(input: unknown): BackupVersion | undefined {
+  if (!input || typeof input !== "number") return;
 
   return input as BackupVersion;
 }
