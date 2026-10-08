@@ -110,8 +110,10 @@ export type StorageDataV1 = {
 export const backupV1: BackupService<1> = {
   version: 1,
 
-  async exportBackup(zip) {
-    const { isLoaded, ...data } = storage
+  async exportBackup(zip, customData) {
+    const { isLoaded, ...data } = storage;
+
+    const storageData = customData ?? data;
 
     const iconsFolder = zip.folder(ICONS_DIR_NAME_V1);
     const icons = await getAllImages();
@@ -128,13 +130,13 @@ export const backupV1: BackupService<1> = {
     }
 
     // @ts-ignore
-    const backup: StorageDataV1 = data as StorageDataV1;
+    const backup: StorageDataV1 = storageData as StorageDataV1;
 
     zip.file(DATA_FILE_NAME_V1, JSON.stringify(backup, null, 2));
 
     zip.file(ICONS_FILE_NAME_V1, JSON.stringify(iconManifest, null, 2));
 
-    return zip
+    return zip;
   },
   async importBackup(zip) {
     return;

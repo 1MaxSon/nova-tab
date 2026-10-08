@@ -17,7 +17,7 @@ export type BackupManifest = {
 export type BackupService<Version extends BackupVersion> = {
   version: Version;
 
-  exportBackup: (zip: JSZip) => Promise<JSZip>;
+  exportBackup: (zip: JSZip, customData?: any) => Promise<JSZip>;
   importBackup: (zip: JSZip) => Promise<void>;
   migrate: (zip: JSZip) => Promise<JSZip>;
 };

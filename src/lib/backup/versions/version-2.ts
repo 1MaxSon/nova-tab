@@ -105,8 +105,10 @@ export type StorageDataV2 = {
 export const backupV2: BackupService<2> = {
   version: 2,
 
-  async exportBackup(zip) {
+  async exportBackup(zip, customData) {
     const { isLoaded, ...data } = storage;
+
+    const storageData = customData ?? data;
 
     const iconsFolder = zip.folder(IMAGES_DIR_NAME_V2);
     const icons = await getAllImages();
@@ -122,7 +124,9 @@ export const backupV2: BackupService<2> = {
       });
     }
 
-    const backup: StorageDataV2 = data;
+    const backup: StorageDataV2 = storageData;
+
+    
 
     zip.file(DATA_FILE_NAME_V2, JSON.stringify(backup, null, 2));
 
@@ -353,6 +357,9 @@ async function migrateStorage(zip: JSZip) {
     if (oldShortcut.type === "shortcut") {
       const migratedShortcut = migrateShortcut(oldShortcut);
 
+      console.log(migratedShortcut);
+      
+
       if (migratedShortcut) shortcutsV2.push(migratedShortcut);
     }
 
@@ -402,7 +409,6 @@ async function migrateStorage(zip: JSZip) {
         const iconData = iconsV1
           .filter((p) => p.id === oldIconId.valueOf())
           .pop();
-        console.log(iconData);
 
         if (!iconData) return;
 

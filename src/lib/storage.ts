@@ -1,4 +1,4 @@
-import { exportBackup } from "@/lib/backup";
+import { exportBackup, importBackup } from "@/lib/backup";
 import {
   BACKUP_FILE_NAME,
   BackupVersion,
@@ -6,7 +6,7 @@ import {
 } from "@/lib/backup/types";
 import { downloadBlob } from "@/lib/backup/utils";
 import { getDefaultLanguage } from "@/lib/helpers";
-import { t, type Language } from "@/lib/i18n";
+import { type Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
 import type { ShortcutData, WeatherCity } from "@/lib/types";
 import {
@@ -65,35 +65,46 @@ export const storage = reactive<StorageData>({
 let isSelfUpdating = false;
 
 async function loadData() {
+  const data = await chrome.storage.local.get(
+    Object.keys(DEFAULT_STORAGE_DATA),
+  );
+
+  const backupVersion = normalizeBackupVersion(data.backupVersion);
+
+  if (!backupVersion) {
+    await chrome.storage.local.set({
+      backupVersion: 1,
+    });
+  } else {
+    storage.backupVersion = backupVersion;
+    await chrome.storage.local.set({
+      backupVersion: CURRENT_BACKUP_VERSION,
+    });
+  }
+
+  if (backupVersion !== CURRENT_BACKUP_VERSION) {
+    const backup = await exportBackup(backupVersion ?? 1, data);
+
+    const backupBlob = await backup.generateAsync({
+      type: "blob",
+      mimeType: "application/zip",
+    });
+
+    const backupFile = new File([backupBlob], BACKUP_FILE_NAME);
+
+    downloadBlob(backupFile, "old_" + BACKUP_FILE_NAME);
+
+    await importBackup(backupFile);
+
+    await chrome.storage.local.set({
+      backupVersion: CURRENT_BACKUP_VERSION,
+    });
+    storage.backupVersion = CURRENT_BACKUP_VERSION;
+
+    return;
+  }
+
   try {
-    const data = await chrome.storage.local.get(
-      Object.keys(DEFAULT_STORAGE_DATA),
-    );
-
-    const backupVersion = normalizeBackupVersion(data.backupVersion);
-
-    if (!backupVersion) {
-      await chrome.storage.local.set({
-        backupVersion: 1,
-      });
-    } else {
-      storage.backupVersion = backupVersion;
-      await chrome.storage.local.set({
-        backupVersion: CURRENT_BACKUP_VERSION,
-      });
-    }
-
-    if (backupVersion !== CURRENT_BACKUP_VERSION) {
-      const backup = await exportBackup(backupVersion);
-
-      const backupBlob = await backup.generateAsync({
-        type: "blob",
-        mimeType: "application/zip",
-      });
-      downloadBlob(backupBlob, BACKUP_FILE_NAME);
-      alert(t("backup.outdated"));
-    }
-
     if ("settings" in data) {
       storage.settings = normalizeSettingsData(data.settings);
     }

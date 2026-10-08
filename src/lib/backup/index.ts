@@ -22,6 +22,7 @@ const currentBackupService = backupServices[CURRENT_BACKUP_VERSION];
 
 export async function exportBackup(
   version: BackupVersion = CURRENT_BACKUP_VERSION,
+  customData?: any,
 ): Promise<JSZip> {
   const zip = new JSZip();
 
@@ -32,7 +33,9 @@ export async function exportBackup(
 
   zip.file(BACKUP_MANIFEST_FILE_NAME, JSON.stringify(manifest));
 
-  return await currentBackupService.exportBackup(zip);
+  const backupService = backupServices[version];
+
+  return await backupService.exportBackup(zip, customData);
 }
 
 export async function importBackup(file: File): Promise<void> {
@@ -44,21 +47,15 @@ export async function importBackup(file: File): Promise<void> {
     throw new Error(INVALID_BACKUP_FILE_ERROR);
 
   let importingBackup = zip;
-  
-  
-  
+
   try {
     if (version !== CURRENT_BACKUP_VERSION) {
       importingBackup = await migrateBackup(zip, version);
     }
-    
+
     await currentBackupService.importBackup(importingBackup);
     // window.location.reload();
   } catch (e) {
-    console.log("HERe");
-    
-    console.error(e);
-    
     alert(t("settings.backupError"));
   }
 }
