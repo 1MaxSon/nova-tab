@@ -18,7 +18,6 @@ import {
   StorageDataV1,
   WeatherCityV1,
 } from "@/lib/backup/versions/version-1";
-import { type Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
 import {
   normalizeSettingsData,
@@ -27,6 +26,7 @@ import {
 } from "@/lib/storage";
 import { UserTheme } from "@/lib/types/theme";
 import { getAllImages, saveImage } from "@/lib/utils/img-idb";
+import { Language } from "@/lib/constants";
 
 export const DATA_FILE_NAME_V2 = "data.json";
 const IMAGES_FILE_NAME_V2 = "images.json";

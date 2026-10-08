@@ -1,4 +1,4 @@
-import { Language } from "@/lib/i18n";
+import { Language } from "@/lib/constants";
 
 export const getDefaultLanguage = (): Language => {
   if (typeof navigator === "undefined") return "en";
