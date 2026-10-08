@@ -1,10 +1,9 @@
+import { Language } from "@/lib/constants";
 import { isDev } from "@/lib/helpers";
 import { storage } from "@/lib/storage";
 import en from "@/locales/en.json";
 import { computed, ref, watch } from "vue";
 
-export const languages = ["en", "ru", "es", "de"] as const;
-export type Language = (typeof languages)[number];
 export type TranslationKey = keyof typeof en;
 
 type TranslationDictionary = Partial<Record<TranslationKey, string>>;
@@ -48,8 +47,6 @@ watch(
   },
   { immediate: true },
 );
-
-
 
 export function t(key: TranslationKey): string {
   const translation = selectedTranslations.value[key];

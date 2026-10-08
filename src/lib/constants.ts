@@ -138,3 +138,6 @@ export const GROUP_DROP_PREFIX = "shortcut-drop:";
 
 export const shortcutItemClassName =
   "flex flex-col items-center justify-center rounded-lg relative aspect-video";
+
+export const languages = ["en", "ru", "es", "de"] as const;
+export type Language = (typeof languages)[number];

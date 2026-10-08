@@ -1,7 +1,7 @@
 import { migrateStoredData } from "@/lib/backup";
 import { BackupVersion, CURRENT_BACKUP_VERSION } from "@/lib/backup/types";
+import { Language } from "@/lib/constants";
 import { getDefaultLanguage } from "@/lib/helpers";
-import { type Language } from "@/lib/i18n";
 import type { SearchEngine } from "@/lib/search-engines";
 import type { ShortcutData, WeatherCity } from "@/lib/types";
 import {
