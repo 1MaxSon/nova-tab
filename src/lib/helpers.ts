@@ -12,6 +12,12 @@ export const getDefaultLanguage = (): Language => {
         : "en";
 };
 
+export const getDefaultWeatherProvider = (
+  language = getDefaultLanguage(),
+): "yandex" | "google" => {
+  return language === "ru" ? "yandex" : "google";
+};
+
 export const isDev = process.env.NODE_ENV === "development";
 
 export function domainFromUrl(url: string) {

@@ -1,7 +1,10 @@
 import { migrateStoredData } from "@/lib/backup";
 import { BackupVersion, CURRENT_BACKUP_VERSION } from "@/lib/backup/types";
 import { Language } from "@/lib/constants";
-import { getDefaultLanguage } from "@/lib/helpers";
+import {
+  getDefaultLanguage,
+  getDefaultWeatherProvider,
+} from "@/lib/helpers";
 import type { SearchEngine } from "@/lib/search-engines";
 import type { ShortcutData, WeatherCity } from "@/lib/types";
 import {
@@ -9,7 +12,6 @@ import {
   ThemeColors,
   UserTheme,
 } from "@/lib/types/theme";
-import { getDefaultWeatherProvider } from "@/lib/utils/weather";
 import { isEqual } from "lodash-es";
 import { reactive, toRaw, watch } from "vue";
 

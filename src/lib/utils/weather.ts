@@ -1,7 +1,8 @@
-import { getDefaultLanguage } from "@/lib/helpers";
 import { t } from "@/lib/i18n";
-import { WeatherProvider } from "@/lib/storage";
+import type { WeatherProvider } from "@/lib/storage";
 import { Coords } from "@/lib/types/open-meteo";
+
+export { getDefaultWeatherProvider } from "@/lib/helpers";
 
 function buildYandexWeatherUrl(coords: Coords) {
   return `https://yandex.ru/pogoda/?lat=${coords.latitude}&lon=${coords.longitude}`;
@@ -36,9 +37,3 @@ export function buildWeatherProviderUrl(
 
   return builder(coords, cityName);
 }
-
-export const getDefaultWeatherProvider = (
-  language = getDefaultLanguage(),
-): WeatherProvider => {
-  return language === "ru" ? "yandex" : "google";
-};
