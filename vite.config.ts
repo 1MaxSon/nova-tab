@@ -8,6 +8,9 @@ import packageJson from "./package.json" with { type: "json" };
 import tailwindcss from "@tailwindcss/vite";
 
 export default defineConfig({
+  build: {
+    sourcemap: true,
+  },
   resolve: {
     alias: {
       "@": `${path.resolve(import.meta.dirname, "./src")}`,
